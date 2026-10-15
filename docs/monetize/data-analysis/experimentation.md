@@ -8,9 +8,9 @@ Define how the business learns what works instead of arguing about it: registere
 
 ## Users
 
-- Operator/founder: proposes "yearly −20% vs −10%" and gets an answer with a date, not a debate.
-- Finance: trusts that no experiment silently corrupts closed books or grandfathering promises.
-- Buyer: never sees broken or unfair treatment — variant assignment is stable, honest, and disclosed where material.
+- Operator/founder: *As an Operator/founder, I want to propose "yearly −20% vs −10%" and get an answer with a date, not a debate so that the business learns what works instead of arguing about it as defined here.* proposes "yearly −20% vs −10%" and gets an answer with a date, not a debate.
+- Finance: *As a Finance, I want to trust that no experiment silently corrupts closed books or grandfathering promises so that the business learns what works instead of arguing about it as defined here.* trusts that no experiment silently corrupts closed books or grandfathering promises.
+- Buyer: *As a Buyer, I want to never see broken or unfair treatment — variant assignment is stable, honest, and disclosed where material so that the business learns what works instead of arguing about it as defined here.* never sees broken or unfair treatment — variant assignment is stable, honest, and disclosed where material.
 
 ## Functional requirements
 
@@ -21,6 +21,8 @@ Define how the business learns what works instead of arguing about it: registere
 5. Incrementality for promos: every major promo campaign carries a holdout (eligible non-recipients measured against recipients) so the business learns true lift, not just redemption counts. Holdouts sized by the registry's power rule; results feed the campaign-management readout.
 6. Readout and decision: fixed analysis window, framework-KPI metrics only (no post-hoc metric shopping), decision logged (ship variant / keep control / iterate) with the evidence attached. Shipped variants roll out via the normal catalog/config change path with versioning intact.
 
+- 7. Safety/scale NFR (derived from rules 4-6 above): a guardrail breach auto-pauses the experiment and pages ops under the same kill-switch discipline as provider incidents, and no variant alters closed-period figures or grandfathered terms — no new thresholds.
+
 ## Data / API touches
 
 - New tables `experiments{id, hypothesis, variants_json, status (draft|running|paused|decided), ship_rule}` + `experiment_assignments{experiment_id, user_id, variant}` (sticky, written once) with RLS posture (operators manage; assignment reads server-side only — variant never trusted from the client). All PG via `worker/db/*`.
@@ -30,10 +32,15 @@ Define how the business learns what works instead of arguing about it: registere
 ## Acceptance criteria
 
 - Registration drill: unregistered pricing change blocked from experiment surfaces by review gate; registered test carries hypothesis, MDE, guardrails, and ship rule before launch.
+  *GWT: Given Registration drill context; When unregistered pricing change blocked from experiment surfaces by review gate; Then registered test carries hypothesis, MDE, guardrails, and ship rule before launch.*
 - Stability drill: same user sees the same variant across sessions, devices, and pending windows; no mid-flight re-bucketing under load.
+  *GWT: Given Stability drill context; When same user sees the same variant across sessions, devices, and pending windows; Then no mid-flight re-bucketing under load.*
 - Guardrail drill: seeded conversion dip auto-pauses the test and pages with the offending slice; finance figures and grandfathered terms provably untouched.
+  *GWT: Given Guardrail drill context; When seeded conversion dip auto-pauses the test and pages with the offending slice; Then finance figures and grandfathered terms provably untouched.*
 - Holdout drill: promo campaign with holdout reports true lift vs raw redemptions; holdout buyers never learn they were held out through degraded UX.
+  *GWT: Given Holdout drill context; When promo campaign with holdout reports true lift vs raw redemptions; Then holdout buyers never learn they were held out through degraded UX.*
 - Decision drill: readout uses framework KPIs only; decision + evidence logged; shipped variant rolls through catalog versioning with renewals consistent.
+  *GWT: Given Decision drill context; When readout uses framework KPIs only; Then shipped variant rolls through catalog versioning with renewals consistent.*
 
 ## Out of scope
 

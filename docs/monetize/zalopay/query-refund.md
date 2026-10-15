@@ -8,9 +8,9 @@ Close every gap the order + callback round-trip can leave: buyers who close the 
 
 ## Users
 
-- Buyer stuck on "confirming" (redirect seen, callback delayed): gets resolution via on-demand verify instead of limbo.
-- Support/ops: looks up live status by `app_trans_id`, triggers verify, issues refunds.
-- System (scheduled job): sweeps callback-less orders until each resolves or its payment window expires (ZaloPay's recommended Option 1; Option 2 minimum is one query after the window lapses).
+- Buyer stuck on "confirming" (redirect seen, callback delayed): *As a Buyer stuck on "confirming", I want to get resolution via on-demand verify instead of limbo so that gap the order + callback round-trip can leave as defined here.* gets resolution via on-demand verify instead of limbo.
+- Support/ops: *As a Support/ops, I want to look up live status by `app_trans_id`, trigger verify, issue refunds so that gap the order + callback round-trip can leave as defined here.* looks up live status by `app_trans_id`, triggers verify, issues refunds.
+- System (scheduled job): *As a System, I want to sweep callback-less orders until each resolves or its payment window expires (ZaloPay's recommended Option 1; Option 2 minimum is one query after the window lapses) so that gap the order + callback round-trip can leave as defined here.* sweeps callback-less orders until each resolves or its payment window expires (ZaloPay's recommended Option 1; Option 2 minimum is one query after the window lapses).
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Close every gap the order + callback round-trip can leave: buyers who close the 
 ## Acceptance criteria
 
 - Callback-suppression drill (block receiver, complete sandbox payment): redirect page shows confirming, on-demand query grants exactly once; redelivered callback afterward is a no-op.
+  *GWT: Given Callback-suppression drill (block receiver, complete sandbox payment) context; When redirect page shows confirming, on-demand query grants exactly once; Then redelivered callback afterward is a no-op.*
 - Sweep drill: callback-less orders with gateway-paid settle correctly, no doubles; mismatches held for ops.
+  *GWT: Given Sweep drill context; When callback-less orders with gateway-paid settle correctly, no doubles; Then mismatches held for ops.*
 - Refund drill (sandbox): status `refunded` with gateway reference recorded, entitlement revoked, re-grant impossible.
+  *GWT: Given Refund drill (sandbox) context; When the checked action occurs; Then status `refunded` with gateway reference recorded, entitlement revoked, re-grant impossible.*
 - Auth probe: non-ops user on ops endpoints → 403; RLS denies cross-owner rows.
+  *GWT: Given Auth probe: non-ops user on ops endpoints; When the transition executes; Then 403; RLS denies cross-owner rows.*
 - Gateway-error handling: transient query failures retry with backoff; persistent auth errors page instead of spinning.
+  *GWT: Given Gateway-error handling context; When transient query failures retry with backoff; Then persistent auth errors page instead of spinning.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Define the complete buyer lifecycle as one analyzable trail — from first plan 
 
 ## Users
 
-- Operator/analyst: replays anonymized journey trails to diagnose friction (e.g. provider-switch loops before abandon).
-- Experiment designer: sources hypotheses with evidential trails instead of opinions (feeds `data-analysis/experimentation.md`).
-- Buyer: tracked only within strict privacy bounds — journey data never changes their prices, gates, or treatment.
+- Operator/analyst: *As an Operator/analyst, I want to replay anonymized journey trails to diagnose friction (e.g. provider-switch loops before abandon) so that the complete buyer lifecycle as one analyzable trail as defined here.* replays anonymized journey trails to diagnose friction (e.g. provider-switch loops before abandon).
+- Experiment designer: *As an Experiment designer, I want to source hypotheses with evidential trails instead of opinions (feeds `data-analysis/experimentation.md`) so that the complete buyer lifecycle as one analyzable trail as defined here.* sources hypotheses with evidential trails instead of opinions (feeds `data-analysis/experimentation.md`).
+- Buyer: *As a Buyer, I want to be tracked only within strict privacy bounds — journey data never changes their prices, gate, or treatment so that the complete buyer lifecycle as one analyzable trail as defined here.* tracked only within strict privacy bounds — journey data never changes their prices, gates, or treatment.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define the complete buyer lifecycle as one analyzable trail — from first plan 
 ## Acceptance criteria
 
 - Trail drill: seeded multi-day purchase (view → proforma → provider switch → coupon attempt → pay → renew) assembles into one complete journey with all markers ordered correctly.
+  *GWT: Given Trail drill: seeded multi-day purchase (view; When the transition executes; Then proforma → provider switch → coupon attempt → pay → renew) assembles into one complete journey with all markers ordered correctly.*
 - Stitching drill: logged-out browsing stays unattributed until identification; no fingerprint/device-graph joins exist in code (review gate).
+  *GWT: Given Stitching drill context; When logged-out browsing stays unattributed until identification; Then no fingerprint/device-graph joins exist in code (review gate).*
 - Privacy drill: sub-threshold segments suppressed in every readout; deletion request clears raw trails within window; behavioral data provably unused by gates/pricing/fraud-auto-actions (grep + review gate).
+  *GWT: Given Privacy drill context; When sub-threshold segments suppressed in every readout; Then behavioral data provably unused by gates/pricing/fraud-auto-actions (grep + review gate).*
 - Closure drill: stale open journeys finalize as marked-inferred within the window; no orphans past retention.
+  *GWT: Given Closure drill context; When stale open journeys finalize as marked-inferred within the window; Then no orphans past retention.*
 - Auth probe: non-ops roles on journey aggregates → 403; earner-scoped callers see only their ledgers.
+  *GWT: Given Auth probe: non-ops roles on journey aggregates; When the transition executes; Then 403; earner-scoped callers see only their ledgers.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Hold the keys to seven platforms without ever leaking them: per-network OAuth co
 
 ## Users
 
-- Creator: links social accounts (one per platform on free, up to ten per platform on pro), sees connection health, disconnects cleanly.
-- Publisher pipeline (internal consumer): receives short-lived usable credentials per job without ever reading the vault directly.
-- Security reviewer: verifies tokens are encrypted at rest, never logged, and rotatable without a deploy.
+- Creator: *As a Creator, I want to link social accounts within per-plan caps, see connection health, and disconnect cleanly so that fan-out never touches raw tokens.* Links social accounts (one per platform on free, up to ten per platform on pro), sees connection health, disconnects cleanly.
+- Publisher pipeline (internal consumer): *As a Publisher pipeline, I want short-lived usable credentials per job without ever reading the vault directly so that tokens stay confined to one audited module.* Receives short-lived usable credentials per job without ever reading the vault directly.
+- Security reviewer: *As a Security reviewer, I want to verify tokens are encrypted at rest, never logged, and rotatable without a deploy so that the vault holds seven platforms safely.* Verifies tokens are encrypted at rest, never logged, and rotatable without a deploy.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Hold the keys to seven platforms without ever leaking them: per-network OAuth co
 
 ## Acceptance criteria
 
-- Vault drill: database dump inspection shows ciphertext only; application logs from connect/publish/refresh flows contain zero token material (grep gate in CI).
-- Cap drill: free user connecting a second account on one platform gets 403 with the upgrade path; direct API call cannot bypass; pro connects ten, eleventh refused.
-- Refresh drill: near-expiry tokens refresh silently with no failed publish; revoked-provider-side account flips to `revoked` by next health cycle and its scheduled posts error loudly (never silent-drop).
-- Disconnect drill: row deleted, remote revoke attempted, scheduled queued jobs for the account cancelled with creator notice.
-- Rotation drill: key rotation re-wraps all rows with zero publish failures during the dual-read window.
+- Vault drill: database dump inspection shows ciphertext only; application logs from connect/publish/refresh flows contain zero token material (grep gate in CI). *GWT: Given dumps and logs from connect/publish/refresh flows; When inspected via the CI grep gate; Then dumps show ciphertext only and logs contain zero token material.*
+- Cap drill: free user connecting a second account on one platform gets 403 with the upgrade path; direct API call cannot bypass; pro connects ten, eleventh refused. *GWT: Given free and pro connect attempts; When cap checks run server-side; Then a second free account returns 403 with upgrade path, direct API cannot bypass, and the pro eleventh is refused.*
+- Refresh drill: near-expiry tokens refresh silently with no failed publish; revoked-provider-side account flips to `revoked` by next health cycle and its scheduled posts error loudly (never silent-drop). *GWT: Given near-expiry or provider-revoked tokens; When refresh and health cycles run; Then near-expiry refreshes silently with no failed publish, and revoked accounts flip to `revoked` with loud scheduled-post errors.*
+- Disconnect drill: row deleted, remote revoke attempted, scheduled queued jobs for the account cancelled with creator notice. *GWT: Given a user disconnect; When processed; Then the vault row is deleted, remote revoke is attempted, and queued jobs cancel with creator notice.*
+- Rotation drill: key rotation re-wraps all rows with zero publish failures during the dual-read window. *GWT: Given a `TOKEN_ENC_KEY` rotation; When the dual-read window and re-wrap run; Then all rows re-wrap with zero publish failures.*
 
 ## Out of scope
 

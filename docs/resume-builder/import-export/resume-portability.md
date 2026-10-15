@@ -8,9 +8,17 @@ Guarantee a user can back up, restore, and bootstrap a resume without lock-in. C
 
 ## Users
 
-- Job seeker: downloads a backup, restores after accidental delete, moves between accounts.
-- New user: bootstraps a first resume from LinkedIn or GitHub profile data.
-- Developer: runs the fixture profile through migrations to catch breaking schema changes.
+| Role | Permissions | Notes |
+|---|---|---|
+| Job seeker | Export/import own resume documents and linked resume blocks (calls scoped by session `user_id` + RLS) | Downloads a backup, restores after accidental delete, moves between accounts |
+| New user | Import via LinkedIn/GitHub adapters into own draft resume (server-side fetch, no third-party tokens on client) | Bootstraps a first resume from LinkedIn or GitHub profile data |
+| Developer | — (reported: no access-control statement in this file) | Runs the fixture profile through migrations to catch breaking schema changes |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Job seeker | download a backup, restore after accidental delete, and move between accounts | I avoid lock-in | High |
+| US-02 | New user | bootstrap a first resume from LinkedIn or GitHub profile data | I can start without manual entry | High |
+| US-03 | Developer | run the fixture profile through migrations | breaking schema changes are caught | High |
 
 ## Functional requirements
 
@@ -31,12 +39,14 @@ Guarantee a user can back up, restore, and bootstrap a resume without lock-in. C
 
 ## Acceptance criteria
 
-- Round-trip test on fixture plus one real resume: re-export diff shows only ids/timestamps changed.
-- Malformed, oversized, or newer-version file: rejected with actionable error; zero rows written (atomic import).
-- LinkedIn/GitHub import creates draft only; no public `/:username/cv` change until explicit Save Snapshot + publish.
-- IDOR probe: user A cannot export/import against user B `profile_id`; all calls scoped by session `user_id` + RLS.
-- XSS probe: malicious strings in imported payload render stripped on dashboard preview, public CV, and re-export.
-- Fixture import passes on a clean database after each schema migration.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Round-trip test on fixture plus one real resume: re-export diff shows only ids/timestamps changed | an exported resume file | imported into a fresh account and re-exported | the diff shows only ids/timestamps changed |
+| AC-02 | Malformed, oversized, or newer-version file: rejected with actionable error; zero rows written (atomic import) | a malformed, oversized, or newer-version file | import is attempted | it is rejected with an actionable error and zero rows are written |
+| AC-03 | LinkedIn/GitHub import creates draft only; no public `/:username/cv` change until explicit Save Snapshot + publish | a LinkedIn/GitHub import | the import completes | it creates a draft only with no public `/:username/cv` change until explicit Save Snapshot + publish |
+| AC-04 | IDOR probe: user A cannot export/import against user B `profile_id`; all calls scoped by session `user_id` + RLS | user B `profile_id` | user A attempts export/import against it | access is denied with all calls scoped by session `user_id` + RLS |
+| AC-05 | XSS probe: malicious strings in imported payload render stripped on dashboard preview, public CV, and re-export | malicious strings in an imported payload | rendered on dashboard preview, public CV, and re-export | they render stripped |
+| AC-06 | Fixture import passes on a clean database after each schema migration | a clean database after a schema migration | the fixture is imported | the import passes |
 
 ## Out of scope
 

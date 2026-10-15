@@ -8,10 +8,19 @@ Define one refund lifecycle every rail shares: who may ask, who must approve, ho
 
 ## Users
 
-- Buyer: requests a refund for a paid order, tracks request → approved → reversed states.
-- Support/ops (restricted role): approves, executes, and evidences reversals, including manual bank transfers.
-- Finance: reconciles PSP references against the refunds ledger and credit notes.
-- System: blocks double-execution and illegal transitions regardless of caller.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Request a refund for a paid order; track request to approved to reversed states | One refund lifecycle shared by every rail |
+| Support/ops (restricted role) | Approve, execute, and evidence reversals, including manual bank transfers | Two-person evidenced for manual bank reversals |
+| Finance | Reconcile PSP references against the refunds ledger and credit notes | Uses one refunds ledger and credit notes |
+| System | Block double-execution and illegal transitions regardless of caller | Idempotent and terminal-safe by construction |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Request a refund for a paid order and track request to approved to reversed states | A refund on any rail is as audited and idempotent as any other | Must |
+| US-02 | Support/ops | Approve, execute, and evidence reversals including manual bank transfers | No path silently defaults to another rail's behavior | Must |
+| US-03 | Finance | Reconcile PSP references against the refunds ledger and credit notes | Reversals stay audited and idempotent | Must |
+| US-04 | System | Block double-execution and illegal transitions regardless of caller | Retries and races resolve to one outcome | Must |
 
 ## Functional requirements
 
@@ -30,13 +39,15 @@ Define one refund lifecycle every rail shares: who may ask, who must approve, ho
 
 ## Acceptance criteria
 
-- Eight-rail refund drill: one paid order per registry member (payos, sepay, vnpay, zalopay, napas, googlepay, applepay, stripe) driven request → approve → execute — each lands `refunded` (full) with its member's PSP/manual reference recorded, entitlements revoked per rule, re-grant refused.
-- Partial drill: partial sums ledger correctly, order stays `paid`, totals never exceed `amount_vnd`; over-partial rejected.
-- Idempotency drill: retried request/execution with the same key is a no-op single reversal; concurrent approve+execute races resolve to one outcome.
-- Eligibility drill: refund of non-`paid` orders refused with the terminal reason; `disputed` orders routed to dispute handling, not refunded.
-- No-default drill: routing reads the order's `provider` only — unknown codes rejected; grep gate finds no hardcoded provider default or cross-rail fallback in refund code.
-- IDOR probe (S-1/S-6): user A requesting/reading user B refunds → 403; RLS denies cross-user rows at DB; non-ops on ops endpoints → 403.
-- Baseline: request/history views XSS-stripped with CSP holding (S-2); anonymous-adjacent endpoints Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation (P5-4); manual bank reversals show two-person evidence before transition.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Eight-rail refund drill: one paid order per registry member (payos, sepay, vnpay, zalopay, napas, googlepay, applepay, stripe) driven request to approve to execute; each lands `refunded` (full) with its member's PSP/manual reference recorded, entitlements revoked per rule, re-grant refused | One paid order per registry member | Request to approve to execute runs | Each lands `refunded` with its member's PSP/manual reference recorded, entitlements revoked per rule, and re-grant refused |
+| AC-02 | Partial drill: partial sums ledger correctly, order stays `paid`, totals never exceed `amount_vnd`; over-partial rejected | A partial refund | Partial sums are ledgered | The order stays `paid`, totals never exceed `amount_vnd`, and over-partial is rejected |
+| AC-03 | Idempotency drill: retried request/execution with the same key is a no-op single reversal; concurrent approve+execute races resolve to one outcome | A retried request/execution with the same key and concurrent approve+execute races | Retries and races run | The retry is a no-op single reversal and races resolve to one outcome |
+| AC-04 | Eligibility drill: refund of non-`paid` orders refused with the terminal reason; `disputed` orders routed to dispute handling, not refunded | A refund for non-`paid` and `disputed` orders | Eligibility runs | Non-`paid` refunds are refused with the terminal reason and `disputed` orders route to dispute handling |
+| AC-05 | No-default drill: routing reads the order's `provider` only with unknown codes rejected; grep gate finds no hardcoded provider default or cross-rail fallback in refund code | Refund routing on stored `provider` | Routing runs and the grep gate scans refund code | Routing reads the order's `provider` only, unknown codes are rejected, and the grep gate finds no hardcoded default or cross-rail fallback |
+| AC-06 | IDOR probe (S-1/S-6): user A requesting/reading user B refunds returns 403; RLS denies cross-user rows at DB; non-ops on ops endpoints returns 403 | User A requesting/reading user B refunds and non-ops on ops endpoints | The operations are attempted | The API returns 403 and RLS denies cross-user rows at DB |
+| AC-07 | Baseline: request/history views XSS-stripped with CSP holding (S-2); anonymous-adjacent endpoints Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation (P5-4); manual bank reversals show two-person evidence before transition | Request/history views, anonymous-adjacent endpoints, repo under secrets grep, and manual bank reversals | XSS, abuse, secrets, and evidence checks run | Views are XSS-stripped with CSP holding (S-2), endpoints are Turnstile + WAF throttled (S-5), secrets grep stays clean with quarterly rotation, and manual reversals show two-person evidence before transition |
 
 ## Out of scope
 

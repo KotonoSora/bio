@@ -8,9 +8,9 @@ Set the house rules for analytics data across the monetize domain (adoptable by 
 
 ## Users
 
-- Implementer (any new event source): the checklist that makes its data trustworthy on day one.
-- Analyst/operator: reads any aggregate knowing its dedupe, filter, and freshness semantics.
-- Privacy reviewer: verifies retention and minimization claims against one standard.
+- Implementer (any new event source): *As an Implementer, I want to have the checklist that makes its data trustworthy on day one so that the house rules for analytics data across the monetize domain as defined here.* the checklist that makes its data trustworthy on day one.
+- Analyst/operator: *As an Analyst/operator, I want to read any aggregate knowing its dedupe, filter, and freshness semantics so that the house rules for analytics data across the monetize domain as defined here.* reads any aggregate knowing its dedupe, filter, and freshness semantics.
+- Privacy reviewer: *As a Privacy reviewer, I want to verify retention and minimization claims against one standard so that the house rules for analytics data across the monetize domain as defined here.* verifies retention and minimization claims against one standard.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Set the house rules for analytics data across the monetize domain (adoptable by 
 ## Acceptance criteria
 
 - Taxonomy drill: unregistered event rejected at edge (TEST loud, production sampled + alerted); registered-but-malformed payload quarantined with owner notification.
+  *GWT: Given Taxonomy drill context; When unregistered event rejected at edge (TEST loud, production sampled + alerted); Then registered-but-malformed payload quarantined with owner notification.*
 - Exactly-once drill: redelivered event batches produce zero aggregate drift (idempotency keys hold under replay storms).
+  *GWT: Given Exactly-once drill context; When the checked action occurs; Then redelivered event batches produce zero aggregate drift (idempotency keys hold under replay storms).*
 - Retention drill: expired raw classes deleted on schedule (storage audit proves it); aggregates survive with documented provenance; deletion request clears raw buyer data within window.
+  *GWT: Given Retention drill context; When expired raw classes deleted on schedule (storage audit proves it); Then deletion request clears raw buyer data within window.*
 - Rebuild drill: destroyed aggregate rebuilt from raw + ledger to byte-identical figures (dual-report check during definition migrations).
+  *GWT: Given Rebuild drill context; When the checked action occurs; Then destroyed aggregate rebuilt from raw + ledger to byte-identical figures (dual-report check during definition migrations).*
 - Adoption drill: one existing pipeline gains a conformance note + taxonomy alias without behavior change; new pipeline ships conformant from its first review.
+  *GWT: Given Adoption drill context; When one existing pipeline gains a conformance note + taxonomy alias without behavior change; Then new pipeline ships conformant from its first review.*
 
 ## Out of scope
 

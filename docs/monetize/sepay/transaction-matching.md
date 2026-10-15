@@ -8,9 +8,9 @@ Guarantee no real payment goes unnoticed and no ambiguous transfer auto-grants. 
 
 ## Users
 
-- Buyer who mistyped content, sent the wrong amount, or paid after expiry: gets a resolvable outcome (auto-credit where safe, assisted otherwise) instead of silent loss.
-- Support/ops: triages the exceptions queue, links transfers to orders, issues entitlements or refunds manually.
-- System (scheduled job): polls SePay API v2 transaction lists and diffs against local records.
+- Buyer who mistyped content, sent the wrong amount, or paid after expiry: *As a Buyer who mistyped content, sent the wrong amount, or paid after expiry, I want to get a resolvable outcome (auto-credit where safe, assisted otherwise) instead of silent loss so that no real payment goes unnoticed and no ambiguous transfer auto-grants as defined here.* gets a resolvable outcome (auto-credit where safe, assisted otherwise) instead of silent loss.
+- Support/ops: *As a Support/ops, I want to triage the exceptions queue, link transfers to orders, issue entitlements or refund manually so that no real payment goes unnoticed and no ambiguous transfer auto-grants as defined here.* triages the exceptions queue, links transfers to orders, issues entitlements or refunds manually.
+- System (scheduled job): *As a System, I want to poll SePay API v2 transaction lists and diff against local records so that no real payment goes unnoticed and no ambiguous transfer auto-grants as defined here.* polls SePay API v2 transaction lists and diffs against local records.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Guarantee no real payment goes unnoticed and no ambiguous transfer auto-grants. 
 ## Acceptance criteria
 
 - Simulated wrong-content transfer: 200 acknowledged, zero grant, `open` exception with `unknown_code`, visible in ops queue.
+  *GWT: Given Simulated wrong-content transfer context; When the checked action occurs; Then 200 acknowledged, zero grant, `open` exception with `unknown_code`, visible in ops queue.*
 - Underpay simulation: `amount_mismatch`, no grant; ops link after buyer tops up (or partial handling per Q1) grants exactly once.
+  *GWT: Given Underpay simulation context; When `amount_mismatch`, no grant; Then ops link after buyer tops up (or partial handling per Q1) grants exactly once.*
 - Post-expiry transfer inside grace: linkable by ops to a single grant; outside grace: refund path.
+  *GWT: Given Post-expiry transfer inside grace context; When linkable by ops to a single grant; Then outside grace: refund path.*
 - Webhook-suppression drill (drop deliveries, run sweep): all missing transfers recovered with correct outcomes, no doubles on redelivery.
+  *GWT: Given Webhook-suppression drill (drop deliveries, run sweep) context; When the checked action occurs; Then all missing transfers recovered with correct outcomes, no doubles on redelivery.*
 - Auth probe: non-ops user hitting ops endpoints → 403; RLS denies cross-owner rows.
+  *GWT: Given Auth probe: non-ops user hitting ops endpoints; When the transition executes; Then 403; RLS denies cross-owner rows.*
 - Refund action records an external reference and flips status to `refunded`; refunded transfers can never later grant.
+  *GWT: Given Refund action records an external reference and flips status to `refunded`; When the next step executes; Then refunded transfers can never later grant.*
 
 ## Out of scope
 

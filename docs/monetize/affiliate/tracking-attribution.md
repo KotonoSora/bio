@@ -8,9 +8,9 @@ Define exactly which affiliate gets credit for which paid order: signed referral
 
 ## Users
 
-- Referred buyer: clicks a link or uses an affiliate code; buys at normal prices with no visible tracking friction beyond standard consent.
-- Affiliate: sees clicks, conversions, and pending/confirmed commission states in near-real time.
-- Dispute reviewer: replays any attribution from stored evidence (link click, code, timestamps).
+- Referred buyer: *As a Referred buyer, I want to click a link or use an affiliate code; buy at normal prices with no visible tracking friction beyond standard consent so that exactly which affiliate gets credit for which paid order as defined here.* clicks a link or uses an affiliate code; buys at normal prices with no visible tracking friction beyond standard consent.
+- Affiliate: *As an Affiliate, I want to see clicks, conversion, and pending/confirmed commission states in near-real time so that exactly which affiliate gets credit for which paid order as defined here.* sees clicks, conversions, and pending/confirmed commission states in near-real time.
+- Dispute reviewer: *As a Dispute reviewer, I want to replay any attribution from stored evidence (link click, code, timestamps) so that exactly which affiliate gets credit for which paid order as defined here.* replays any attribution from stored evidence (link click, code, timestamps).
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Define exactly which affiliate gets credit for which paid order: signed referral
 ## Acceptance criteria
 
 - Precedence drill: cookie A + code B at checkout → B credited; two cookies → most recent wins; direct purchase → unattributed; all reproducible from evidence bundles.
+  *GWT: Given Precedence drill: cookie A + code B at checkout; When the transition executes; Then B credited; two cookies → most recent wins; direct purchase → unattributed; all reproducible from evidence bundles.*
 - Window drill: purchase on day 29 attributes, day 31 doesn't (configurable window respected to the second).
+  *GWT: Given Window drill context; When the checked action occurs; Then purchase on day 29 attributes, day 31 doesn't (configurable window respected to the second).*
 - Reversal drill: refund/dispute-loss flips confirmed → reversed (proportional on partials); self-purchase voids with affiliate flag raised.
+  *GWT: Given Reversal drill: refund/dispute-loss flips confirmed; When the transition executes; Then reversed (proportional on partials); self-purchase voids with affiliate flag raised.*
 - Stuffing drill: hidden-iframe click floods rejected at ingest, dashboards unskewed, affiliate warned per terms ladder.
+  *GWT: Given Stuffing drill context; When the checked action occurs; Then hidden-iframe click floods rejected at ingest, dashboards unskewed, affiliate warned per terms ladder.*
 - Privacy drill: declined-consent buyer completes checkout normally with zero attribution; affiliate stats contain no buyer PII.
+  *GWT: Given Privacy drill context; When declined-consent buyer completes checkout normally with zero attribution; Then affiliate stats contain no buyer PII.*
 - Auth probe: affiliate A reading affiliate B clicks/attributions → 403; RLS denies cross-affiliate rows.
+  *GWT: Given Auth probe: affiliate A reading affiliate B clicks/attributions; When the transition executes; Then 403; RLS denies cross-affiliate rows.*
 
 ## Out of scope
 

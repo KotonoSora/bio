@@ -8,9 +8,17 @@ Define the paper trail for money going back: every refund or downward adjustment
 
 ## Users
 
-- Refunded buyer: receives a credit note proving what was returned, linked to the original charge.
-- Support/ops: cites one credit-note id per refund dispute instead of reconstructing events.
-- Finance: books reversals against originals with unbroken chains.
+| Role | Permissions | Notes |
+|---|---|---|
+| Refunded buyer | Receive a credit note proving what was returned, linked to the original charge | Includes e-invoice linkage where one exists |
+| Support/ops | Cite one credit-note id per refund dispute | Avoids reconstructing events |
+| Finance | Book reversals against originals with unbroken chains | Running remaining balance stays readable across partials |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Refunded buyer | Receive a credit note proving what was returned, linked to the original charge | Support, buyers, and finance share one consistent reversal story | Must |
+| US-02 | Support/ops | Cite one credit-note id per refund dispute | I avoid reconstructing events | Must |
+| US-03 | Finance | Book reversals against originals with unbroken chains | The chain stays readable no matter how many partials occur | Must |
 
 ## Functional requirements
 
@@ -29,12 +37,14 @@ Define the paper trail for money going back: every refund or downward adjustment
 
 ## Acceptance criteria
 
-- Refund drill on three rails (one redirect, one wallet/card, one bank rail): exactly one credit note each, correct links/amounts/references, emails delivered, history chains readable.
-- Duplicate-refund-event drill: single credit note, retries are no-ops (gateway-ref + order uniqueness).
-- Partial-refund drill (2+ partials): running remaining balance correct on every note; chain order unambiguous.
-- E-invoice drill (where enabled): credit note and adjustment document cross-reference each other; originals untouched.
-- Immutability probe: no code path UPDATEs or DELETEs a credit note (grep + migration-review gate); voiding only via superseding correction.
-- Auth probe: cross-user credit-note access → 403; RLS denies cross-user rows.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Refund drill on three rails (one redirect, one wallet/card, one bank rail): exactly one credit note each, correct links/amounts/references, emails delivered, history chains readable | A refund on each of three rails (redirect, wallet/card, bank) | Refunds execute | Exactly one credit note issues each with correct links/amounts/references, emails delivered, and readable history chains |
+| AC-02 | Duplicate-refund-event drill: single credit note, retries are no-ops (gateway-ref + order uniqueness) | Duplicate refund events with the same gateway-ref + order | Retries run | A single credit note exists and retries are no-ops |
+| AC-03 | Partial-refund drill (2+ partials): running remaining balance correct on every note; chain order unambiguous | Two or more partials on one order | Each partial issues | Running remaining balance is correct on every note with unambiguous chain order |
+| AC-04 | E-invoice drill (where enabled): credit note and adjustment document cross-reference each other; originals untouched | An order with a VAT e-invoice and a refund | Adjustment runs | Credit note and adjustment document cross-reference each other with originals untouched |
+| AC-05 | Immutability probe: no code path UPDATEs or DELETEs a credit note (grep + migration-review gate); voiding only via superseding correction | Issued credit notes | The grep + migration-review gate scans and voiding is attempted | No code path UPDATEs or DELETEs a credit note and voiding occurs only via superseding correction |
+| AC-06 | Auth probe: cross-user credit-note access returns 403; RLS denies cross-user rows | Cross-user credit-note access | Access is attempted | The API returns 403 and RLS denies cross-user rows |
 
 ## Out of scope
 

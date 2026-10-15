@@ -8,9 +8,17 @@ Define how money starts moving via PayOS: an authenticated checkout creates a tr
 
 ## Users
 
-- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, pays on the PayOS link, returns to the platform.
-- Creator/seller: receives entitlement on webhook grant.
-- Support/ops: looks up an order by `orderCode` to reconcile disputes.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Authenticated checkout; read own orders (`WHERE user_id = session.userId`) | Logged-in owner for plans; buyer-email claim for products per shop major |
+| Creator/seller | — | Receives entitlement on webhook grant |
+| Support/ops | — | Looks up an order by `orderCode` to reconcile disputes |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | start checkout, pay on the PayOS link, return to the platform | money starts moving via PayOS as defined here | High |
+| US-02 | Creator/seller | receive entitlement on webhook grant | money starts moving via PayOS as defined here | High |
+| US-03 | Support/ops | look up an order by `orderCode` to reconcile disputes | money starts moving via PayOS as defined here | High |
 
 ## Functional requirements
 
@@ -30,11 +38,17 @@ Define how money starts moving via PayOS: an authenticated checkout creates a tr
 ## Acceptance criteria
 
 - Sandbox checkout for plan and for product: PayOS link opens, amount exact to the VND, `orders` row pending with unique `orderCode`.
+  *GWT: Given Sandbox checkout for plan and for product context; When the checked action occurs; Then PayOS link opens, amount exact to the VND, `orders` row pending with unique `orderCode`.*
 - Amount tamper (client sends lower amount): server re-prices to canonical; mismatch logged.
+  *GWT: Given Amount tamper (client sends lower amount) context; When server re-prices to canonical; Then mismatch logged.*
 - Off-origin return/cancel addresses: rejected 422 at checkout build.
+  *GWT: Given Off-origin return/cancel addresses context; When the checked action occurs; Then rejected 422 at checkout build.*
 - Expired-link attempt surfaces the expired-checkout UX; order flips `expired` (lifecycle doc owns the sweep).
+  *GWT: Given Expired-link attempt surfaces the expired-checkout UX; When the next step executes; Then order flips `expired` (lifecycle doc owns the sweep).*
 - IDOR probe: user A reading user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A reading user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no PayOS key in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no PayOS key in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Define how money starts moving via Stripe: an authenticated checkout creates a t
 
 ## Users
 
-- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, pays in-page (card or wallet), sees confirmation or a pending state.
-- Creator/seller: receives entitlement on webhook-confirmed grant.
-- Support/ops: looks up an order by `orderCode` / PaymentIntent id to reconcile disputes and chargebacks.
+- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): *As a Buyer, I want to start checkout, pay in-page (card or wallet), see confirmation or a pending state so that money starts moving via Stripe as defined here.* starts checkout, pays in-page (card or wallet), sees confirmation or a pending state.
+- Creator/seller: *As a Creator/seller, I want to receive entitlement on webhook-confirmed grant so that money starts moving via Stripe as defined here.* receives entitlement on webhook-confirmed grant.
+- Support/ops: *As a Support/ops, I want to look up an order by `orderCode` / PaymentIntent id to reconcile disputes and chargebacks so that money starts moving via Stripe as defined here.* looks up an order by `orderCode` / PaymentIntent id to reconcile disputes and chargebacks.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Define how money starts moving via Stripe: an authenticated checkout creates a t
 ## Acceptance criteria
 
 - TEST-mode checkout for plan and for product (Stripe test cards, incl. 3DS challenge cards): PaymentIntent exact to the VND, `orders` row pending with unique `orderCode` in metadata, in-page confirmation works end-to-end.
+  *GWT: Given the preconditions for this check hold; When tEST-mode checkout for plan and for product (Stripe test cards, incl. 3DS challenge cards): PaymentIntent exact to the VND, `orders` row pending with unique `orderCode` in metadata, in-page confirmation works end-to-end; Then the expected outcome stated here is observed.*
 - Amount tamper (client sends lower amount): server re-prices to canonical; mismatch logged.
+  *GWT: Given Amount tamper (client sends lower amount) context; When server re-prices to canonical; Then mismatch logged.*
 - Wallet buttons (Apple Pay + Google Pay via Stripe elements): render on capable devices, tokenize through Stripe, settle into the same grant path — one flow, not three.
+  *GWT: Given Wallet buttons (Apple Pay + Google Pay via Stripe elements) context; When the checked action occurs; Then render on capable devices, tokenize through Stripe, settle into the same grant path — one flow, not three.*
 - Cancel while cancellable: PaymentIntent canceled, order `cancelled`, late webhooks rejected with no grant.
+  *GWT: Given Cancel while cancellable context; When the checked action occurs; Then PaymentIntent canceled, order `cancelled`, late webhooks rejected with no grant.*
 - IDOR probe: user A operating on user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A operating on user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no secret/restricted keys or `whsec_` in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no secret/restricted keys or `whsec_` in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

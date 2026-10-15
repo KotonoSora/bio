@@ -8,9 +8,17 @@ Define how promo campaigns are created, bounded, targeted, and retired: a campai
 
 ## Users
 
-- Marketing/ops: launches a campaign (Back-to-school 20%, influencer batch, win-back), watches burn-down, pauses leaks.
-- Finance: sees committed vs redeemed exposure per campaign before approving.
-- Buyer: only ever sees an eligible code accepted or a clean rejection — campaign internals never leak.
+| Role | Permissions | Notes |
+|---|---|---|
+| Marketing/ops | Launch a campaign (Back-to-school 20%, influencer batch, win-back), watch burn-down, pause leaks | Every code traces to exactly one campaign with a spend ceiling and an off switch |
+| Finance | See committed vs redeemed exposure per campaign before approving | Budgeted, time-windowed parent of a batch of codes |
+| Buyer | Only ever see an eligible code accepted or a clean rejection | Campaign internals never leak |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Marketing/ops | Launch a campaign, watch burn-down, and pause leaks | Marketing intent becomes enforceable server-side guardrails | Must |
+| US-02 | Finance | See committed vs redeemed exposure per campaign before approving | Codes never become untracked liabilities | Must |
+| US-03 | Buyer | Only ever see an eligible code accepted or a clean rejection | Campaign internals never leak | Must |
 
 ## Functional requirements
 
@@ -29,12 +37,14 @@ Define how promo campaigns are created, bounded, targeted, and retired: a campai
 
 ## Acceptance criteria
 
-- Launch-guard drill: cap-less or window-less campaign rejected; unbounded codes uncreatable.
-- Cap-race drill: concurrent redemptions at 99% burn — exactly the remaining count succeeds, rest get clean rejections, exposure never exceeds cap.
-- Pause drill: mid-campaign pause blocks new redemptions within seconds; in-flight quoted checkouts honor their quote; resume reopens cleanly.
-- Targeting drill: win-back code on an active subscriber rejected; invite-only code on a non-invitee rejected; eligibility re-checked at grant after a status flip.
-- Leak drill: pause + bulk-void stops a leaked list; audit shows actor, reason, and affected code count.
-- Auth probe: non-ops campaign endpoints → 403; buyers cannot enumerate campaigns or codes.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Launch-guard drill: cap-less or window-less campaign rejected; unbounded codes uncreatable | A cap-less or window-less campaign | Launch is attempted | It is rejected and unbounded codes are uncreatable |
+| AC-02 | Cap-race drill: concurrent redemptions at 99% burn; exactly the remaining count succeeds, rest get clean rejections, exposure never exceeds cap | Concurrent redemptions at 99% burn | Redemptions race | Exactly the remaining count succeeds, the rest get clean rejections, and exposure never exceeds cap |
+| AC-03 | Pause drill: mid-campaign pause blocks new redemptions within seconds; in-flight quoted checkouts honor their quote; resume reopens cleanly | A mid-campaign pause and resume | Pause and resume run | New redemptions block within seconds, in-flight quoted checkouts honor their quote, and resume reopens cleanly |
+| AC-04 | Targeting drill: win-back code on an active subscriber rejected; invite-only code on a non-invitee rejected; eligibility re-checked at grant after a status flip | A win-back code on an active subscriber and an invite-only code on a non-invitee | Validation and grant run | Both reject and eligibility is re-checked at grant after a status flip |
+| AC-05 | Leak drill: pause + bulk-void stops a leaked list; audit shows actor, reason, and affected code count | A leaked code list | Pause + bulk-void runs | The list stops and audit shows actor, reason, and affected code count |
+| AC-06 | Auth probe: non-ops campaign endpoints return 403; buyers cannot enumerate campaigns or codes | Non-ops campaign endpoints and buyer enumeration attempts | Access is attempted | Endpoints return 403 and buyers cannot enumerate campaigns or codes |
 
 ## Out of scope
 

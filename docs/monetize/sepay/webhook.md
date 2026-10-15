@@ -8,9 +8,9 @@ Define how the platform trusts SePay: every bank-transaction notification is aut
 
 ## Users
 
-- SePay server: posts signed transaction events to the webhook URL on every inbound transfer to the linked company account.
-- Buyer: receives entitlement (plan upgrade or product claim) after a genuine matched transfer.
-- Ops: replays deliveries from SePay logs during incident recovery without double-granting.
+- SePay server: *As a SePay server, I want to post signed transaction events to the webhook URL on every inbound transfer to the linked company account so that the platform trusts SePay as defined here.* posts signed transaction events to the webhook URL on every inbound transfer to the linked company account.
+- Buyer: *As a Buyer, I want to receive entitlement (plan upgrade or product claim) after a genuine matched transfer so that the platform trusts SePay as defined here.* receives entitlement (plan upgrade or product claim) after a genuine matched transfer.
+- Ops: *As an Ops, I want to replay deliveries from SePay logs during incident recovery without double-granting so that the platform trusts SePay as defined here.* replays deliveries from SePay logs during incident recovery without double-granting.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define how the platform trusts SePay: every bank-transaction notification is aut
 ## Acceptance criteria
 
 - Sandbox end-to-end (SePay Test mode): checkout → simulate inbound transfer with correct content+amount → webhook → `paid` + entitlement visible within the SLA.
+  *GWT: Given Sandbox end-to-end (SePay Test mode): checkout; When the transition executes; Then simulate inbound transfer with correct content+amount → webhook → `paid` + entitlement visible within the SLA.*
 - Replay test: same delivery posted twice (and SePay-side manual replay) → single transition, single entitlement, single audit entry; repeats are 200 no-ops.
+  *GWT: Given Replay test: same delivery posted twice (and SePay-side manual replay); When the transition executes; Then single transition, single entitlement, single audit entry; repeats are 200 no-ops.*
 - Tamper tests: bad signature → 401; altered content/amount → no grant, exception logged; outbound transfer → 200 ignored.
+  *GWT: Given Tamper tests: bad signature; When the transition executes; Then 401; altered content/amount → no grant, exception logged; outbound transfer → 200 ignored.*
 - Burst of bogus deliveries throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus deliveries throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 - Unknown-code transfer with valid signature → 200, no grant, appears in the exceptions queue (settlement doc's flow).
+  *GWT: Given Unknown-code transfer with valid signature; When the transition executes; Then 200, no grant, appears in the exceptions queue (settlement doc's flow).*
 
 ## Out of scope
 

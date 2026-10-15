@@ -8,10 +8,10 @@ Give agencies a master account that holds people and client profiles together: c
 
 ## Users
 
-- Agency owner: creates the org, invites managers/members/clients, assigns roles, removes people.
-- Manager: invites members and clients, manages day-to-day roster (cannot remove the owner or promote to owner).
-- Member/client: accepts an invite, appears in the roster, works within their scope (clients see only their own profiles).
-- Future P4 developer: builds on skeleton tables without migration surgery.
+- Agency owner: *As an Agency owner, I want to create the org, invite managers/members/clients, assign roles, and remove people so that membership roots all agency power exactly.* Creates the org, invites managers/members/clients, assigns roles, removes people.
+- Manager: *As a Manager, I want to invite members and clients and manage the day-to-day roster without touching the owner role so that daily operations stay within my matrix.* Invites members and clients, manages day-to-day roster (cannot remove the owner or promote to owner).
+- Member/client: *As a Member/client, I want to accept an invite, appear in the roster, and work within my scope so that clients see only their own profiles.* Accepts an invite, appears in the roster, works within their scope (clients see only their own profiles).
+- Future P4 developer: *As a Future P4 developer, I want to build on skeleton tables without migration surgery so that P4 agency work inherits the skeleton DDL.* Builds on skeleton tables without migration surgery.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Give agencies a master account that holds people and client profiles together: c
 
 ## Acceptance criteria
 
-- Invite drill: username invite → accept links accounts with the exact role; expired/used token rejected; unknown-username flow converts on signup without duplicate rows.
-- Role drill: permission matrix fixture (owner/manager/member/client × every agency endpoint) green; direct-API role-escalation attempts (member→grant-owner) rejected 403 + audit-flagged.
-- Effect drill: removed/unlinked user loses reporting + Act-as-user on the next request (stale-session probe fails closed within TTL).
-- Client-link drill: staff-initiated link pending until owner accepts; either-side unlink severs access immediately; profiles never change `user_id` ownership.
-- Audit drill: every mutation in `audit_log` with actor + before/after; suspension freezes powers verifiably across all surfaces.
+- Invite drill: username invite → accept links accounts with the exact role; expired/used token rejected; unknown-username flow converts on signup without duplicate rows. *GWT: Given a username invite, expired/used token, or unknown username; When accept or signup runs; Then valid invites link with the exact role, expired/used tokens are rejected, and unknown-username flows convert without duplicates.*
+- Role drill: permission matrix fixture (owner/manager/member/client × every agency endpoint) green; direct-API role-escalation attempts (member→grant-owner) rejected 403 + audit-flagged. *GWT: Given the role matrix and a direct-API escalation attempt; When endpoints are exercised; Then the matrix fixture is green and escalation is rejected 403 plus audit-flagged.*
+- Effect drill: removed/unlinked user loses reporting + Act-as-user on the next request (stale-session probe fails closed within TTL). *GWT: Given a removed/unlinked user; When the next request runs; Then reporting plus Act-as-user are lost and stale sessions fail closed within TTL.*
+- Client-link drill: staff-initiated link pending until owner accepts; either-side unlink severs access immediately; profiles never change `user_id` ownership. *GWT: Given a staff-initiated link or an either-side unlink; When acceptance or unlink completes; Then staff links stay pending until owner accepts, unlinks sever immediately, and profiles never change ownership.*
+- Audit drill: every mutation in `audit_log` with actor + before/after; suspension freezes powers verifiably across all surfaces. *GWT: Given any roster mutation or suspension; When audited or powers are probed; Then every mutation carries actor plus before/after and suspensions freeze powers across all surfaces.*
 
 ## Out of scope
 

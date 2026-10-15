@@ -8,9 +8,9 @@ Let fans send money with two taps: preset amounts plus custom entry, an optional
 
 ## Users
 
-- Fan: tips a creator (account or guest with email receipt), optionally with a message.
-- Creator: configures presets, reads messages, thanks tippers; sees tip revenue in the earnings dashboard.
-- Moderator: screens tip messages before any public display.
+- Fan: *As a Fan, I want to tip a creator with presets or custom entry and an optional message so that support takes two taps.* Tips a creator (account or guest with email receipt), optionally with a message.
+- Creator: *As a Creator, I want to configure presets, read messages, thank tippers, and see tip revenue so that goodwill converts to earnings.* Configures presets, reads messages, thanks tippers; sees tip revenue in the earnings dashboard.
+- Moderator: *As a Moderator, I want to screen tip messages before any public display so that the thank-you wall stays safe.* Screens tip messages before any public display.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Let fans send money with two taps: preset amounts plus custom entry, an optional
 
 ## Acceptance criteria
 
-- Floor/ceiling drill: below-floor and above-ceiling amounts rejected 422 with the limits stated; presets all settle end-to-end in sandbox.
-- Guest drill: guest tip with email delivers receipt; without email blocked (receipt-required) with a clear message.
-- Message drill: pending message invisible publicly; approved renders as plain text (link/markup stripped); rejected stays private.
-- Finality drill: refund endpoint refuses tip orders with policy reason (except unauthorized-payment dispute path, which routes to the provider flow).
-- Abuse drill: rapid-fire tipping throttled (Turnstile + WAF/rate rules); IDOR on jar config returns 403.
+- Floor/ceiling drill: below-floor and above-ceiling amounts rejected 422 with the limits stated; presets all settle end-to-end in sandbox. *GWT: Given below-floor, above-ceiling, and preset amounts; When checkout runs; Then out-of-range amounts are rejected 422 with limits stated and presets settle end-to-end in sandbox.*
+- Guest drill: guest tip with email delivers receipt; without email blocked (receipt-required) with a clear message. *GWT: Given a guest tip with or without email; When checkout completes; Then with email a receipt is delivered and without email it is blocked with a clear message.*
+- Message drill: pending message invisible publicly; approved renders as plain text (link/markup stripped); rejected stays private. *GWT: Given a pending, approved, or rejected tip message; When the public wall renders; Then pending stays invisible publicly, approved renders as plain text with links/markup stripped, and rejected stays private.*
+- Finality drill: refund endpoint refuses tip orders with policy reason (except unauthorized-payment dispute path, which routes to the provider flow). *GWT: Given a tip-order refund request; When the refund endpoint runs; Then it refuses with the policy reason except unauthorized-payment claims, which route to the provider flow.*
+- Abuse drill: rapid-fire tipping throttled (Turnstile + WAF/rate rules); IDOR on jar config returns 403. *GWT: Given rapid-fire tipping or user B jar config; When attempted; Then rapid-fire is throttled and IDOR returns 403.*
 
 ## Out of scope
 

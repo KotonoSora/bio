@@ -8,9 +8,9 @@ Guarantee no real payment goes unnoticed and no ambiguous transfer auto-grants. 
 
 ## Users
 
-- Buyer who paid late, edited the content, or sent the wrong amount: gets a resolvable outcome instead of silent loss.
-- Support/ops: triages the exceptions queue, links transfers to orders, issues entitlements or refunds.
-- System (scheduled job): polls check-transaction by order ref and sweeps stale pendings.
+- Buyer who paid late, edited the content, or sent the wrong amount: *As a Buyer who paid late, edited the content, or sent the wrong amount, I want to get a resolvable outcome instead of silent loss so that no real payment goes unnoticed and no ambiguous transfer auto-grants as defined here.* gets a resolvable outcome instead of silent loss.
+- Support/ops: *As a Support/ops, I want to triage the exceptions queue, link transfers to orders, issue entitlements or refund so that no real payment goes unnoticed and no ambiguous transfer auto-grants as defined here.* triages the exceptions queue, links transfers to orders, issues entitlements or refunds.
+- System (scheduled job): *As a System, I want to poll check-transaction by order ref and sweep stale pendings so that no real payment goes unnoticed and no ambiguous transfer auto-grants as defined here.* polls check-transaction by order ref and sweeps stale pendings.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Guarantee no real payment goes unnoticed and no ambiguous transfer auto-grants. 
 ## Acceptance criteria
 
 - Simulated edited-content transfer: 200 acknowledged, zero grant, `open` exception with `unknown_ref`, visible in ops queue.
+  *GWT: Given Simulated edited-content transfer context; When the checked action occurs; Then 200 acknowledged, zero grant, `open` exception with `unknown_ref`, visible in ops queue.*
 - Underpay simulation: `amount_mismatch`, no grant; ops link after buyer tops up grants exactly once.
+  *GWT: Given Underpay simulation context; When `amount_mismatch`, no grant; Then ops link after buyer tops up grants exactly once.*
 - Post-expiry payment inside grace: linkable by ops to a single grant; outside grace: refund path.
+  *GWT: Given Post-expiry payment inside grace context; When linkable by ops to a single grant; Then outside grace: refund path.*
 - Sync-suppression drill (drop pushes, run sweep): all missing transfers recovered with correct outcomes, no doubles on redelivery.
+  *GWT: Given Sync-suppression drill (drop pushes, run sweep) context; When the checked action occurs; Then all missing transfers recovered with correct outcomes, no doubles on redelivery.*
 - Auth probe: non-ops user hitting ops endpoints → 403; RLS denies cross-owner rows.
+  *GWT: Given Auth probe: non-ops user hitting ops endpoints; When the transition executes; Then 403; RLS denies cross-owner rows.*
 - Refund action records an external reference and flips status to `refunded`; refunded transfers can never later grant.
+  *GWT: Given Refund action records an external reference and flips status to `refunded`; When the next step executes; Then refunded transfers can never later grant.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Define the platform's single URL-shortening service: every trackable link — ca
 
 ## Users
 
-- Creator/operator: mints a short link for a destination (campaign, QR print, bio overflow), sets expiry, reads its stats.
-- Visitor: opens a short URL and lands on the destination in milliseconds, with no interstitial except where safety demands.
-- Abuse reviewer: blocks malicious destinations once, killing every short link pointing at them.
+- Creator/operator: *As a Creator/operator, I want to mint a short link for a destination, set expiry, and read its stats so that campaigns stay trackable.* Mints a short link for a destination (campaign, QR print, bio overflow), sets expiry, reads its stats.
+- Visitor: *As a Visitor, I want to open a short URL and land on the destination in milliseconds so that redirects feel instant.* Opens a short URL and lands on the destination in milliseconds, with no interstitial except where safety demands.
+- Abuse reviewer: *As an Abuse reviewer, I want to block malicious destinations once so that every short link pointing at them stops resolving.* Blocks malicious destinations once, killing every short link pointing at them.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Define the platform's single URL-shortening service: every trackable link — ca
 
 ## Acceptance criteria
 
-- Collision drill: username `go`/`r`/`a` claims rejected; short code never resolves as a profile and vice versa (namespace test matrix green).
-- Counting drill: 1,000 opens of a 302 short link = 1,000 counted hits (no CDN/proxy caching swallows); 301 vanity documented as uncounted-after-first with an explicit test asserting the difference.
-- Safety drill: blocklisted destination rejected at mint AND at resolve (re-listed after mint); reported link suspends platform-wide within minutes with evidence preserved.
-- Expiry drill: lapsed code serves the branded gone-page; dormant-target link uses the declared fallback or the gone-page, never a blind 404.
-- Abuse drill: mint-flood throttled per account/IP; bulk minting outside ops impossible (403 + audit).
+- Collision drill: username `go`/`r`/`a` claims rejected; short code never resolves as a profile and vice versa (namespace test matrix green). *GWT: Given reserved slugs `go`/`r`/`a` and minted short codes; When username claims or resolution are attempted; Then `go`/`r`/`a` claims are rejected and short codes never resolve as profiles and vice versa.*
+- Counting drill: 1,000 opens of a 302 short link = 1,000 counted hits (no CDN/proxy caching swallows); 301 vanity documented as uncounted-after-first with an explicit test asserting the difference. *GWT: Given a 302 short link and a 301 vanity link; When 1,000 opens occur; Then the 302 link counts 1,000 hits and the 301 vanity stays documented as uncounted-after-first.*
+- Safety drill: blocklisted destination rejected at mint AND at resolve (re-listed after mint); reported link suspends platform-wide within minutes with evidence preserved. *GWT: Given a blocklisted or reported destination; When minting, resolving, or suspending; Then mint and resolve reject it and reported links suspend platform-wide within minutes with evidence preserved.*
+- Expiry drill: lapsed code serves the branded gone-page; dormant-target link uses the declared fallback or the gone-page, never a blind 404. *GWT: Given a lapsed code or dormant target; When opened; Then the lapsed code serves the branded gone-page and the dormant-target link uses the declared fallback or the gone-page, never a blind 404.*
+- Abuse drill: mint-flood throttled per account/IP; bulk minting outside ops impossible (403 + audit). *GWT: Given a mint flood or non-ops bulk minting; When attempted per account/IP; Then floods are throttled and non-ops bulk minting returns 403 with audit.*
 
 ## Out of scope
 

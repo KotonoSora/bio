@@ -8,9 +8,9 @@ Define how the platform trusts PayOS: every payment notification's `signature` i
 
 ## Users
 
-- PayOS server: posts signed payment notifications to the webhook URL.
-- Buyer: receives entitlement (plan upgrade or product claim) after genuine payment.
-- Ops: replays safely during incident recovery without double-granting.
+- PayOS server: *As a PayOS server, I want to post signed payment notifications to the webhook URL so that the platform trusts PayOS as defined here.* posts signed payment notifications to the webhook URL.
+- Buyer: *As a Buyer, I want to receive entitlement (plan upgrade or product claim) after genuine payment so that the platform trusts PayOS as defined here.* receives entitlement (plan upgrade or product claim) after genuine payment.
+- Ops: *As an Ops, I want to replay safely during incident recovery without double-granting so that the platform trusts PayOS as defined here.* replays safely during incident recovery without double-granting.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define how the platform trusts PayOS: every payment notification's `signature` i
 ## Acceptance criteria
 
 - Sandbox end-to-end: checkout → PayOS test pay → webhook → `paid` + entitlement visible within the SLA.
+  *GWT: Given Sandbox end-to-end: checkout; When the transition executes; Then PayOS test pay → webhook → `paid` + entitlement visible within the SLA.*
 - Replay test: same valid payload twice → single transition, single entitlement, single audit entry; second is a 200 no-op.
+  *GWT: Given Replay test: same valid payload twice; When the transition executes; Then single transition, single entitlement, single audit entry; second is a 200 no-op.*
 - Tamper tests: bad signature → 401; altered amount → rejected, no grant; unknown `orderCode` → no information leak.
+  *GWT: Given Tamper tests: bad signature; When the transition executes; Then 401; altered amount → rejected, no grant; unknown `orderCode` → no information leak.*
 - `webhooks/confirm` runbook verified after deploy (PayOS dashboard shows confirmed URL).
+  *GWT: Given the preconditions for this check hold; When `webhooks/confirm` runbook verified after deploy (PayOS dashboard shows confirmed URL); Then the expected outcome stated here is observed.*
 - Burst of bogus webhooks throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus webhooks throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 
 ## Out of scope
 

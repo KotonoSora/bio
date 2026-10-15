@@ -8,8 +8,8 @@ Turn visitors into contacts at the point of interest: a form block on the bio pa
 
 ## Users
 
-- Visitor: submits email in one tap (two at most), understands exactly what they signed up for, receives confirmation.
-- Creator: configures fields and offer copy per form, watches submissions land in the dashboard, follows up.
+- Visitor: *As a Visitor, I want to submit email in one tap, understand exactly what I signed up for, and receive confirmation so that capture is frictionless.* Submits email in one tap (two at most), understands exactly what they signed up for, receives confirmation.
+- Creator: *As a Creator, I want to configure fields and offer copy per form and watch submissions land in the dashboard so that I can follow up.* Configures fields and offer copy per form, watches submissions land in the dashboard, follows up.
 - Bot/spammer (adversarial): finds no open relay — submissions are throttled, verified, and never reflected unsanitized.
 
 ## Functional requirements
@@ -29,11 +29,11 @@ Turn visitors into contacts at the point of interest: a form block on the bio pa
 
 ## Acceptance criteria
 
-- Capture drill: valid submit lands in the creator inbox within seconds with source + consent class + copy version intact; duplicate submit (double-tap, replay) creates exactly one lead row.
-- Consent drill: unchecked marketing box (default) yields lifecycle-only consent; checked yields marketing class; both provable per-address in minutes.
-- Double-opt-in drill: pending row ineligible for broadcasts; token confirm flips to active; expired token offers clean re-request (no duplicate rows).
-- Abuse drill: burst submits throttled with creator-visible pause notice; script payloads in name/note stripped; disposable-domain policy enforced as decided.
-- IDOR drill: creator A lead reads/exports against creator B `profile_id` return 403; public submit cannot enumerate existing leads (uniform success timing).
+- Capture drill: valid submit lands in the creator inbox within seconds with source + consent class + copy version intact; duplicate submit (double-tap, replay) creates exactly one lead row. *GWT: Given a valid or duplicate submit; When the capture queue processes; Then valid submits land within seconds with source plus consent class plus copy version intact, and duplicates create exactly one row.*
+- Consent drill: unchecked marketing box (default) yields lifecycle-only consent; checked yields marketing class; both provable per-address in minutes. *GWT: Given an unchecked or checked marketing box; When the lead is recorded; Then unchecked yields lifecycle-only consent, checked yields marketing class, and both are provable per-address in minutes.*
+- Double-opt-in drill: pending row ineligible for broadcasts; token confirm flips to active; expired token offers clean re-request (no duplicate rows). *GWT: Given a pending row or a valid/expired token; When eligibility or confirm runs; Then pending rows are ineligible, valid tokens flip to active, and expired tokens offer clean re-request with no duplicates.*
+- Abuse drill: burst submits throttled with creator-visible pause notice; script payloads in name/note stripped; disposable-domain policy enforced as decided. *GWT: Given burst submits, script payloads, or disposable domains; When submit validates; Then bursts throttle with pause notice, scripts are stripped, and the disposable-domain policy enforces as decided.*
+- IDOR drill: creator A lead reads/exports against creator B `profile_id` return 403; public submit cannot enumerate existing leads (uniform success timing). *GWT: Given creator A reads/exports against creator B `profile_id` or public submits; When requested; Then cross-creator reads return 403 and public submits show uniform success timing with no enumeration.*
 
 ## Out of scope
 

@@ -8,9 +8,17 @@ Define how the platform issues real Vietnamese VAT e-invoices (`hóa đơn GTGT 
 
 ## Users
 
-- Company buyer: provides tax profile once, receives a compliant e-invoice per paid order for input-VAT deduction.
-- Finance/ops: monitors issuance status, handles rejections, issues adjustments.
-- Auditor/tax authority (indirect): receives well-formed, sequentially numbered, verifiable invoices.
+| Role | Permissions | Notes |
+|---|---|---|
+| Company buyer | Provide tax profile once, receive a compliant e-invoice per paid order | For input-VAT deduction |
+| Finance/ops | Monitor issuance status, handle rejections, issue adjustments | Uses series/number discipline and linked adjustments |
+| Auditor/tax authority (indirect) | Receive well-formed, sequentially numbered, verifiable invoices | Only when every legal and technical prerequisite is met |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Company buyer | Provide tax profile once and receive a compliant e-invoice per paid order | I can claim input-VAT deduction | Must |
+| US-02 | Finance/ops | Monitor issuance status, handle rejections, and issue adjustments | Numbering stays sequential and gapless per series | Must |
+| US-03 | Auditor/tax authority | Receive well-formed, sequentially numbered, verifiable invoices | Invoices lift the non-VAT disclaimer order by order | Must |
 
 ## Functional requirements
 
@@ -29,12 +37,14 @@ Define how the platform issues real Vietnamese VAT e-invoices (`hóa đơn GTGT 
 
 ## Acceptance criteria
 
-- Gate drill: issuance endpoints 403 with the gate closed; full UAT issuance (TEST series) passes before the gate opens.
-- Issuance drill (sandbox): paid order → job → issued invoice with series/number, frozen profile snapshot, cross-linked receipt; buyer email delivered.
-- Profile-edit drill: editing the tax profile alters future invoices only; issued ones byte-identical.
-- Adjustment drill: partial refund post-invoice produces a linked adjustment document; original never edited or renumbered.
-- Failure drill: provider outage parks jobs in `pending_issue` with retries + alert; grants unaffected; sweep converges afterward.
-- Auth probe: cross-user tax-profile/invoice access → 403; RLS denies cross-user rows.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Gate drill: issuance endpoints 403 with the gate closed; full UAT issuance (TEST series) passes before the gate opens | The e-invoice gate closed and TEST series UAT | Issuance is requested and UAT runs | Endpoints return 403 while closed and full UAT issuance passes before the gate opens |
+| AC-02 | Issuance drill (sandbox): paid order to job to issued invoice with series/number, frozen profile snapshot, cross-linked receipt; buyer email delivered | A paid order with buyer opt-in | The e-invoice job runs | An invoice issues with series/number, frozen profile snapshot, and cross-linked receipt, and buyer email is delivered |
+| AC-03 | Profile-edit drill: editing the tax profile alters future invoices only; issued ones byte-identical | An issued invoice and an edited tax profile | A future invoice issues | Future invoices use the new profile while issued ones stay byte-identical |
+| AC-04 | Adjustment drill: partial refund post-invoice produces a linked adjustment document; original never edited or renumbered | A partial refund post-invoice | Adjustment runs | A linked adjustment document produces with the original never edited or renumbered |
+| AC-05 | Failure drill: provider outage parks jobs in `pending_issue` with retries + alert; grants unaffected; sweep converges afterward | A provider outage during issuance | Jobs run | Jobs park in `pending_issue` with retries + alert, grants stay unaffected, and the sweep converges afterward |
+| AC-06 | Auth probe: cross-user tax-profile/invoice access returns 403; RLS denies cross-user rows | Cross-user tax-profile/invoice access | Access is attempted | The API returns 403 and RLS denies cross-user rows |
 
 ## Out of scope
 

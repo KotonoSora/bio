@@ -8,9 +8,9 @@ Define how the platform trusts Google Pay money: the token alone authorizes noth
 
 ## Users
 
-- Buyer: authorized in the sheet; receives entitlement on charge-confirmed grant.
-- PSP server: confirms charges synchronously and posts asynchronous webhooks (captures, reviews, failures).
-- Ops: relies on idempotency during retries, duplicate webhooks, and incident recovery.
+- Buyer: *As a Buyer, I want to be authorized in the sheet; receive entitlement on charge-confirmed grant so that the platform trusts Google Pay money as defined here.* authorized in the sheet; receives entitlement on charge-confirmed grant.
+- PSP server: *As a PSP server, I want to confirm charges synchronously and post asynchronous webhooks (captures, reviews, failures) so that the platform trusts Google Pay money as defined here.* confirms charges synchronously and posts asynchronous webhooks (captures, reviews, failures).
+- Ops: *As an Ops, I want to rely on idempotency during retries, duplicate webhooks, and incident recovery so that the platform trusts Google Pay money as defined here.* relies on idempotency during retries, duplicate webhooks, and incident recovery.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define how the platform trusts Google Pay money: the token alone authorizes noth
 ## Acceptance criteria
 
 - Sandbox end-to-end (Google `TEST` + PSP sandbox): checkout → sheet → token → authorize → `paid` + entitlement within the SLA.
+  *GWT: Given Sandbox end-to-end (Google `TEST` + PSP sandbox): checkout; When the transition executes; Then sheet → token → authorize → `paid` + entitlement within the SLA.*
 - Replay test: same token/authorize posted twice + redelivered PSP webhook → single transition, single entitlement, single audit entry; repeats are no-ops.
+  *GWT: Given Replay test: same token/authorize posted twice + redelivered PSP webhook; When the transition executes; Then single transition, single entitlement, single audit entry; repeats are no-ops.*
 - Tamper tests: forged/malformed token → failure, no PSP charge attempted... or PSP-declined with no grant; altered amount → rejected pre-charge; unknown `orderCode` → no leak.
+  *GWT: Given Tamper tests: forged/malformed token; When the transition executes; Then failure, no PSP charge attempted... or PSP-declined with no grant; altered amount → rejected pre-charge; unknown `orderCode` → no leak.*
 - Timeout drill (PSP never answers): order recoverable via settlement status query; exactly-once charge preserved by the idempotency key (no double capture on retry).
+  *GWT: Given Timeout drill (PSP never answers) context; When order recoverable via settlement status query; Then exactly-once charge preserved by the idempotency key (no double capture on retry).*
 - Burst of bogus webhooks throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus webhooks throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 
 ## Out of scope
 

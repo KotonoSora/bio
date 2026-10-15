@@ -8,9 +8,9 @@ Define how the platform trusts rail money: every balance-fluctuation delivery is
 
 ## Users
 
-- Rail/VietQR service: pushes balance-fluctuation notifications to our Transaction Sync endpoint on each collected transfer.
-- Buyer: receives entitlement (plan upgrade or product claim) after a genuine matched sync.
-- Ops: relies on idempotency during incident recovery and duplicate deliveries.
+- Rail/VietQR service: *As a Rail/VietQR service, I want to push balance-fluctuation notifications to our Transaction Sync endpoint on each collected transfer so that the platform trusts rail money as defined here.* pushes balance-fluctuation notifications to our Transaction Sync endpoint on each collected transfer.
+- Buyer: *As a Buyer, I want to receive entitlement (plan upgrade or product claim) after a genuine matched sync so that the platform trusts rail money as defined here.* receives entitlement (plan upgrade or product claim) after a genuine matched sync.
+- Ops: *As an Ops, I want to rely on idempotency during incident recovery and duplicate deliveries so that the platform trusts rail money as defined here.* relies on idempotency during incident recovery and duplicate deliveries.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define how the platform trusts rail money: every balance-fluctuation delivery is
 ## Acceptance criteria
 
 - UAT end-to-end (simulated successful payment): checkout → dynamic QR → simulated sync → `paid` + entitlement visible within the package SLA.
+  *GWT: Given UAT end-to-end (simulated successful payment): checkout; When the transition executes; Then dynamic QR → simulated sync → `paid` + entitlement visible within the package SLA.*
 - Replay test: same delivery twice → single transition, single entitlement, single audit entry; repeat is a durable no-op.
+  *GWT: Given Replay test: same delivery twice; When the transition executes; Then single transition, single entitlement, single audit entry; repeat is a durable no-op.*
 - Tamper tests: bad/missing token → rejected, nothing written; edited-content delivery (no ref echo) → 200, no grant, appears in the exceptions queue; wrong amount → no grant.
+  *GWT: Given Tamper tests: bad/missing token; When the transition executes; Then rejected, nothing written; edited-content delivery (no ref echo) → 200, no grant, appears in the exceptions queue; wrong amount → no grant.*
 - Display-page polling with no sync yet: order stays `pending`, UX shows confirming (check-transaction repair covers it — settlement doc).
+  *GWT: Given Display-page polling with no sync yet context; When the checked action occurs; Then order stays `pending`, UX shows confirming (check-transaction repair covers it — settlement doc).*
 - Burst of bogus deliveries throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus deliveries throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 
 ## Out of scope
 

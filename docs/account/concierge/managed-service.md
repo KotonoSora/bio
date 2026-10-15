@@ -8,9 +8,17 @@ Sell outcomes, not seats: for a retainer, our team handles a client's setup, cam
 
 ## Users
 
-- Concierge client: buys the retainer, approves a setup plan, receives scheduled work + reports, exits with a clean handoff.
-- Concierge operator (staff): executes setup/campaign/post/email/automation/report tasks inside scoped agency powers, logs every action.
-- Agency owner (internal): staffs, reviews quality, pauses or offboards clients.
+| Role | Permissions | Notes |
+| --- | --- | --- |
+| Concierge client | Approve setup plan + per-item work (owner-scoped); pause/exit own contract | Buys the retainer, approves a setup plan, receives scheduled work + reports, exits with a clean handoff. |
+| Concierge operator (staff) | Execute assigned tasks only via agency-gated endpoints (Act-as-user with step-up, full audit; no backdoor edits) | Executes setup/campaign/post/email/automation/report tasks inside scoped agency powers, logs every action. |
+| Agency owner (internal) | Contract/task CRUD (internal roles); staff, pause, offboard clients | Staffs, reviews quality, pauses or offboards clients. |
+
+| Story ID | As a | I want to | So that | Priority |
+| --- | --- | --- | --- | --- |
+| US-01 | Concierge client | approve a setup plan and receive scheduled work plus reports with a clean handoff on exit | I buy outcomes with visible work logs under one SLA | Low |
+| US-02 | Concierge operator | execute setup/campaign/post/email/automation/report tasks inside scoped agency powers with every action logged | the work is visible and auditable | Low |
+| US-03 | Agency owner | staff, review quality, and pause or offboard clients | the service stays staffed and quality-controlled | Low |
 
 ## Functional requirements
 
@@ -29,11 +37,11 @@ Sell outcomes, not seats: for a retainer, our team handles a client's setup, cam
 
 ## Acceptance criteria
 
-- Powers drill: operator without assignment/approval cannot touch client content (403s across all surfaces); every executed task links to approval + audit rows visible to the client.
-- Gate drill: unapproved campaign/post-batch/automation refuses dispatch (verified at the send/publish endpoints, not by operator discipline).
-- Pause/exit drill: paused retainer halts work with content live; exited contract completes handoff inventory with agency links severed and client assets intact.
-- SLA drill: fixture tasks measure response/remediation against the SOW clock; missed SLA shows service-credit path per contract.
-- No-sale-before-staffing drill: contract creation attempted without assigned operators/SOW templates is refused (presence checks, not policy text).
+- Powers drill: operator without assignment/approval cannot touch client content (403s across all surfaces); every executed task links to approval + audit rows visible to the client. *GWT: Given an operator without assignment or approval; When they attempt client content actions; Then all surfaces return 403 and executed tasks link to approval plus audit rows visible to the client.*
+- Gate drill: unapproved campaign/post-batch/automation refuses dispatch (verified at the send/publish endpoints, not by operator discipline). *GWT: Given unapproved campaign/post-batch/automation work; When dispatch is attempted at send/publish endpoints; Then dispatch is refused.*
+- Pause/exit drill: paused retainer halts work with content live; exited contract completes handoff inventory with agency links severed and client assets intact. *GWT: Given a paused or exited retainer; When pause or exit completes; Then paused work halts with content live, and exited contracts complete handoff inventory with links severed and assets intact.*
+- SLA drill: fixture tasks measure response/remediation against the SOW clock; missed SLA shows service-credit path per contract. *GWT: Given fixture tasks under the SOW clock; When response/remediation misses the SLA; Then the service-credit path per contract is shown.*
+- No-sale-before-staffing drill: contract creation attempted without assigned operators/SOW templates is refused (presence checks, not policy text). *GWT: Given no assigned operators or SOW templates; When contract creation is attempted; Then creation is refused by presence checks.*
 
 ## Out of scope
 

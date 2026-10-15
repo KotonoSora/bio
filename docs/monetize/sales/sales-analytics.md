@@ -8,9 +8,9 @@ Define how the business reads its own sales motion: checkout-funnel conversion, 
 
 ## Users
 
-- Operator/founder: answers "are we growing, where do we leak, which rail earns its keep" every morning.
-- Finance: closes periods off ledger-derived revenue cuts with audit traceability.
-- Support lead: spots anomaly spikes (failed-checkout waves, dispute clusters) before they become incidents.
+- Operator/founder: *As an Operator/founder, I want to answer "are we growing, where do we leak, which rail earns its keep" every morning so that the business reads its own sales motion as defined here.* answers "are we growing, where do we leak, which rail earns its keep" every morning.
+- Finance: *As a Finance, I want to close periods off ledger-derived revenue cuts with audit traceability so that the business reads its own sales motion as defined here.* closes periods off ledger-derived revenue cuts with audit traceability.
+- Support lead: *As a Support lead, I want to spot anomaly spikes (failed-checkout waves, dispute clusters) before they become incidents so that the business reads its own sales motion as defined here.* spots anomaly spikes (failed-checkout waves, dispute clusters) before they become incidents.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define how the business reads its own sales motion: checkout-funnel conversion, 
 ## Acceptance criteria
 
 - Reconciliation drill: every dashboard figure decomposes exactly to ledger lines; finance close snapshot re-runs byte-identical.
+  *GWT: Given Reconciliation drill context; When every dashboard figure decomposes exactly to ledger lines; Then finance close snapshot re-runs byte-identical.*
 - Funnel drill: synthetic traffic with known drop-offs reproduces exact stage counts per slice; provider kill-switch flip shows up in funnel shifts same-day.
+  *GWT: Given Funnel drill context; When synthetic traffic with known drop-offs reproduces exact stage counts per slice; Then provider kill-switch flip shows up in funnel shifts same-day.*
 - Health drill: degraded-provider simulation (delayed webhooks, elevated declines) trips the scorecard thresholds and pages with the right slice.
+  *GWT: Given Health drill context; When the checked action occurs; Then degraded-provider simulation (delayed webhooks, elevated declines) trips the scorecard thresholds and pages with the right slice.*
 - Anomaly drill: dispute spike and funnel cliff both alert before a manual review would catch them (seeded data, measured lead time).
+  *GWT: Given Anomaly drill context; When the checked action occurs; Then dispute spike and funnel cliff both alert before a manual review would catch them (seeded data, measured lead time).*
 - Auth probe: non-ops roles on analytics endpoints → 403; affiliate/creator callers see only their scoped readouts, never business cuts.
+  *GWT: Given Auth probe: non-ops roles on analytics endpoints; When the transition executes; Then 403; affiliate/creator callers see only their scoped readouts, never business cuts.*
 
 ## Out of scope
 

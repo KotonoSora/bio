@@ -8,9 +8,9 @@ Give visitors two trust signals on a Link-to-Me page: a verification badge that 
 
 ## Users
 
-- Creator: applies for verification, links social accounts for display, sees combined follower total on the page.
-- Visitor: sees badge + total at a glance and trusts they are platform-attested, not self-typed.
-- Reviewer (ops): approves/rejects/verifies badge applications, revokes on impersonation.
+- Creator: *As a Creator, I want to apply for verification and link social accounts so that my page shows a combined follower total as platform-attested trust.* Applies for verification, links social accounts for display, sees combined follower total on the page.
+- Visitor: *As a Visitor, I want to see badge + total at a glance so that I trust they are platform-attested, not self-typed.* Sees badge + total at a glance and trusts they are platform-attested, not self-typed.
+- Reviewer (ops): *As a Reviewer (ops), I want to approve, reject, and revoke badge applications so that impersonation loses its badge within the cache-purge SLA.* Approves/rejects/verifies badge applications, revokes on impersonation.
 
 ## Functional requirements
 
@@ -29,12 +29,12 @@ Give visitors two trust signals on a Link-to-Me page: a verification badge that 
 
 ## Acceptance criteria
 
-- Fake-badge probe: bio/display-name containing badge emoji/SVG markup renders as plain text, never as the platform badge component.
-- State drill: `pending` shows no badge; `verified` shows badge within purge SLA; `revoked` removes it within purge SLA; rename of a verified profile hides badge until re-approved.
-- Follower drill: self-reported edit applies with version history; auto-refresh updates totals without slowing public page (p95 unchanged); network outage keeps last-good total with stale indicator.
-- IDOR probe: user A verify/follower writes against user B `profile_id` return 403; RLS denies at DB.
-- XSS probe: handle/URL/count fields reject `javascript:` and markup; CSP holds; anchors carry `rel="noopener ugc"`.
-- Ops audit: every approve/reject/revoke row appears in `audit_log` with actor + reason.
+- Fake-badge probe: bio/display-name containing badge emoji/SVG markup renders as plain text, never as the platform badge component. *GWT: Given bio/display-name input containing badge emoji/SVG markup; When rendered; Then it appears as plain text, never as the platform badge component.*
+- State drill: `pending` shows no badge; `verified` shows badge within purge SLA; `revoked` removes it within purge SLA; rename of a verified profile hides badge until re-approved. *GWT: Given verification states `pending`, `verified`, `revoked`, and a verified-profile rename; When the page renders; Then `pending` shows no badge, `verified` shows it within purge SLA, `revoked` removes it within purge SLA, and a rename hides the badge until re-approved.*
+- Follower drill: self-reported edit applies with version history; auto-refresh updates totals without slowing public page (p95 unchanged); network outage keeps last-good total with stale indicator. *GWT: Given a self-reported edit, a scheduled auto-refresh, and a network outage; When applied; Then the edit versions history, the refresh updates totals with p95 unchanged, and the outage keeps the last-good total with a stale indicator.*
+- IDOR probe: user A verify/follower writes against user B `profile_id` return 403; RLS denies at DB. *GWT: Given user A verify/follower writes against user B `profile_id`; When evaluated; Then the API returns 403 and RLS denies at DB.*
+- XSS probe: handle/URL/count fields reject `javascript:` and markup; CSP holds; anchors carry `rel="noopener ugc"`. *GWT: Given handle/URL/count input with `javascript:` or markup; When saved and rendered; Then it is rejected, CSP holds, and anchors carry `rel="noopener ugc"`.*
+- Ops audit: every approve/reject/revoke row appears in `audit_log` with actor + reason. *GWT: Given an approve, reject, or revoke action; When recorded; Then a row appears in `audit_log` with actor + reason.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Understand what happens AFTER the grant — who adopts, who quietly lapses, who 
 
 ## Users
 
-- Operator/founder: sees adoption-to-renewal chains, lapse reasons, and win-back effectiveness per cohort.
-- Lifecycle marketer: tunes reminder/win-back copy and timing from response data, not taste.
-- Support lead: learns the top cancel reasons and fixes the underlying causes (product, confusion, price) in priority order.
+- Operator/founder: *As an Operator/founder, I want to see adoption-to-renewal chains, lapse reasons, and win-back effectiveness per cohort so that understand what happens AFTER the grant as defined here.* sees adoption-to-renewal chains, lapse reasons, and win-back effectiveness per cohort.
+- Lifecycle marketer: *As a Lifecycle marketer, I want to tune reminder/win-back copy and timing from response data, not taste so that understand what happens AFTER the grant as defined here.* tunes reminder/win-back copy and timing from response data, not taste.
+- Support lead: *As a Support lead, I want to learn the top cancel reasons and fix the underlying causes (product, confusion, price) in priority order so that understand what happens AFTER the grant as defined here.* learns the top cancel reasons and fixes the underlying causes (product, confusion, price) in priority order.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Understand what happens AFTER the grant — who adopts, who quietly lapses, who 
 ## Acceptance criteria
 
 - Adoption drill: seeded cohorts show correct time-to-activated distributions; non-adopters flagged pre-renewal with reason-visible bands.
+  *GWT: Given Adoption drill context; When seeded cohorts show correct time-to-activated distributions; Then non-adopters flagged pre-renewal with reason-visible bands.*
 - Lapse drill: decaying-usage accounts score at-risk with correct contributing reasons; scores provably unread by gating/pricing/fraud code paths (dependency + review gate).
+  *GWT: Given Lapse drill context; When decaying-usage accounts score at-risk with correct contributing reasons; Then scores provably unread by gating/pricing/fraud code paths (dependency + review gate).*
 - Cancel drill: exit reasons captured without blocking cancel (one-click skip measured); save offers run only as registered experiments with honest copy.
+  *GWT: Given Cancel drill context; When exit reasons captured without blocking cancel (one-click skip measured); Then save offers run only as registered experiments with honest copy.*
 - Win-back drill: outreach response cut by cohort/offer/recency; consent-declined buyers provably excluded from every send.
+  *GWT: Given Win-back drill context; When outreach response cut by cohort/offer/recency; Then consent-declined buyers provably excluded from every send.*
 - Trial drill: engagement-banded conversion reported; dormant-rescue messaging feeds the trial experiment backlog.
+  *GWT: Given Trial drill context; When engagement-banded conversion reported; Then dormant-rescue messaging feeds the trial experiment backlog.*
 
 ## Out of scope
 

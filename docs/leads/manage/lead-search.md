@@ -8,9 +8,9 @@ Give creators a working view of their contacts: search by email or name, filter 
 
 ## Users
 
-- Creator: finds "the buyer from Saturday's drop," checks what they consented to, adds a note, tags for follow-up, suppresses on request.
-- Support (creator-side, future agency seat): same view under the creator's scope, every action attributed.
-- Contact (indirect): benefits from accurate records — suppression requests honored, history provable.
+- Creator: *As a Creator, I want to find a contact by email or name, check consent, add a note, tag for follow-up, and suppress on request so that I can work contacts without touching other creators' data.* Finds "the buyer from Saturday's drop," checks what they consented to, adds a note, tags for follow-up, suppresses on request.
+- Support (creator-side, future agency seat): *As a Support, I want the same creator-scoped view with every action attributed so that help stays inside the creator's scope.* Same view under the creator's scope, every action attributed.
+- Contact (indirect): *As a Contact, I want accurate records with suppression honored and history provable so that my requests stick.* Benefits from accurate records — suppression requests honored, history provable.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Give creators a working view of their contacts: search by email or name, filter 
 
 ## Acceptance criteria
 
-- Search drill: exact email ranks first; typo'd query still surfaces the row; 2-char minimum enforced; cross-creator rows never appear (leak probe with overlapping fixtures returns empty).
-- Filter drill: combined source × status × date filters reconcile exactly with direct row counts; count-before-export matches exported rows.
-- Timeline drill: capture, consent change, purchase reference, automation event, and note render in one chronological view with actors.
-- Action drill: note/tag/suppress append audit rows; manual consent-grant attempts impossible (no endpoint exists — verified by surface review); suppression propagates to send eligibility before the next broadcast.
-- Performance drill: 100k-lead fixture search within p95 budget; export selection of 10k rows completes without timeout (async file path where needed).
+- Search drill: exact email ranks first; typo'd query still surfaces the row; 2-char minimum enforced; cross-creator rows never appear (leak probe with overlapping fixtures returns empty). *GWT: Given exact, typo'd, short, and cross-creator queries; When search runs; Then exact ranks first, typos still surface, 2-char minimum enforces, and cross-creator rows never appear.*
+- Filter drill: combined source × status × date filters reconcile exactly with direct row counts; count-before-export matches exported rows. *GWT: Given combined source-by-status-by-date filters; When filtered and counted; Then results reconcile with direct row counts and count-before-export matches exported rows.*
+- Timeline drill: capture, consent change, purchase reference, automation event, and note render in one chronological view with actors. *GWT: Given capture, consent, purchase, automation, and note events; When the detail view renders; Then one chronological timeline shows all entries with actors.*
+- Action drill: note/tag/suppress append audit rows; manual consent-grant attempts impossible (no endpoint exists — verified by surface review); suppression propagates to send eligibility before the next broadcast. *GWT: Given note/tag/suppress or consent-grant attempts; When actions run; Then notes/tags/suppressions append audit rows, consent grants are impossible by surface review, and suppression propagates before the next broadcast.*
+- Performance drill: 100k-lead fixture search within p95 budget; export selection of 10k rows completes without timeout (async file path where needed). *GWT: Given a 100k-lead fixture or a 10k-row selection; When search or export runs; Then search stays within p95 budget and exports complete without timeout via async where needed.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Keep the front door both welcoming and barred: legitimate users recover access i
 
 ## Users
 
-- User: signs up, logs in, resets a forgotten password, reviews and revokes sessions.
+- User: *As a User, I want to sign up, log in, reset a forgotten password, and review and revoke sessions so that I recover access in minutes while my account stays barred to attackers.* Signs up, logs in, resets a forgotten password, reviews and revokes sessions.
 - Attacker (adversarial): harvests no user list, stuffs no credentials at scale, replays no reset token.
-- Support: verifies identity for locked-out users without ever seeing secrets.
+- Support: *As a Support, I want to verify identity for locked-out users without ever seeing secrets so that assisted recovery stays auditable.* Verifies identity for locked-out users without ever seeing secrets.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Keep the front door both welcoming and barred: legitimate users recover access i
 
 ## Acceptance criteria
 
-- Enumeration drill: reset/login/signup responses byte-equivalent (modulo timing-noise budget) for existing vs non-existing accounts; timing analysis shows no reliable oracle.
-- Reset drill: token single-use (replay fails), expiry enforced, cross-account use fails, post-reset all other sessions dead + notification sent.
-- Stuffing drill: credential-burst throttled per account+IP with backoff; no victim lockout exceeding the short IP-scoped window.
-- Step-up drill: each sensitive action without a fresh grant refused (403 with the step-up path); grant older than 10 min refused.
-- Support drill: assisted recovery completes without any party viewing a password; audit row present with actor + identity evidence cited.
+- Enumeration drill: reset/login/signup responses byte-equivalent (modulo timing-noise budget) for existing vs non-existing accounts; timing analysis shows no reliable oracle. *GWT: Given existing vs non-existing accounts; When reset/login/signup is attempted; Then responses are byte-equivalent within the timing-noise budget with no reliable oracle.*
+- Reset drill: token single-use (replay fails), expiry enforced, cross-account use fails, post-reset all other sessions dead + notification sent. *GWT: Given an issued reset token; When it is replayed, expired, used cross-account, or consumed validly; Then replays, expiries, and cross-account uses fail closed, and valid use kills other sessions plus sends notification.*
+- Stuffing drill: credential-burst throttled per account+IP with backoff; no victim lockout exceeding the short IP-scoped window. *GWT: Given a credential burst; When per-account plus per-IP throttling applies; Then requests back off with no victim lockout beyond the short IP-scoped window.*
+- Step-up drill: each sensitive action without a fresh grant refused (403 with the step-up path); grant older than 10 min refused. *GWT: Given a sensitive action without a fresh grant or with a grant older than 10 min; When the action is attempted; Then it is refused with 403 plus the step-up path.*
+- Support drill: assisted recovery completes without any party viewing a password; audit row present with actor + identity evidence cited. *GWT: Given a locked-out user; When assisted recovery completes; Then no party views a password and an audit row cites actor plus identity evidence.*
 
 ## Out of scope
 

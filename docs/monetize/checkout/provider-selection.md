@@ -8,9 +8,17 @@ Name the complete set of payment rails checkout serves and lock the no-default c
 
 ## Users
 
-- Buyer: sees every eligible rail for their intent, chooses one, pays through its handoff.
-- Frontend checkout: renders the eligible list verbatim, sends the chosen `provider` back explicitly.
-- Ops/support: enables/disables rails and tunes display order without deploys; answers "why isn't X offered" from config + capability rules.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | See every eligible rail, choose one, pay through its handoff | Checkout cannot offer what is not in the registry |
+| Frontend checkout | Render the eligible list verbatim, send chosen `provider` back explicitly | Buyer always selects explicitly from the registry |
+| Ops/support | Enable/disable rails and tune display order without deploys | Answers "why isn't X offered" from config + capability rules |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | See every eligible rail for my intent, choose one, and pay through its handoff | Checkout cannot offer what is not in the registry | Must |
+| US-02 | Frontend checkout | Render the eligible list verbatim and send the chosen `provider` back explicitly | The buyer always selects explicitly from the registry | Must |
+| US-03 | Ops/support | Enable/disable rails and tune display order without deploys | I can answer "why isn't X offered" from config + capability rules | Must |
 
 ## Functional requirements
 
@@ -30,12 +38,14 @@ Name the complete set of payment rails checkout serves and lock the no-default c
 
 ## Acceptance criteria
 
-- Eight-rail matrix drill: each plan/product × registry-member cell allowed or rejected per config, verified via API on all eight checkout docs' paths; no member reachable when ineligible.
-- No-default drill: omitted `provider` on create → 422 with eligible list on every intent type; unknown code → 422; grep gate finds no hardcoded provider default or fallback ordering in checkout code.
-- Order-verbatim drill: with display config absent, client renders API order exactly (no re-sort to a favorite); with config present, rendered order matches config.
-- Capability drill: incapable device/browser excludes wallet members server-side; capable one includes them with correct `handoff_kind`.
-- Kill-switch drill: disabling any one of the eight removes it from the list within seconds with audited flip and buyer messaging intact.
-- Baseline: IDOR 403 cross-user on member-scoped order reads/cancels with RLS deny (S-1/S-6); error/quote rendering XSS-stripped with CSP holding (S-2); anonymous endpoints Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation (P5-4).
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Eight-rail matrix drill: each plan/product × registry-member cell allowed or rejected per config, verified via API on all eight checkout docs' paths; no member reachable when ineligible | Plan/product × registry-member config | Each cell is verified via API on all eight checkout paths | Allowed cells pass, rejected cells fail, and no ineligible member is reachable |
+| AC-02 | No-default drill: omitted `provider` on create returns 422 with eligible list on every intent type; unknown code returns 422; grep gate finds no hardcoded provider default or fallback ordering in checkout code | A create with omitted or unknown `provider` on any intent type | Checkout is created and the grep gate scans checkout code | Omitted `provider` returns 422 with the eligible list, unknown codes return 422, and the grep gate finds no hardcoded default or fallback ordering |
+| AC-03 | Order-verbatim drill: with display config absent, client renders API order exactly (no re-sort to a favorite); with config present, rendered order matches config | Display config absent or present | The eligible list is rendered | Absent config renders API order exactly and present config renders the configured order |
+| AC-04 | Capability drill: incapable device/browser excludes wallet members server-side; capable one includes them with correct `handoff_kind` | An incapable or capable device/browser | Eligibility is evaluated | The incapable device excludes wallet members server-side and the capable one includes them with correct `handoff_kind` |
+| AC-05 | Kill-switch drill: disabling any one of the eight removes it from the list within seconds with audited flip and buyer messaging intact | Any one of the eight disabled | The list is read | It is removed within seconds with audited flip and buyer messaging intact |
+| AC-06 | Baseline: IDOR 403 cross-user on member-scoped order reads/cancels with RLS deny (S-1/S-6); error/quote rendering XSS-stripped with CSP holding (S-2); anonymous endpoints Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation (P5-4) | Cross-user member-scoped order reads/cancels, rendered error/quote output, anonymous endpoints, and repo under secrets grep | IDOR, XSS, abuse, and secrets probes run | Cross-user access returns 403 with RLS deny (S-1/S-6), rendering is XSS-stripped with CSP holding (S-2), anonymous endpoints are Turnstile + WAF throttled (S-5), and secrets grep stays clean with quarterly rotation |
 
 ## Out of scope
 

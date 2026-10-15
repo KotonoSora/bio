@@ -8,9 +8,17 @@ Define the single checkout front door all buyers use regardless of rail: one dis
 
 ## Users
 
-- Buyer: picks a plan/product once, sees eligible payment methods in a defined order, pays, and lands on one consistent pending/return experience.
-- Frontend checkout page: calls one endpoint, renders one provider list, polls one status shape.
-- Support/ops: disables a degraded provider in one place instead of redeploying.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Pick a plan/product, see eligible payment methods, pay, land on pending/return experience | One checkout front door regardless of rail; defined order |
+| Frontend checkout page | Call one endpoint, render one provider list, poll one status shape | Supports one consistent pending/return experience |
+| Support/ops | Disable a degraded provider in one place | Avoids redeploying |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Pick a plan/product once, see eligible payment methods in a defined order, pay, and land on one consistent pending/return experience | I use one checkout front door regardless of rail | Must |
+| US-02 | Frontend checkout page | Call one endpoint, render one provider list, and poll one status shape | Buyers get one consistent pending/return experience | Must |
+| US-03 | Support/ops | Disable a degraded provider in one place | I avoid redeploying | Must |
 
 ## Functional requirements
 
@@ -29,13 +37,15 @@ Define the single checkout front door all buyers use regardless of rail: one dis
 
 ## Acceptance criteria
 
-- Eight-provider matrix drill: each plan/product × provider cell allowed or rejected per config, verified via API (client-side filtering alone is a failure).
-- Kill-switch drill: disabling a provider mid-incident removes it from the list within seconds; in-flight pendings route to that provider's settlement flow with buyer messaging intact.
-- Double-submit drill on every provider handoff kind: single `orders` row, same handoff re-issued.
-- Return/cancel URLs from all redirect providers converge on the one pending page with correct status rendering.
-- IDOR probe: user A operating on user B orders returns 403; RLS denies cross-user rows.
-- No-default drill: omitted `provider` on create → 422 with the eligible list (never a silent PayOS fallback); grep gate finds no hardcoded provider default or fallback ordering in checkout code.
-- Provider-addition dry run (review-only): a ninth provider fits the dispatcher + `next` shape with no contract changes.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Eight-provider matrix drill: each plan/product x provider cell allowed or rejected per config, verified via API (client-side filtering alone is a failure) | Plan/product x provider config | Each cell is verified via API | Allowed cells pass and rejected cells fail with client-side filtering alone treated as failure |
+| AC-02 | Kill-switch drill: disabling a provider mid-incident removes it from the list within seconds; in-flight pendings route to that provider's settlement flow with buyer messaging intact | A provider disabled mid-incident | The list is read and in-flight pendings settle | The provider is removed from the list within seconds and pendings route to that provider's settlement flow with buyer messaging intact |
+| AC-03 | Double-submit drill on every provider handoff kind: single `orders` row, same handoff re-issued | A double-submit on any provider handoff kind | The checkout is submitted twice | A single `orders` row exists with the same handoff re-issued |
+| AC-04 | Return/cancel URLs from all redirect providers converge on the one pending page with correct status rendering | Return/cancel URLs from all redirect providers | The buyer returns or cancels | All land on the one pending page with correct status rendering |
+| AC-05 | IDOR probe: user A operating on user B orders returns 403; RLS denies cross-user rows | User A operating on user B orders | The operation is attempted | The API returns 403 and RLS denies cross-user rows |
+| AC-06 | No-default drill: omitted `provider` on create returns 422 with the eligible list (never a silent PayOS fallback); grep gate finds no hardcoded provider default or fallback ordering in checkout code | A create with omitted `provider` | Checkout is created and the grep gate scans checkout code | The API returns 422 with the eligible list, never a silent PayOS fallback, and the grep gate finds no hardcoded default or fallback ordering |
+| AC-07 | Provider-addition dry run (review-only): a ninth provider fits the dispatcher + `next` shape with no contract changes | The dispatcher + `next` shape | A ninth provider is reviewed against the contract | It fits with no contract changes |
 
 ## Out of scope
 

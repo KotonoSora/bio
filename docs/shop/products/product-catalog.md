@@ -8,9 +8,9 @@ Define the single catalog every sellable thing lives in: one product row whether
 
 ## Users
 
-- Creator/seller: creates listings, sets prices in VND, publishes to the shop page and product blocks.
-- Buyer: browses `/:username/shop`, buys on-platform or follows a disclosed link-out to an external checkout.
-- Fee engine and analytics (consumers): read kind + price + tier to quote fees and attribute revenue.
+- Creator/seller: *As a Creator/seller, I want to create listings, set prices in VND, and publish to the shop page and product blocks so that every sellable thing lives in one catalog.* Creates listings, sets prices in VND, publishes to the shop page and product blocks.
+- Buyer: *As a Buyer, I want to browse `/:username/shop` and buy on-platform or follow a disclosed link-out so that purchases stay transparent.* Browses `/:username/shop`, buys on-platform or follows a disclosed link-out to an external checkout.
+- Fee engine and analytics (consumers): *As a Fee engine and analytics consumer, I want to read kind + price + tier so that fee quotes and revenue attribution stay uniform.* Read kind + price + tier to quote fees and attribute revenue.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Define the single catalog every sellable thing lives in: one product row whether
 
 ## Acceptance criteria
 
-- Kind drill: unknown kind or negative price rejected 422; free merch/digital rejected; free course and custom-amount tip accepted.
-- Price-freeze drill: order placed before a price change settles at the purchase-time price (ledger matches quote snapshot).
-- Archive drill: product with orders archives cleanly; bio blocks show unavailable (no 500s, no dead checkouts); product without orders hard-deletes only via audited path.
-- Link-out drill: external URL requires `https:`, renders with disclosure + domain; clicks counted in beacon aggregates; no order row created.
-- IDOR drill: user A product CRUD against user B `profile_id` returns 403; RLS denies at DB. XSS drill on title/description: stripped, CSP holds.
+- Kind drill: unknown kind or negative price rejected 422; free merch/digital rejected; free course and custom-amount tip accepted. *GWT: Given an unknown kind, negative price, or free-price listing; When validation runs; Then unknown kinds and negative prices are rejected 422, free merch/digital are rejected, and free courses plus custom-amount tips are accepted.*
+- Price-freeze drill: order placed before a price change settles at the purchase-time price (ledger matches quote snapshot). *GWT: Given an order placed before a price change; When settlement runs; Then it settles at the purchase-time price with ledger matching the quote snapshot.*
+- Archive drill: product with orders archives cleanly; bio blocks show unavailable (no 500s, no dead checkouts); product without orders hard-deletes only via audited path. *GWT: Given a product with or without orders; When archived or deleted; Then the product with orders archives cleanly with bio blocks showing unavailable (no 500s, no dead checkouts), and the product without orders hard-deletes only via the audited path.*
+- Link-out drill: external URL requires `https:`, renders with disclosure + domain; clicks counted in beacon aggregates; no order row created. *GWT: Given a link-out product; When created and clicked; Then the external URL requires `https:`, renders with disclosure + domain, clicks are counted in beacon aggregates, and no order row is created.*
+- IDOR drill: user A product CRUD against user B `profile_id` returns 403; RLS denies at DB. XSS drill on title/description: stripped, CSP holds. *GWT: Given user B `profile_id` and injection input in title/description; When user A attempts product CRUD or the fields render; Then CRUD returns 403 with RLS denial at DB, and XSS input is stripped with CSP holding.*
 
 ## Out of scope
 

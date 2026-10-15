@@ -8,10 +8,10 @@ Define how the platform trusts Apple Pay money: every sheet runs on a server-fet
 
 ## Users
 
-- Buyer: authenticates in the validated sheet; receives entitlement on charge-confirmed grant.
-- Apple servers: issue single-use merchant sessions to our validated server identity.
-- PSP server: confirms charges synchronously and posts asynchronous webhooks (captures, reviews, failures).
-- Ops: relies on idempotency during retries, duplicate webhooks, and incident recovery.
+- Buyer: *As a Buyer, I want to authenticate in the validated sheet; receive entitlement on charge-confirmed grant so that the platform trusts Apple Pay money as defined here.* authenticates in the validated sheet; receives entitlement on charge-confirmed grant.
+- Apple servers: *As an Apple servers, I want to issue single-use merchant sessions to our validated server identity so that the platform trusts Apple Pay money as defined here.* issue single-use merchant sessions to our validated server identity.
+- PSP server: *As a PSP server, I want to confirm charges synchronously and post asynchronous webhooks (captures, reviews, failures) so that the platform trusts Apple Pay money as defined here.* confirms charges synchronously and posts asynchronous webhooks (captures, reviews, failures).
+- Ops: *As an Ops, I want to rely on idempotency during retries, duplicate webhooks, and incident recovery so that the platform trusts Apple Pay money as defined here.* relies on idempotency during retries, duplicate webhooks, and incident recovery.
 
 ## Functional requirements
 
@@ -32,11 +32,17 @@ Define how the platform trusts Apple Pay money: every sheet runs on a server-fet
 ## Acceptance criteria
 
 - Sandbox end-to-end (Apple sandbox/test cards + PSP sandbox): checkout → validated sheet → token → authorize → `paid` + entitlement within the SLA; `completePayment` verdict matches the grant outcome.
+  *GWT: Given Sandbox end-to-end (Apple sandbox/test cards + PSP sandbox): checkout; When the transition executes; Then validated sheet → token → authorize → `paid` + entitlement within the SLA; `completePayment` verdict matches the grant outcome.*
 - Validation failure drill (bad cert/expired session): sheet fails closed before any payment UI confusion; no charge attempted.
+  *GWT: Given Validation failure drill (bad cert/expired session) context; When sheet fails closed before any payment UI confusion; Then no charge attempted.*
 - Replay test: same token/authorize posted twice + redelivered PSP webhook → single transition, single entitlement, single audit entry; repeats are no-ops. Reused `transactionIdentifier` across orders → rejected.
+  *GWT: Given Replay test: same token/authorize posted twice + redelivered PSP webhook; When the transition executes; Then single transition, single entitlement, single audit entry; repeats are no-ops. Reused `transactionIdentifier` across orders → rejected.*
 - Tamper tests: forged/malformed token → failure, no grant; altered amount → rejected pre-charge; unknown `orderCode` → no leak.
+  *GWT: Given Tamper tests: forged/malformed token; When the transition executes; Then failure, no grant; altered amount → rejected pre-charge; unknown `orderCode` → no leak.*
 - Timeout drill (PSP never answers): order recoverable via settlement status query; exactly-once charge preserved by the idempotency key.
+  *GWT: Given Timeout drill (PSP never answers) context; When order recoverable via settlement status query; Then exactly-once charge preserved by the idempotency key.*
 - Burst of bogus webhooks throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus webhooks throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 
 ## Out of scope
 

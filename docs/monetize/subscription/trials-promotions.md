@@ -8,10 +8,19 @@ Define how users legitimately experience pro without paying full price: trial pe
 
 ## Users
 
-- Evaluator: tries pro for a bounded period with full gates open and a clear conversion path.
-- Buyer with a coupon: redeems a code at checkout for a defined discount or extended term.
-- Advocate/goodwill recipient: earns or receives credit (referral reward, support compensation) applied as term time, never as cash.
-- Support/ops: issues goodwill within defined bounds instead of hand-editing rows.
+| Role | Permissions | Notes |
+|---|---|---|
+| Evaluator | Try pro for a bounded period with full gates open | Clear conversion path; every free day flows through the same ledger, gates, and audit trail |
+| Buyer with a coupon | Redeem a code at checkout for a defined discount or extended term | Provider sees the final amount only |
+| Advocate/goodwill recipient | Earn or receive credit applied as term time, never as cash | Referral reward or support compensation as pro-days |
+| Support/ops | Issue goodwill within defined bounds | Avoids hand-editing rows |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Evaluator | Try pro for a bounded period with full gates open and a clear conversion path | Every free day of pro flows through the same ledger, gates, and audit trail | Must |
+| US-02 | Buyer with a coupon | Redeem a code at checkout for a defined discount or extended term | The provider sees the final amount only | Must |
+| US-03 | Advocate/goodwill recipient | Earn or receive credit applied as term time, never as cash | Referral or goodwill stays as pro-days | Must |
+| US-04 | Support/ops | Issue goodwill within defined bounds | I avoid hand-editing rows | Must |
 
 ## Functional requirements
 
@@ -30,11 +39,13 @@ Define how users legitimately experience pro without paying full price: trial pe
 
 ## Acceptance criteria
 
-- Trial drill: full gates during trial, one-trial-ever enforced across sock-puppet signals, expiry follows the lossless downgrade path, conversion nudge sequence delivered.
-- Coupon drill: percent/fixed/term-extend all price correctly; brute-force throttled; 0-VND order grants without touching any provider; expired/exhausted codes rejected with indistinguishable errors.
-- Credit drill: referral vests only post-refund-window; goodwill capped and audited; credits extend terms as days, never cash out.
-- Ledger probe: every pro row carries a valid `source`; support can explain any account's status from ledger + audit alone.
-- Auth probe: non-ops issuance endpoints → 403; users cannot self-stamp trials/credits; RLS denies cross-user rows.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Trial drill: full gates during trial, one-trial-ever enforced across sock-puppet signals, expiry follows the lossless downgrade path, conversion nudge sequence delivered | A trial user | Gates, second-trial attempts, expiry, and conversion nudges run | Gates are full during trial, one-trial-ever is enforced, expiry follows the lossless downgrade path, and nudges are delivered |
+| AC-02 | Coupon drill: percent/fixed/term-extend all price correctly; brute-force throttled; 0-VND order grants without touching any provider; expired/exhausted codes rejected with indistinguishable errors | Percent/fixed/term-extend coupons including 0-VND, brute-force, and expired/exhausted codes | Checkout prices and validates | Kinds price correctly, brute-force is throttled, 0-VND grants without touching any provider, and expired/exhausted codes reject with indistinguishable errors |
+| AC-03 | Credit drill: referral vests only post-refund-window; goodwill capped and audited; credits extend terms as days, never cash out | Referral and goodwill credits | Vesting and issuance run | Referral vests only post-refund-window, goodwill is capped and audited, and credits extend terms as days with no cash out |
+| AC-04 | Ledger probe: every pro row carries a valid `source`; support can explain any account's status from ledger + audit alone | Any pro row | Ledger + audit are read | Every pro row carries a valid `source` that explains the account status |
+| AC-05 | Auth probe: non-ops issuance endpoints return 403; users cannot self-stamp trials/credits; RLS denies cross-user rows | Non-ops issuance and self-stamped trial/credit attempts | The operations are attempted | Endpoints return 403 and RLS denies cross-user rows |
 
 ## Out of scope
 

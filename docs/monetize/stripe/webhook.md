@@ -8,9 +8,9 @@ Define how the platform trusts Stripe: every event's signature is recomputed ove
 
 ## Users
 
-- Stripe server: posts signed event JSON to the registered endpoint (successes, failures, refunds, disputes).
-- Buyer: receives entitlement (plan upgrade or product claim) after a genuine succeeded event.
-- Ops: relies on idempotency during Stripe retries, CLI replays, and incident recovery.
+- Stripe server: *As a Stripe server, I want to post signed event JSON to the registered endpoint (successes, failure, refund, disputes) so that the platform trusts Stripe as defined here.* posts signed event JSON to the registered endpoint (successes, failures, refunds, disputes).
+- Buyer: *As a Buyer, I want to receive entitlement (plan upgrade or product claim) after a genuine succeeded event so that the platform trusts Stripe as defined here.* receives entitlement (plan upgrade or product claim) after a genuine succeeded event.
+- Ops: *As an Ops, I want to rely on idempotency during Stripe retries, CLI replays, and incident recovery so that the platform trusts Stripe as defined here.* relies on idempotency during Stripe retries, CLI replays, and incident recovery.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define how the platform trusts Stripe: every event's signature is recomputed ove
 ## Acceptance criteria
 
 - TEST end-to-end (`stripe trigger payment_intent.succeeded` + real test-card payments): `paid` + entitlement within the SLA; dashboard event log and local ledger agree.
+  *GWT: Given TEST end-to-end (`stripe trigger payment_intent.succeeded` + real test-card payments): `paid` + entitlement within the SLA; When the next step executes; Then dashboard event log and local ledger agree.*
 - Replay test: same `event.id` delivered twice → single transition, single entitlement, single audit entry; repeat is a durable no-op.
+  *GWT: Given Replay test: same `event.id` delivered twice; When the transition executes; Then single transition, single entitlement, single audit entry; repeat is a durable no-op.*
 - Tamper tests: bad signature → 400, nothing parsed; stale timestamp → rejected; altered amount → no grant; unknown `orderCode` → no leak.
+  *GWT: Given Tamper tests: bad signature; When the transition executes; Then 400, nothing parsed; stale timestamp → rejected; altered amount → no grant; unknown `orderCode` → no leak.*
 - Page-closed-mid-payment drill (no client callback ever arrives): webhook alone drives the grant — buyer sees `paid` on next status poll.
+  *GWT: Given Page-closed-mid-payment drill (no client callback ever arrives) context; When the checked action occurs; Then webhook alone drives the grant — buyer sees `paid` on next status poll.*
 - Burst of bogus webhooks throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus webhooks throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 
 ## Out of scope
 

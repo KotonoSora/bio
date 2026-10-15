@@ -8,9 +8,9 @@ Let agency staff edit a client's profile as if logged in as them — with the cl
 
 ## Users
 
-- Staff (manager/member): starts a scoped session on an assigned client profile, edits blocks/themes/products, ends the session.
-- Client: sees who accessed their profile, when, and what changed — with one-click revoke and complaint path.
-- Auditor/support: replays any session's actions from the audit trail during disputes.
+- Staff (manager/member): *As a Staff, I want to start a scoped session on an assigned client profile, edit blocks/themes/products, and end the session so that every minute is attributable and revocable.* Starts a scoped session on an assigned client profile, edits blocks/themes/products, ends the session.
+- Client: *As a Client, I want to see who accessed my profile, when, and what changed with one-click revoke so that impersonation stays visible to me.* Sees who accessed their profile, when, and what changed — with one-click revoke and complaint path.
+- Auditor/support: *As an Auditor/support, I want to replay any session's actions from the audit trail so that disputes resolve from evidence.* Replays any session's actions from the audit trail during disputes.
 
 ## Functional requirements
 
@@ -28,11 +28,11 @@ Let agency staff edit a client's profile as if logged in as them — with the cl
 
 ## Acceptance criteria
 
-- Gate drill: each start-condition failure (unassigned profile, revoked access, stale step-up, suspended membership) returns 403 naming the condition, with zero session created.
-- Scope drill: allowlisted edits succeed; account-level attempts (password, plan, username, delete, roster) via live session return 403 + audit-flag; direct API replay with stripped marker fails authentication entirely.
-- Audit drill: fixture editing session replays action-for-action with before/after; client history view matches support view; append-only enforced at DB grants.
-- Revocation drill: client revoke ends live sessions within seconds (in-flight mutation fails closed); complaint freeze blocks new starts while preserving read surfaces.
-- Expiry drill: idle session dies at 30 min; active session hard-stops at 8 h requiring fresh step-up.
+- Gate drill: each start-condition failure (unassigned profile, revoked access, stale step-up, suspended membership) returns 403 naming the condition, with zero session created. *GWT: Given an unassigned profile, revoked access, stale step-up, or suspended membership; When session start is attempted; Then 403 naming the condition results with zero session created.*
+- Scope drill: allowlisted edits succeed; account-level attempts (password, plan, username, delete, roster) via live session return 403 + audit-flag; direct API replay with stripped marker fails authentication entirely. *GWT: Given a live session with allowlisted vs account-level attempts or a stripped marker; When requests run; Then allowlisted edits succeed, account-level attempts return 403 plus audit-flag, and stripped-marker replays fail authentication.*
+- Audit drill: fixture editing session replays action-for-action with before/after; client history view matches support view; append-only enforced at DB grants. *GWT: Given a fixture editing session; When replayed from `audit_log`; Then actions match action-for-action with before/after, client and support views agree, and append-only holds at DB grants.*
+- Revocation drill: client revoke ends live sessions within seconds (in-flight mutation fails closed); complaint freeze blocks new starts while preserving read surfaces. *GWT: Given a client revoke or complaint freeze; When live sessions or new starts run; Then revokes end live sessions within seconds with in-flight mutations failing closed, and freezes block new starts while preserving reads.*
+- Expiry drill: idle session dies at 30 min; active session hard-stops at 8 h requiring fresh step-up. *GWT: Given an idle or long-active session; When TTLs elapse; Then idle sessions die at 30 min and active sessions hard-stop at 8 h requiring fresh step-up.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Define what the watcher listens for: exact-keyword triggers ("comment TOUR → g
 
 ## Users
 
-- Creator: creates keyword rules per post (or account-wide), toggles any-comment catch-alls, previews what a commenter will receive.
-- Commenter (Instagram user): comments, gets a public reply and exactly one DM — no follow-up drip, no subscription.
-- Ops/abuse reviewer: inspects match logs when a creator is reported for spammy automation.
+- Creator: *As a Creator, I want to create keyword rules per post, toggle any-comment catch-alls, and preview what a commenter will receive so that matching stays exact, auditable, and scoped.* Creates keyword rules per post (or account-wide), toggles any-comment catch-alls, previews what a commenter will receive.
+- Commenter (Instagram user): *As a Commenter, I want to comment and get a public reply plus exactly one DM so that my raised hand earns one reply with no drip.* Comments, gets a public reply and exactly one DM — no follow-up drip, no subscription.
+- Ops/abuse reviewer: *As an Ops/abuse reviewer, I want to inspect match logs when a creator is reported so that spammy automation is reviewable.* Inspects match logs when a creator is reported for spammy automation.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Define what the watcher listens for: exact-keyword triggers ("comment TOUR → g
 
 ## Acceptance criteria
 
-- Match drill: exact/folded/phrase keywords fire; near-miss typos, creator self-comments, and blocklisted users do not (fixture matrix green).
-- Collision drill: overlapping keyword sets on one post rejected at save naming both automations.
-- Quota drill: 3rd/4th free rules save, next refused with upgrade path; downgrade pauses newest-first; watcher skips paused/over-quota rules even under queued backlog.
-- Spike drill: viral-post comment flood obeys per-hour caps with queued overflow + creator warning (no platform-ban-shaped traffic burst).
-- Webhook drill: tampered comment events rejected (401), no intent emitted; replayed events dedupe to one intent.
+- Match drill: exact/folded/phrase keywords fire; near-miss typos, creator self-comments, and blocklisted users do not (fixture matrix green). *GWT: Given exact/folded/phrase keywords vs typos, self-comments, and blocklisted users; When matching evaluates; Then only exact matches fire and the fixture matrix stays green.*
+- Collision drill: overlapping keyword sets on one post rejected at save naming both automations. *GWT: Given overlapping keyword sets on one post; When saving; Then the save is rejected naming both automations.*
+- Quota drill: 3rd/4th free rules save, next refused with upgrade path; downgrade pauses newest-first; watcher skips paused/over-quota rules even under queued backlog. *GWT: Given free-rule counts and a downgrade; When saving or the watcher evaluates; Then the 3rd/4th save, the next is refused with upgrade path, downgrades pause newest-first, and the watcher skips paused/over-quota rules.*
+- Spike drill: viral-post comment flood obeys per-hour caps with queued overflow + creator warning (no platform-ban-shaped traffic burst). *GWT: Given a viral-post comment flood; When fire caps apply; Then per-hour caps hold with queued overflow plus creator warning and no ban-shaped burst.*
+- Webhook drill: tampered comment events rejected (401), no intent emitted; replayed events dedupe to one intent. *GWT: Given tampered or replayed comment events; When the webhook consumer evaluates; Then tampered events are rejected 401 with no intent and replays dedupe to one intent.*
 
 ## Out of scope
 

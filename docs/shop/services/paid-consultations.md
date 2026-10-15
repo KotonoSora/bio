@@ -8,9 +8,9 @@ Sell 1-on-1 time: creator offers bookable consultation slots, buyer pays upfront
 
 ## Users
 
-- Creator/expert: defines session types (duration, price, buffer times), opens availability, supplies a standing or per-booking meeting link.
-- Buyer: picks a slot, pays upfront, receives confirmation + reminders, joins via the link.
-- Both: reschedule or cancel under one published policy with no ambiguity about refunds.
+- Creator/expert: *As a Creator/expert, I want to define session types, open availability, and supply a meeting link so that 1-on-1 time sells.* Defines session types (duration, price, buffer times), opens availability, supplies a standing or per-booking meeting link.
+- Buyer: *As a Buyer, I want to pick a slot, pay upfront, and receive confirmation + reminders so that I can join via the link.* Picks a slot, pays upfront, receives confirmation + reminders, joins via the link.
+- Both: *As a creator or buyer, I want to reschedule or cancel under one published policy so that refunds have no ambiguity.* Reschedule or cancel under one published policy with no ambiguity about refunds.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Sell 1-on-1 time: creator offers bookable consultation slots, buyer pays upfront
 
 ## Acceptance criteria
 
-- Double-book drill: concurrent holds on the same slot yield exactly one confirmable booking (DB unique constraint verified under race).
-- Hold-expiry drill: unpaid hold frees the slot within TTL; no orphan locks; grant-after-expiry correctly fails with re-book guidance.
-- Policy drill: ≥24 h cancel refunds in full; <24 h cancel and no-show refuse with policy citation; creator cancel auto-refunds with buyer notice.
-- Link drill: non-`https:` meeting links rejected; signed reschedule/cancel tokens work without login and expire after the slot passes.
-- IDOR drill: buyer A booking operations against buyer B ids return 403; creator A cannot touch creator B availability.
+- Double-book drill: concurrent holds on the same slot yield exactly one confirmable booking (DB unique constraint verified under race). *GWT: Given concurrent holds on the same slot; When confirmation runs; Then exactly one confirmable booking results with the DB unique constraint holding under race.*
+- Hold-expiry drill: unpaid hold frees the slot within TTL; no orphan locks; grant-after-expiry correctly fails with re-book guidance. *GWT: Given an unpaid hold past TTL; When expiry and grant-after-expiry run; Then the slot frees within TTL with no orphan locks and grant-after-expiry fails with re-book guidance.*
+- Policy drill: ≥24 h cancel refunds in full; <24 h cancel and no-show refuse with policy citation; creator cancel auto-refunds with buyer notice. *GWT: Given ≥24 h, <24 h/no-show, or creator-cancel cases; When cancel runs; Then ≥24 h refunds in full, <24 h and no-show refuse with policy citation, and creator cancel auto-refunds with buyer notice.*
+- Link drill: non-`https:` meeting links rejected; signed reschedule/cancel tokens work without login and expire after the slot passes. *GWT: Given non-`https:` meeting links and signed reschedule/cancel tokens; When validated and used; Then non-`https:` links are rejected and signed tokens work without login, expiring after the slot passes.*
+- IDOR drill: buyer A booking operations against buyer B ids return 403; creator A cannot touch creator B availability. *GWT: Given buyer B ids and creator B availability; When buyer A or creator A attempts operations; Then booking operations return 403 and cross-creator availability edits are denied.*
 
 ## Out of scope
 

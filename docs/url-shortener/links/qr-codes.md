@@ -8,9 +8,9 @@ Define how every QR code in the product gets made: QR images encode short links 
 
 ## Users
 
-- Creator/operator: downloads a print-ready QR for a short link (campaign poster, packaging, event signage), picks size/format, reprints later with confidence it still scans.
-- Scanner (phone camera, any bank/wallet/camera app): points, lands on the short URL, follows the normal redirect + counting path.
-- Print vendor (indirect): receives files with quiet zones and contrast that survive real printing.
+- Creator/operator: *As a Creator/operator, I want to download a print-ready QR for a short link with size/format choice so that reprints still scan reliably.* Downloads a print-ready QR for a short link (campaign poster, packaging, event signage), picks size/format, reprints later with confidence it still scans.
+- Scanner (phone camera, any bank/wallet/camera app): *As a Scanner, I want to point at the code and land on the short URL so that the normal redirect + counting path follows.* Points, lands on the short URL, follows the normal redirect + counting path.
+- Print vendor (indirect): *As a Print vendor, I want to receive files with quiet zones and contrast so that real printing survives.* Receives files with quiet zones and contrast that survive real printing.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Define how every QR code in the product gets made: QR images encode short links 
 
 ## Acceptance criteria
 
-- Encode drill: every exported QR decodes to the short URL (never the destination); destination edit + reprint resolves to the new target; old prints follow the link's current state.
-- Scan drill: matrix of devices (iOS/Android native cameras + major bank/wallet scanners) × sizes × error levels — minimum-size exports scan at arm's length; below-floor requests refused with the reason stated.
-- Lifecycle drill: suspended/expired link's QR serves the same gone/suspended behavior as URL opens; no orphan resolves.
-- Contrast drill: below-floor palette requests rejected; all exported codes pass a contrast/scan-ability check in CI with reference images.
-- Bulk drill: 100-code event pack generates with unique per-location links, correct labels, and per-code stats separation.
+- Encode drill: every exported QR decodes to the short URL (never the destination); destination edit + reprint resolves to the new target; old prints follow the link's current state. *GWT: Given an exported QR for a short URL; When decoded and when the destination is edited with reprint; Then every code decodes to the short URL (never the destination), reprints resolve to the new target, and old prints follow the link's current state.*
+- Scan drill: matrix of devices (iOS/Android native cameras + major bank/wallet scanners) × sizes × error levels — minimum-size exports scan at arm's length; below-floor requests refused with the reason stated. *GWT: Given the device × size × error-level matrix; When minimum-size exports are scanned or below-floor exports are requested; Then minimum-size exports scan at arm's length and below-floor requests are refused with the reason stated.*
+- Lifecycle drill: suspended/expired link's QR serves the same gone/suspended behavior as URL opens; no orphan resolves. *GWT: Given a suspended/expired link; When its QR is opened; Then it serves the same gone/suspended behavior as URL opens with no orphan resolves.*
+- Contrast drill: below-floor palette requests rejected; all exported codes pass a contrast/scan-ability check in CI with reference images. *GWT: Given a below-floor palette request; When validation and CI checks run; Then the request is rejected and all exported codes pass the contrast/scan-ability check with reference images.*
+- Bulk drill: 100-code event pack generates with unique per-location links, correct labels, and per-code stats separation. *GWT: Given a 100-code event-pack request; When generation completes; Then it has unique per-location links, correct labels, and per-code stats separation.*
 
 ## Out of scope
 

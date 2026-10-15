@@ -8,9 +8,9 @@ Give creators link.me-style AI design help — theme picks, bio polish, link ord
 
 ## Users
 
-- Creator: asks for design help, previews suggestions, accepts or discards each one.
-- Visitor: sees only human-approved output; never AI-experimental markup.
-- Platform (cost control): every generation draws from a capped budget shared with P3-3 AI credits.
+- Creator: *As a Creator, I want to ask for design help and preview each suggestion so that I can accept or discard theme picks, bio polish, and link-ordering help without custom code.* Asks for design help, previews suggestions, accepts or discards each one.
+- Visitor: *As a Visitor, I want to see only human-approved output so that no AI-experimental markup ever reaches the public page.* Sees only human-approved output; never AI-experimental markup.
+- Platform (cost control): *As a Platform cost controller, I want every generation to draw from a capped shared budget so that design assistance shares P3-3 AI credits without unbounded cost.* Every generation draws from a capped budget shared with P3-3 AI credits.
 
 ## Functional requirements
 
@@ -29,12 +29,12 @@ Give creators link.me-style AI design help — theme picks, bio polish, link ord
 
 ## Acceptance criteria
 
-- Guardrail drill: adversarial prompt demanding custom CSS/JS/font-URL returns only gallery-valid suggestions or a refusal; any output failing API validators never renders as applicable.
-- Human-loop drill: no suggestion reaches the public page without an explicit Apply + publish; audit shows actor = user on every applied change.
-- Quota drill: exhausted credits block generation with a clear upsell-safe message while manual editing stays fully functional.
-- Injection drill: bio text containing instruction-override attempts (`ignore previous instructions…`) is treated as data — system behavior unchanged, output stays within the closed suggestion set.
-- IDOR probe: user A assist calls scoped to user B `profile_id` return 403; RLS denies at DB on apply.
-- Cost drill: per-user/day KV caps hold under burst; generation latency never blocks dashboard render (async with progress state).
+- Guardrail drill: adversarial prompt demanding custom CSS/JS/font-URL returns only gallery-valid suggestions or a refusal; any output failing API validators never renders as applicable. *GWT: Given an adversarial prompt demanding custom CSS/JS/font-URL; When the assistant responds; Then it returns only gallery-valid suggestions or a refusal and validator-failing output never renders as applicable.*
+- Human-loop drill: no suggestion reaches the public page without an explicit Apply + publish; audit shows actor = user on every applied change. *GWT: Given a staged suggestion; When publish is evaluated; Then nothing reaches the public page without explicit Apply + publish and audit shows actor = user.*
+- Quota drill: exhausted credits block generation with a clear upsell-safe message while manual editing stays fully functional. *GWT: Given exhausted AI credits; When generation is requested; Then it is blocked with a clear message while manual editing stays fully functional.*
+- Injection drill: bio text containing instruction-override attempts (`ignore previous instructions…`) is treated as data — system behavior unchanged, output stays within the closed suggestion set. *GWT: Given bio text containing instruction-override attempts; When processed; Then it is treated as data with system behavior unchanged and output stays within the closed suggestion set.*
+- IDOR probe: user A assist calls scoped to user B `profile_id` return 403; RLS denies at DB on apply. *GWT: Given user A assist calls scoped to user B `profile_id`; When evaluated; Then the API returns 403 and RLS denies at DB on apply.*
+- Cost drill: per-user/day KV caps hold under burst; generation latency never blocks dashboard render (async with progress state). *GWT: Given a per-user/day burst; When generations run; Then KV caps hold and generation latency never blocks dashboard render.*
 
 ## Out of scope
 

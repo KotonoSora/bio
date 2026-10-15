@@ -8,9 +8,9 @@ Define how creators earn from ads on their pages and get paid: opt-in economics,
 
 ## Users
 
-- Creator: opts in, watches estimated vs confirmed earnings, meets a threshold, receives payout with a statement.
-- Program operator: sets rev-share rates, runs payout cycles, handles invalid-traffic clawbacks fairly.
-- Finance: books rev-share expense off the same ledger pattern as affiliate commissions.
+- Creator: *As a Creator, I want to opt in, watch estimated vs confirmed earnings, meet a threshold, receive payout with a statement so that creators earn from ads on their pages and get paid as defined here.* opts in, watches estimated vs confirmed earnings, meets a threshold, receives payout with a statement.
+- Program operator: *As a Program operator, I want to set rev-share rates, run payout cycles, handle invalid-traffic clawbacks fairly so that creators earn from ads on their pages and get paid as defined here.* sets rev-share rates, runs payout cycles, handles invalid-traffic clawbacks fairly.
+- Finance: *As a Finance, I want to book rev-share expense off the same ledger pattern as affiliate commissions so that creators earn from ads on their pages and get paid as defined here.* books rev-share expense off the same ledger pattern as affiliate commissions.
 
 ## Functional requirements
 
@@ -21,6 +21,8 @@ Define how creators earn from ads on their pages and get paid: opt-in economics,
 5. Transparency minimums: creator dashboard shows estimated vs confirmed balances, per-flight breakdown, filter-exclusion counts affecting their pages, threshold progress, and payout history with references. "Why did my earnings drop" must be answerable from the dashboard (clawback lines carry reasons + evidence links).
 6. Plan interplay: ad earnings never gate features and feature gates never force ads — free creators earn the same share formula as pro (no plan-based rate discrimination in v1); payout thresholds identical across plans.
 
+- 7. Scale/consistency NFR (derived from rules 2-3 above): daily estimates close to confirmed on flight/invoice or monthly close and settle in audited partitioned payout runs that reconcile event to aggregate to ledger to statement; quarantined traffic never accrues — no new thresholds and no new rails.
+
 ## Data / API touches
 
 - New table `creator_ad_earnings` (schema above) + reuse of shared payout-batch infrastructure (earner-type partitioned). RLS: creators read own lines/statements; batch execution restricted to finance-ops role. All PG via `worker/db/*`.
@@ -30,10 +32,15 @@ Define how creators earn from ads on their pages and get paid: opt-in economics,
 ## Acceptance criteria
 
 - Earnings drill: counted events accrue estimates; flight/month close flips them confirmed; payout cycle pays with matching statements; numbers reconcile event→aggregate→ledger→statement end to end.
+  *GWT: Given Earnings drill: counted events accrue estimates; flight/month close flips them confirmed; payout cycle pays with matching statements; numbers reconcile event; When the transition executes; Then aggregate→ledger→statement end to end.*
 - Clawback drill: post-close invalid-traffic finding moves only the tainted share to `clawed_back` with notice + evidence; legitimate earnings untouched and still payable.
+  *GWT: Given Clawback drill context; When post-close invalid-traffic finding moves only the tainted share to `clawed_back` with notice + evidence; Then legitimate earnings untouched and still payable.*
 - Self-farming drill: creator inflating own slots voids tainted earnings, triggers the warn/restrict ladder, preserves legitimate history.
+  *GWT: Given Self-farming drill context; When the checked action occurs; Then creator inflating own slots voids tainted earnings, triggers the warn/restrict ladder, preserves legitimate history.*
 - Shared-runner drill: affiliate + creator lines settle in one audited batch run with correct per-earner statements and no cross-visibility.
+  *GWT: Given Shared-runner drill context; When the checked action occurs; Then affiliate + creator lines settle in one audited batch run with correct per-earner statements and no cross-visibility.*
 - Auth probe: creator A reading creator B earnings → 403; RLS denies cross-creator rows.
+  *GWT: Given Auth probe: creator A reading creator B earnings; When the transition executes; Then 403; RLS denies cross-creator rows.*
 
 ## Out of scope
 

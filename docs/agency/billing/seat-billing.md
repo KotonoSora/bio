@@ -8,9 +8,9 @@ Charge agencies fairly for exactly the team they field: per-seat subscriptions w
 
 ## Users
 
-- Agency owner (billing contact): sees seat count, per-seat price, upcoming total; adds/removes seats; pays; reads invoices.
-- Manager/member: consumes a seat; sees plan status but never billing instruments.
-- Finance/support: resolves "why was I charged X?" from seat-history evidence alone.
+- Agency owner (billing contact): *As an Agency owner, I want to see seat count, per-seat price, and upcoming total, add/remove seats, pay, and read invoices so that every charge traces to a dated seat count.* Sees seat count, per-seat price, upcoming total; adds/removes seats; pays; reads invoices.
+- Manager/member: *As a Manager/member, I want to consume a seat and see plan status without touching billing instruments so that staffing stays separated from payment.* Consumes a seat; sees plan status but never billing instruments.
+- Finance/support: *As a Finance/support, I want to resolve "why was I charged X?" from seat-history evidence alone so that no invoice is a surprise.* Resolves "why was I charged X?" from seat-history evidence alone.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Charge agencies fairly for exactly the team they field: per-seat subscriptions w
 
 ## Acceptance criteria
 
-- Count drill: fixture roster churn (invite/accept/suspend/remove across a month) reproduces hand-computed billable seats from snapshots exactly; clients never counted; pending invites unbilled.
-- Pro-rate drill: mid-cycle seat add/remove yields exact day-weighted lines (method as decided in Q1); lapse freezes staff powers while client pages stay live (verified under the same session).
-- Transfer drill: billing-contact change requires both confirmations; single-sided attempt leaves billing untouched + audit.
-- Dispute drill: any invoice line traces to dated snapshots in one hop from the overview screen; closed-period invoices immutable under later roster changes.
-- IDOR drill: non-owner seat/billing reads and all billing writes return 403; managers see counts-only.
+- Count drill: fixture roster churn (invite/accept/suspend/remove across a month) reproduces hand-computed billable seats from snapshots exactly; clients never counted; pending invites unbilled. *GWT: Given fixture roster churn across a month; When billable seats are computed from snapshots; Then they match hand-computed counts exactly with clients never counted and pending invites unbilled.*
+- Pro-rate drill: mid-cycle seat add/remove yields exact day-weighted lines (method as decided in Q1); lapse freezes staff powers while client pages stay live (verified under the same session). *GWT: Given a mid-cycle seat add/remove or a lapsed payment; When billing or powers evaluate; Then day-weighted lines result per the decided method and lapse freezes staff powers while client pages stay live.*
+- Transfer drill: billing-contact change requires both confirmations; single-sided attempt leaves billing untouched + audit. *GWT: Given a billing-contact transfer with one or both confirmations; When attempted; Then both confirmations change billing while a single-sided attempt leaves billing untouched plus audit.*
+- Dispute drill: any invoice line traces to dated snapshots in one hop from the overview screen; closed-period invoices immutable under later roster changes. *GWT: Given any invoice line; When traced from the overview screen; Then it reaches dated snapshots in one hop and closed-period invoices stay immutable under later roster changes.*
+- IDOR drill: non-owner seat/billing reads and all billing writes return 403; managers see counts-only. *GWT: Given non-owner seat/billing reads or any billing writes; When requested; Then 403 results except managers see counts-only.*
 
 ## Out of scope
 

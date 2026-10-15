@@ -8,9 +8,17 @@ Give implementers, reviewers, and support one map of the monetize module: which 
 
 ## Users
 
-- Buyer: buys plans/products and requests refunds on any eligible rail with one consistent experience.
-- Implementer: finds the owning doc for any money question (selection vs session vs grant vs refund) without guessing.
-- Support/ops/finance: traces any order by `orderCode` across provider references, ledger rows, receipts, and audit trail.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Buy plans/products and request refunds on any eligible rail | One consistent experience across rails |
+| Implementer | Find the owning doc for any money question (selection vs session vs grant vs refund) | No guessing between minors |
+| Support/ops/finance | Trace any order by `orderCode` across provider references, ledger rows, receipts, and audit trail | Uses one map of the monetize module |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Buy plans/products and request refunds on any eligible rail | I have one consistent experience | Must |
+| US-02 | Implementer | Find the owning doc for any money question (selection vs session vs grant vs refund) | I do not guess | Must |
+| US-03 | Support/ops/finance | Trace any order by `orderCode` across provider references, ledger rows, receipts, and audit trail | I use one map of the monetize module | Must |
 
 ## Functional requirements
 
@@ -28,10 +36,12 @@ Give implementers, reviewers, and support one map of the monetize module: which 
 
 ## Acceptance criteria
 
-- Registry drill: all eight member checkout paths reachable exactly as specified; no ninth rail offerable without a specified minor + registry entry.
-- No-default drill: omitted `provider` on plan/product checkout → 422 with eligible list; unknown code → 422; refund routing reads stored `provider` only; grep gate finds no hardcoded provider default or fallback ordering in checkout/refund/plan-purchase code.
-- End-to-end drill per rail (sandbox): quote = charged = receipt amounts to the VND; single `orders` row on double-submit; verified grant exactly once (replay is a no-op); ledger visible to all gates within SLA; expiry/cancel races safe; full refund revokes per rule with re-grant refused.
-- Baseline: IDOR 403 cross-user with RLS deny at DB (S-1/S-6); error/quote/history rendering XSS-stripped with CSP holding (S-2); anonymous money endpoints Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation per P5-4 (avatar upload N/A to money flows — owned by P1b-4).
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Registry drill: all eight member checkout paths reachable exactly as specified; no ninth rail offerable without a specified minor + registry entry | The eight-member registry as specified | Each member checkout path is reached and a ninth rail without a specified minor + registry entry is offered | The eight paths are reachable and the ninth rail is not offerable |
+| AC-02 | No-default drill: omitted `provider` on plan/product checkout returns 422 with eligible list; unknown code returns 422; refund routing reads stored `provider` only; grep gate finds no hardcoded provider default or fallback ordering in checkout/refund/plan-purchase code | A plan/product checkout with omitted or unknown `provider` | Checkout is created and refund routing runs and the grep gate scans checkout/refund/plan-purchase code | Omitted/unknown codes return 422 with the eligible list, routing reads the stored `provider` only, and the grep gate finds no hardcoded default or fallback ordering |
+| AC-03 | End-to-end drill per rail (sandbox): quote equals charged equals receipt amounts to the VND; single `orders` row on double-submit; verified grant exactly once; ledger visible within SLA; expiry/cancel races safe; full refund revokes per rule with re-grant refused | A sandbox order on any rail | Quote, double-submit, verified grant with replay, gate reads, expiry/cancel races, and full refund are exercised | Amounts match to the VND, a single `orders` row exists, grant applies exactly once, ledger is visible within SLA, races resolve safely, and refund revokes per rule with re-grant refused |
+| AC-04 | Baseline probe: IDOR 403 cross-user with RLS deny at DB (S-1/S-6); error/quote/history rendering XSS-stripped with CSP holding (S-2); anonymous money endpoints Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation per P5-4 (avatar upload N/A to money flows, owned by P1b-4) | Cross-user access, rendered error/quote/history, anonymous money endpoints, and repo/logs/bundles under secrets grep | IDOR, XSS, abuse, and secrets probes run | Cross-user access returns 403 with RLS deny (S-1/S-6), rendering is XSS-stripped with CSP holding (S-2), anonymous endpoints are Turnstile + WAF throttled (S-5), and secrets grep stays clean with quarterly rotation per P5-4 |
 
 ## Out of scope
 

@@ -8,9 +8,17 @@ State once, enforce everywhere: the non-negotiable security rules for all eight 
 
 ## Users
 
-- Implementer (any provider path): the checklist that must hold before the path ships.
-- Reviewer/auditor: one document to verify instead of eight overlapping sections.
-- Buyer: protected by uniform guarantees no matter which rail they pay on.
+| Role | Permissions | Notes |
+|---|---|---|
+| Implementer (any provider path) | Follow the checklist that must hold before the path ships | One normative baseline enforced everywhere |
+| Reviewer/auditor | Verify one document instead of eight overlapping sections | Pre-deploy probes verify each provider uniformly |
+| Buyer | Rely on uniform guarantees on any rail | Protected on all eight payment paths |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Implementer on any provider path | Follow the checklist that must hold before the path ships | One normative baseline is enforced everywhere | Must |
+| US-02 | Reviewer/auditor | Verify one document instead of eight overlapping sections | Pre-deploy probes verify each provider uniformly | Must |
+| US-03 | Buyer | Have uniform guarantees no matter which rail I pay on | I am protected on all eight payment paths | Must |
 
 ## Functional requirements
 
@@ -30,11 +38,13 @@ State once, enforce everywhere: the non-negotiable security rules for all eight 
 
 ## Acceptance criteria
 
-- Per-provider probe battery green on all eight paths (matrix recorded, not spot-checked): IDOR 403s, bad-signature rejections, tampered-amount no-grants, replay no-ops, double-submit single rows, cancel/expiry races safe.
-- Secrets grep across repo, logs, and client bundles: zero hits (keys, certs, `whsec_`, tokens, PAN patterns).
-- WAF + rate-rule simulation: abusive bursts throttled, valid checkout traffic unaffected, per-IP/email buckets verified.
-- Audit completeness drill: random sample of grants/refunds/disputes/kill-switch flips — every one has its audit entry with actor/action/target.
-- Rotation drill (quarterly, with P5): all money secrets rotated without downtime; old credentials dead.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Per-provider probe battery green on all eight paths (matrix recorded, not spot-checked): IDOR 403s, bad-signature rejections, tampered-amount no-grants, replay no-ops, double-submit single rows, cancel/expiry races safe | All eight provider paths with the probe battery | IDOR, bad-signature, tampered-amount, replay, double-submit, and cancel/expiry-race probes run | IDOR returns 403, bad signatures reject, tampered amounts grant nothing, replays are no-ops, double-submits yield single rows, and races resolve safely |
+| AC-02 | Secrets grep across repo, logs, and client bundles: zero hits (keys, certs, `whsec_`, tokens, PAN patterns) | Repo, logs, and client bundles | The secrets grep runs | Zero hits for keys, certs, `whsec_`, tokens, and PAN patterns |
+| AC-03 | WAF + rate-rule simulation: abusive bursts throttled, valid checkout traffic unaffected, per-IP/email buckets verified | Abusive bursts and valid checkout traffic | WAF + rate-rule simulation runs | Abusive bursts are throttled, valid checkout traffic is unaffected, and per-IP/email buckets verify |
+| AC-04 | Audit completeness drill: random sample of grants/refunds/disputes/kill-switch flips; every one has its audit entry with actor/action/target | A random sample of grants/refunds/disputes/kill-switch flips | Audit completeness is checked | Every one has its audit entry with actor/action/target |
+| AC-05 | Rotation drill (quarterly, with P5): all money secrets rotated without downtime; old credentials dead | Money secrets due for quarterly rotation | All money secrets are rotated | Rotation completes without downtime and old credentials are dead |
 
 ## Out of scope
 

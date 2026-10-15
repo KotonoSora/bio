@@ -8,9 +8,9 @@ Answer "what should I charge?" with exact math: from base print cost, shipping e
 
 ## Users
 
-- Creator: prices merch confidently, compares tiers (does pro pay for itself at my volume?), saves scenarios.
-- Support: replays any quoted figure from saved inputs.
-- Finance: updates rate config; calculator reflects new rates without a deploy.
+- Creator: *As a Creator, I want to price merch, compare tiers, and save scenarios so that list prices carry exact math.* Prices merch confidently, compares tiers (does pro pay for itself at my volume?), saves scenarios.
+- Support: *As a Support, I want to replay any quoted figure from saved inputs so that price questions resolve exactly.* Replays any quoted figure from saved inputs.
+- Finance: *As a Finance, I want to update rate config so that the calculator reflects new rates without a deploy.* Updates rate config; calculator reflects new rates without a deploy.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Answer "what should I charge?" with exact math: from base print cost, shipping e
 
 ## Acceptance criteria
 
-- Math drill: fixture inputs reproduce hand-computed price/profit/margin exactly (integer-VND rounding verified at boundaries).
-- Rate-change drill: config bump alters new quotes only; saved scenarios and live prices unchanged until explicit republish (pinned `rate_version` verified).
-- Below-cost drill: reverse-mode price under total cost blocks publishing with the shortfall stated.
-- Tier drill: break-even units match hand computation from live plan prices; plan-price change moves the break-even line.
-- IDOR drill: user A scenario reads/writes against user B products return 403.
+- Math drill: fixture inputs reproduce hand-computed price/profit/margin exactly (integer-VND rounding verified at boundaries). *GWT: Given fixture inputs; When the quote runs; Then price/profit/margin reproduce hand computation exactly with integer-VND rounding at boundaries.*
+- Rate-change drill: config bump alters new quotes only; saved scenarios and live prices unchanged until explicit republish (pinned `rate_version` verified). *GWT: Given a rate-config bump with saved scenarios and live prices; When new quotes run; Then only new quotes change while saved scenarios and live prices stay unchanged until explicit republish with pinned `rate_version`.*
+- Below-cost drill: reverse-mode price under total cost blocks publishing with the shortfall stated. *GWT: Given a reverse-mode price under total cost; When publishing is attempted; Then publishing is blocked with the shortfall stated.*
+- Tier drill: break-even units match hand computation from live plan prices; plan-price change moves the break-even line. *GWT: Given live plan prices; When tier comparison runs; Then break-even units match hand computation and plan-price changes move the break-even line.*
+- IDOR drill: user A scenario reads/writes against user B products return 403. *GWT: Given user B products; When user A attempts scenario reads/writes; Then access returns 403.*
 
 ## Out of scope
 

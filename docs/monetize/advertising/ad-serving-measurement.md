@@ -8,9 +8,9 @@ Define how an ad gets chosen for a slot and how its performance is counted hones
 
 ## Users
 
-- Visitor: loads a page with an ad slot; the slot resolves in milliseconds or collapses gracefully.
-- Advertiser: reads flight reports (impressions, clicks, CTR) they can trust enough to renew.
-- Dispute reviewer: replays any billed event from stored evidence.
+- Visitor: *As a Visitor, I want to load a page with an ad slot; the slot resolves in milliseconds or collapse gracefully so that an ad gets chosen for a slot and how its performance is counted honestly as defined here.* loads a page with an ad slot; the slot resolves in milliseconds or collapses gracefully.
+- Advertiser: *As an Advertiser, I want to read flight reports (impressions, click, CTR) they can trust enough to renew so that an ad gets chosen for a slot and how its performance is counted honestly as defined here.* reads flight reports (impressions, clicks, CTR) they can trust enough to renew.
+- Dispute reviewer: *As a Dispute reviewer, I want to replay any billed event from stored evidence so that an ad gets chosen for a slot and how its performance is counted honestly as defined here.* replays any billed event from stored evidence.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Define how an ad gets chosen for a slot and how its performance is counted hones
 ## Acceptance criteria
 
 - Decision drill: eligibility matrix (window/placement/opt-in/category/caps) verified per combination; empty inventory collapses slots with zero layout shift.
+  *GWT: Given Decision drill context; When eligibility matrix (window/placement/opt-in/category/caps) verified per combination; Then empty inventory collapses slots with zero layout shift.*
 - Counting drill: refresh/double-click storms dedupe to one; bot traffic excluded per the decided posture; below-visibility impressions uncounted; click floods quarantined with billing aggregates clean.
+  *GWT: Given Counting drill context; When refresh/double-click storms dedupe to one; Then click floods quarantined with billing aggregates clean.*
 - Separation drill (under load): zero ad rows in creator analytics; zero creator rows in ad aggregates.
+  *GWT: Given Separation drill (under load) context; When zero ad rows in creator analytics; Then zero creator rows in ad aggregates.*
 - Dispute drill: any billed impression/click replayed from its evidence bundle; filter-exclusion report matches raw-minus-aggregate math.
+  *GWT: Given Dispute drill context; When any billed impression/click replayed from its evidence bundle; Then filter-exclusion report matches raw-minus-aggregate math.*
 - Outage drill: measurement downtime recovers via queue + sweep with no loss and no doubles.
+  *GWT: Given Outage drill context; When the checked action occurs; Then measurement downtime recovers via queue + sweep with no loss and no doubles.*
 - Auth probe: advertiser A reading advertiser B reports → 403; RLS denies cross-scope rows.
+  *GWT: Given Auth probe: advertiser A reading advertiser B reports; When the transition executes; Then 403; RLS denies cross-scope rows.*
 
 ## Out of scope
 

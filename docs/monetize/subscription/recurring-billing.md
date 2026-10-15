@@ -8,9 +8,17 @@ Define how native recurring charges work on rails that support them (Stripe subs
 
 ## Users
 
-- Pro subscriber on a recurring-capable rail: subscribes once, gets invoiced per term, updates payment method on failure, cancels cleanly.
-- Lapsed recurring payer: gets smart-retry + recovery messaging instead of instant downgrade.
-- Support/ops: cancels at provider and ledger together; retries or voids invoices within defined bounds.
+| Role | Permissions | Notes |
+|---|---|---|
+| Pro subscriber on a recurring-capable rail | Subscribe once, get invoiced per term, update payment method on failure, cancel cleanly | Plan experience matches one-shot renewals |
+| Lapsed recurring payer | Receive smart-retry + recovery messaging instead of instant downgrade | Restores good standing before grace starts |
+| Support/ops | Cancel at provider and ledger together; retry or void invoices within defined bounds | No half-cancel ever occurs |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Pro subscriber on a recurring-capable rail | Subscribe once, get invoiced per term, update payment method on failure, and cancel cleanly | The plan experience matches one-shot renewals | Must |
+| US-02 | Lapsed recurring payer | Get smart-retry + recovery messaging instead of instant downgrade | I can restore good standing before grace starts | Must |
+| US-03 | Support/ops | Cancel at provider and ledger together and retry or void invoices within defined bounds | No half-cancel ever occurs | Must |
 
 ## Functional requirements
 
@@ -29,11 +37,13 @@ Define how native recurring charges work on rails that support them (Stripe subs
 
 ## Acceptance criteria
 
-- Recurring drill (sandbox): subscribe → renewal invoice extends ledger exactly one term → card-failure triggers retries + banner (no instant downgrade) → recovery payment restores good standing → cancel runs service to term end with zero further invoices.
-- One-shot parity drill: same buyer journey on a bank rail shows identical plan states, banners, and downgrade behavior — rail-indistinguishable UX.
-- Provider-outage drill: failed provider calls during cancel/retry surface errors with ledger untouched (no half-cancels); reconciliation sweep converges afterward.
-- Amount-surprise drill: renewal invoice differing from catalog → held + alerted, never auto-accepted.
-- Auth probe: cross-user subscription operations → 403; RLS denies cross-user rows.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Recurring drill (sandbox): subscribe to renewal invoice extending ledger exactly one term to card-failure triggering retries + banner (no instant downgrade) to recovery payment restoring good standing to cancel running service to term end with zero further invoices | A sandbox recurring subscription | Subscribe, renewal invoice, card-failure, recovery payment, and cancel run | Renewal extends the ledger exactly one term, failure triggers retries + banner, recovery restores good standing, and cancel runs service to term end with zero further invoices |
+| AC-02 | One-shot parity drill: same buyer journey on a bank rail shows identical plan states, banners, and downgrade behavior with rail-indistinguishable UX | The same buyer journey on a bank rail | Plan states, banners, and downgrade are compared | They are identical with rail-indistinguishable UX |
+| AC-03 | Provider-outage drill: failed provider calls during cancel/retry surface errors with ledger untouched (no half-cancels); reconciliation sweep converges afterward | Failed provider calls during cancel/retry | Cancel/retry is attempted | Errors surface with ledger untouched and the reconciliation sweep converges afterward |
+| AC-04 | Amount-surprise drill: renewal invoice differing from catalog is held + alerted, never auto-accepted | A renewal invoice differing from catalog | Renewal is processed | It is held + alerted and never auto-accepted |
+| AC-05 | Auth probe: cross-user subscription operations return 403; RLS denies cross-user rows | Cross-user subscription operations | The operation is attempted | The API returns 403 and RLS denies cross-user rows |
 
 ## Out of scope
 

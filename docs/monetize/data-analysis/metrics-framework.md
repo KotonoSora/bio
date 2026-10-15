@@ -8,9 +8,9 @@ Fix each monetization metric's one true definition — formula, inputs, and edge
 
 ## Users
 
-- Operator/founder: quotes MRR, NRR, conversion, and churn knowing finance sees the identical figure.
-- Finance: closes books and board packs off versioned definitions with drill-down to ledger lines.
-- Analyst (future): builds new cuts without re-deciding what "active subscriber" means.
+- Operator/founder: *As an Operator/founder, I want to quote MRR, NRR, conversion, and churn knowing finance sees the identical figure so that each monetization metric's one true definition as defined here.* quotes MRR, NRR, conversion, and churn knowing finance sees the identical figure.
+- Finance: *As a Finance, I want to close books and board packs off versioned definitions with drill-down to ledger lines so that each monetization metric's one true definition as defined here.* closes books and board packs off versioned definitions with drill-down to ledger lines.
+- Analyst (future): *As an Analyst, I want to build new cuts without re-deciding what "active subscriber" means so that each monetization metric's one true definition as defined here.* builds new cuts without re-deciding what "active subscriber" means.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Fix each monetization metric's one true definition — formula, inputs, and edge
 ## Acceptance criteria
 
 - Fixture drill: hand-computed MRR/NRR/ARPU/conversion/refund-rate on a seeded ledger (trials, coupons, partials, disputes, grace) match library output exactly under the current version.
+  *GWT: Given Fixture drill context; When the checked action occurs; Then hand-computed MRR/NRR/ARPU/conversion/refund-rate on a seeded ledger (trials, coupons, partials, disputes, grace) match library output exactly under the current version.*
 - Dual-report drill: a redefined metric shows old-vs-new side by side for one overlap period; finance close names its version; history unrewritten.
+  *GWT: Given Dual-report drill context; When a redefined metric shows old-vs-new side by side for one overlap period; Then history unrewritten.*
 - Single-library drill: no dashboard ships KPI SQL outside the shared library (grep + review gate); a definition change propagates to all consumers without per-dashboard edits.
+  *GWT: Given Single-library drill context; When no dashboard ships KPI SQL outside the shared library (grep + review gate); Then a definition change propagates to all consumers without per-dashboard edits.*
 - Closed-period drill: post-close adjustments appear in the posting period with restatement notes; closed snapshots byte-identical.
+  *GWT: Given Closed-period drill context; When post-close adjustments appear in the posting period with restatement notes; Then closed snapshots byte-identical.*
 - Auth probe: non-ops roles on KPI endpoints → 403; earner-scoped callers see only their ledgers, never business KPIs.
+  *GWT: Given Auth probe: non-ops roles on KPI endpoints; When the transition executes; Then 403; earner-scoped callers see only their ledgers, never business KPIs.*
 
 ## Out of scope
 

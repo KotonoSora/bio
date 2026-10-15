@@ -8,9 +8,9 @@ Define who can earn cash for referring buyers, on what terms, and at what rates:
 
 ## Users
 
-- Affiliate (blogger, reviewer, community owner): enrolls, shares tracked links/codes, earns commission on referred paid orders.
-- Referred buyer: buys at normal catalog prices (affiliate cost borne by margin, never surcharged — stated on checkout-adjacent copy).
-- Program operator: approves affiliates, sets tiers, terminates abusers, answers "where is my commission".
+- Affiliate (blogger, reviewer, community owner): *As an Affiliate, I want to enroll, share tracked links/codes, earn commission on referred paid orders so that who can earn cash for referring buyers, on what terms, and at what rates as defined here.* enrolls, shares tracked links/codes, earns commission on referred paid orders.
+- Referred buyer: *As a Referred buyer, I want to buy at normal catalog prices (affiliate cost borne by margin, never surcharged — stated on checkout-adjacent copy) so that who can earn cash for referring buyers, on what terms, and at what rates as defined here.* buys at normal catalog prices (affiliate cost borne by margin, never surcharged — stated on checkout-adjacent copy).
+- Program operator: *As a Program operator, I want to approve affiliates, set tiers, terminate abusers, answer "where is my commission" so that who can earn cash for referring buyers, on what terms, and at what rates as defined here.* approves affiliates, sets tiers, terminates abusers, answers "where is my commission".
 
 ## Functional requirements
 
@@ -21,6 +21,8 @@ Define who can earn cash for referring buyers, on what terms, and at what rates:
 5. Program economics guardrail: total commission exposure per period is capped in config (percentage of referred net revenue); breaching the cap pauses new-affiliate payouts review, never silently underpays earned commissions.
 6. Relationship boundary: affiliates are independent referrers, not employees or resellers — no discounting authority, no support obligations, no sub-affiliate tiers in v1 (MLM-shaped structures explicitly excluded).
 
+- 7. Scale/consistency NFR (derived from rules 2 and 5 above): tiered rates stamp the per-order rate snapshot and keep current-month attributions on the prior rate; an exposure-cap breach pauses new-accrual review with earned balances intact — no retroactive rewrites and no new thresholds.
+
 ## Data / API touches
 
 - New tables `affiliates{id, user_id?, display_name, status, tier, payout_details_enc, terms_version}` + `commission_tiers{...versioned...}` with standard RLS posture (affiliates see only own rows; program config restricted to ops). Payout details encrypted at rest (same vault discipline as OAuth tokens in P4: never logged). All PG via `worker/db/*`.
@@ -30,11 +32,17 @@ Define who can earn cash for referring buyers, on what terms, and at what rates:
 ## Acceptance criteria
 
 - Enrollment drill: application → manual approval → active affiliate with attributable links/codes; auto-approval impossible (no code path).
+  *GWT: Given Enrollment drill: application; When the transition executes; Then manual approval → active affiliate with attributable links/codes; auto-approval impossible (no code path).*
 - Tier drill: volume threshold crossed mid-month steps next month's rate only; current-month attributions keep prior rate (auditable per-order rate stamp).
+  *GWT: Given Tier drill context; When volume threshold crossed mid-month steps next month's rate only; Then current-month attributions keep prior rate (auditable per-order rate stamp).*
 - Conduct drill: cookie-stuffing signal → suspension (attribution frozen, balance held) → upheld termination forfeits tainted earnings with notice + appeal log; legitimate history untouched without review.
+  *GWT: Given Conduct drill: cookie-stuffing signal; When the transition executes; Then suspension (attribution frozen, balance held) → upheld termination forfeits tainted earnings with notice + appeal log; legitimate history untouched without review.*
 - Buyer-price drill: referred checkout totals identical to direct totals for the same cart (margin-funded, never surcharged).
+  *GWT: Given Buyer-price drill context; When the checked action occurs; Then referred checkout totals identical to direct totals for the same cart (margin-funded, never surcharged).*
 - Cap drill: exposure cap breach pauses new accrual review with earned balances intact and visible.
+  *GWT: Given Cap drill context; When the checked action occurs; Then exposure cap breach pauses new accrual review with earned balances intact and visible.*
 - Auth probe: affiliate A reading affiliate B rows → 403; RLS denies cross-affiliate rows.
+  *GWT: Given Auth probe: affiliate A reading affiliate B rows; When the transition executes; Then 403; RLS denies cross-affiliate rows.*
 
 ## Out of scope
 

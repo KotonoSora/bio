@@ -8,9 +8,9 @@ Give builders the complete link.me capability list in one place, each item mappe
 
 ## Users
 
-- Business Analyst: scopes phases against the inventory without re-researching link.me.
-- Implementer: checks the parity mapping before adding or cutting scope in any link-to-bio doc.
-- Reviewer: verifies P1-exit parity claims item by item.
+- Business Analyst: *As a Business Analyst, I want to scope phases against the inventory so that link.me is not re-researched for every phase decision.* Scopes phases against the inventory without re-researching link.me.
+- Implementer: *As an Implementer, I want to check the parity mapping before adding or cutting scope so that no link-to-bio change silently breaks replication coverage.* Checks the parity mapping before adding or cutting scope in any link-to-bio doc.
+- Reviewer: *As a Reviewer, I want to verify P1-exit parity claims item by item so that replication scope is decided from evidence instead of memory.* Verifies P1-exit parity claims item by item.
 
 ## Functional requirements
 
@@ -42,11 +42,11 @@ Parity mapping — link.me capability → our spec → status (no new tables her
 
 ## Acceptance criteria
 
-- P1-exit parity checklist (all verifiable without link.me access): unlimited links + badge on free; link scheduler windows; animated-link + own-logo pro gates with server-side enforcement; basic→advanced→realtime analytics tiers with the stated quotas; QR = profile URL; verification badge + follower display + deep-link escape + mobile-first page present; link.me-FAQ question coverage — every P1 FAQ topic (add-to-profile, customize-look, analytics-learned, QR, schedule-posts) answerable from our specs.
-- P2-exit shop/leads checklist: POD merch listing (no inventory) + profit calculator, digital/paywall one-time delivery after paid order, course resume-last-lesson, tips-as-product, paid consultations with 24 h policy, fee schedule with quote = charged = ledger identity, leads capture + search + CSV with consent timestamps, custom domains verified + served.
+- P1-exit parity checklist (all verifiable without link.me access): unlimited links + badge on free; link scheduler windows; animated-link + own-logo pro gates with server-side enforcement; basic→advanced→realtime analytics tiers with the stated quotas; QR = profile URL; verification badge + follower display + deep-link escape + mobile-first page present; link.me-FAQ question coverage — every P1 FAQ topic (add-to-profile, customize-look, analytics-learned, QR, schedule-posts) answerable from our specs. *GWT: Given P1 exit without link.me access; When each checklist item is checked; Then unlimited links, scheduler windows, pro gates, analytics tiers, QR, badge, follower display, deep-link escape, mobile-first page, and FAQ coverage are present as stated.*
+- P2-exit shop/leads checklist: POD merch listing (no inventory) + profit calculator, digital/paywall one-time delivery after paid order, course resume-last-lesson, tips-as-product, paid consultations with 24 h policy, fee schedule with quote = charged = ledger identity, leads capture + search + CSV with consent timestamps, custom domains verified + served. *GWT: Given P2 exit; When each shop/leads item is checked; Then POD listing, profit calculator, digital/paywall delivery, course resume, tips, consultations, fee identity, leads capture/search/CSV, and custom domains hold as stated.*
 - P4-entry readiness (designed, not built): publish (3 docs), automations (3 docs), agency (4 docs), campaigns/retargeting/ads each name their target scope with no placeholder code in earlier phases — grep gate for premature stubs.
 - Pricing-page fidelity: two tiers vs three, PayOS-first billing, yearly ≤44% ceiling + 7-day trial recommendations recorded in `account/plans/tier-presentation.md`, fee values pending finance — no merch-fee schedule copied without a provider.
-- Source freshness: re-fetch the four source URLs at each phase exit; deltas recorded as spec amendments, not silent drift.
+- Source freshness: re-fetch the four source URLs at each phase exit; deltas recorded as spec amendments, not silent drift. *GWT: Given each phase exit; When the four source URLs are re-fetched; Then deltas are recorded as spec amendments, not silent drift.*
 
 ## Out of scope
 

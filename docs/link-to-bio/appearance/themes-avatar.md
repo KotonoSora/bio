@@ -8,8 +8,8 @@ Define how a Link-to-Bio page looks without ever allowing user-supplied code. Th
 
 ## Users
 
-- Creator: picks a theme, uploads an avatar, previews the result.
-- Visitor: sees a fast, consistent page honoring the chosen tokens and avatar.
+- Creator: *As a Creator, I want to pick a theme and upload an avatar so that I can preview my visual identity without supplying custom code.* Picks a theme, uploads an avatar, previews the result.
+- Visitor: *As a Visitor, I want a fast, consistent page so that the chosen tokens and avatar render as the creator previewed.* Sees a fast, consistent page honoring the chosen tokens and avatar.
 
 ## Functional requirements
 
@@ -28,12 +28,12 @@ Define how a Link-to-Bio page looks without ever allowing user-supplied code. Th
 
 ## Acceptance criteria
 
-- Token switch restyles page end-to-end with zero user CSS fields present in UI, API, or DB schema.
-- Fake image (renamed script), SVG/HTML, and 5 MB uploads: all rejected; nothing lands in R2.
-- Uploaded avatar key is non-sequential and unguessable; direct R2 URL guessing does not enumerate users.
-- Pro-only theme requested by free plan via direct API call: rejected 403 (server-side gate, not UI-only).
-- Rapid upload abuse throttled (Turnstile + WAF/rate rules on anonymous-adjacent paths).
-- Publish after theme/avatar change: public page reflects the change within the cache-purge SLA (<2 min).
+- Token switch restyles page end-to-end with zero user CSS fields present in UI, API, or DB schema. *GWT: Given a token switch; When the page renders; Then it restyles end-to-end with zero user CSS fields present in UI, API, or DB schema.*
+- Fake image (renamed script), SVG/HTML, and 5 MB uploads: all rejected; nothing lands in R2. *GWT: Given a renamed-script fake image, SVG/HTML, or 5 MB upload; When validated; Then all are rejected and nothing lands in R2.*
+- Uploaded avatar key is non-sequential and unguessable; direct R2 URL guessing does not enumerate users. *GWT: Given an uploaded avatar key; When direct R2 URLs are guessed; Then the key is non-sequential and unguessable and guessing does not enumerate users.*
+- Pro-only theme requested by free plan via direct API call: rejected 403 (server-side gate, not UI-only). *GWT: Given a free plan requesting a pro-only theme via direct API call; When evaluated; Then it is rejected 403 by the server-side gate.*
+- Rapid upload abuse throttled (Turnstile + WAF/rate rules on anonymous-adjacent paths). *GWT: Given rapid upload abuse; When rate rules evaluate it; Then it is throttled via Turnstile + WAF/rate rules.*
+- Publish after theme/avatar change: public page reflects the change within the cache-purge SLA (<2 min). *GWT: Given a publish after a theme/avatar change; When the public page is read; Then it reflects the change within the cache-purge SLA (<2 min).*
 
 ## Out of scope
 

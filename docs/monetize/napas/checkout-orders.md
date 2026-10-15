@@ -8,9 +8,9 @@ Define how money starts moving over NAPAS rails: an authenticated checkout creat
 
 ## Users
 
-- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, scans the dynamic QR, pays in their bank app within the validity window.
-- Creator/seller: receives entitlement on matched-sync grant.
-- Support/ops: looks up an order by `orderCode` / rail order ref to reconcile disputes.
+- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): *As a Buyer, I want to start checkout, scan the dynamic QR, pay in their bank app within the validity window so that money starts moving over NAPAS rails as defined here.* starts checkout, scans the dynamic QR, pays in their bank app within the validity window.
+- Creator/seller: *As a Creator/seller, I want to receive entitlement on matched-sync grant so that money starts moving over NAPAS rails as defined here.* receives entitlement on matched-sync grant.
+- Support/ops: *As a Support/ops, I want to look up an order by `orderCode` / rail order ref to reconcile disputes so that money starts moving over NAPAS rails as defined here.* looks up an order by `orderCode` / rail order ref to reconcile disputes.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Define how money starts moving over NAPAS rails: an authenticated checkout creat
 ## Acceptance criteria
 
 - Checkout for plan and for product: `orders` row pending with unique `orderCode` + mapped `napas_order_ref`; QR scans to the exact amount with locked content.
+  *GWT: Given Checkout for plan and for product context; When `orders` row pending with unique `orderCode` + mapped `napas_order_ref`; Then QR scans to the exact amount with locked content.*
 - Amount tamper (client sends lower amount): server re-prices to canonical; mismatch logged.
+  *GWT: Given Amount tamper (client sends lower amount) context; When server re-prices to canonical; Then mismatch logged.*
 - UAT: provider test-callback simulation flips a test order through the sync path end-to-end.
+  *GWT: Given UAT context; When the checked action occurs; Then provider test-callback simulation flips a test order through the sync path end-to-end.*
 - Unpaid past the 15-minute window: order flips `expired`; the QR is dead and late payments follow the settlement doc (never auto-grant).
+  *GWT: Given Unpaid past the 15-minute window context; When order flips `expired`; Then the QR is dead and late payments follow the settlement doc (never auto-grant).*
 - IDOR probe: user A reading user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A reading user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no banking/API credentials in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no banking/API credentials in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

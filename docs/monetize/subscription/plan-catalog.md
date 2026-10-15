@@ -8,9 +8,17 @@ Define plans as versioned data instead of scattered constants: every plan, term,
 
 ## Users
 
-- Buyer: sees stable prices at checkout that always match what they are charged.
-- Ops/admin: introduces prices, terms, and quota changes without code deploys or breaking in-flight checkouts.
-- Checkout/grant/lifecycle code: prices from one catalog version per order, forever auditable.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | See stable prices at checkout that match the charge | Checkout prices from one catalog version per order |
+| Ops/admin | Introduce prices, terms, and quota changes without code deploys and without breaking in-flight checkouts | Every change stays auditable |
+| Checkout/grant/lifecycle code | Price from one catalog version per order | Displayed price and charged price cannot diverge; forever auditable |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | See stable prices at checkout that always match what I am charged | Checkout prices from one catalog version per order | Must |
+| US-02 | Ops/admin | Introduce prices, terms, and quota changes without code deploys or breaking in-flight checkouts | Every change stays auditable | Must |
+| US-03 | Checkout/grant/lifecycle code consumer | Price from one catalog version per order | Displayed price and charged price cannot diverge | Must |
 
 ## Functional requirements
 
@@ -29,11 +37,13 @@ Define plans as versioned data instead of scattered constants: every plan, term,
 
 ## Acceptance criteria
 
-- Price-change drill: publish v2, retire v1 — in-flight pendings charge v1, new checkouts show and charge v2, renewals quote v2 in reminder emails; zero mismatches.
-- Activation-guard drill: second `active` row for the same plan+term rejected; retire-with-pendings rejected until drained.
-- Downgrade-target drill: free row resolves as the universal fallback in lifecycle and gate code with no hardcoded constants (grep gate).
-- Yearly drill: single charge, `period_end` +12 months, reminders/ledger/AI quotas all follow the stamped version.
-- Auth probe: non-admin catalog writes → 403; public catalog readable without session; RLS denies cross-scope rows.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Price-change drill: publish v2, retire v1; in-flight pendings charge v1, new checkouts show and charge v2, renewals quote v2 in reminder emails; zero mismatches | v2 published and v1 retired | In-flight pendings, new checkouts, and renewals run | In-flight pendings charge v1, new checkouts show and charge v2, and renewals quote v2 in reminder emails with zero mismatches |
+| AC-02 | Activation-guard drill: second `active` row for the same plan+term rejected; retire-with-pendings rejected until drained | An existing `active` row for a plan+term and pending orders on a version | A second activation or retirement is attempted | The second `active` row is rejected and retire-with-pendings is rejected until drained |
+| AC-03 | Downgrade-target drill: free row resolves as the universal fallback in lifecycle and gate code with no hardcoded constants (grep gate) | Lifecycle and gate code resolving the downgrade target | The free row is looked up and the grep gate scans for hardcoded constants | It resolves as the universal fallback with no hardcoded constants |
+| AC-04 | Yearly drill: single charge, `period_end` +12 months, reminders/ledger/AI quotas all follow the stamped version | A yearly term purchase | Grant completes | A single charge applies, `period_end` is +12 months, and reminders/ledger/AI quotas follow the stamped version |
+| AC-05 | Auth probe: non-admin catalog writes return 403; public catalog readable without session; RLS denies cross-scope rows | A non-admin catalog write and public catalog read | Both are attempted | Writes return 403, public reads succeed without session, and RLS denies cross-scope rows |
 
 ## Out of scope
 

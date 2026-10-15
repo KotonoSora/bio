@@ -8,9 +8,9 @@ Give the one honest answer to "are there fees when I sell?": a public per-tier f
 
 ## Users
 
-- Seller: reads the schedule, sees exact fees before each sale, compares tiers at a glance.
-- Buyer: pays the displayed total — fees are seller-side and never added opaquely at the last step (any buyer-visible service charge is a separate line item, not a silent bump).
-- Finance/support: explains any historical figure from pinned rate versions.
+- Seller: *As a Seller, I want to read the schedule, see exact fees before each sale, and compare tiers so that fee surprises never occur.* Reads the schedule, sees exact fees before each sale, compares tiers at a glance.
+- Buyer: *As a Buyer, I want to pay the displayed total so that fees never add opaquely at the last step.* Pays the displayed total — fees are seller-side and never added opaquely at the last step (any buyer-visible service charge is a separate line item, not a silent bump).
+- Finance/support: *As a Finance/support, I want to explain any historical figure from pinned rate versions so that close stays reproducible.* Explains any historical figure from pinned rate versions.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Give the one honest answer to "are there fees when I sell?": a public per-tier f
 
 ## Acceptance criteria
 
-- Identity drill: fixture sales reconcile quote = charged = ledger to the VND across tiers × kinds × rate versions.
-- Display drill: shopper-facing totals equal payable amounts (no last-step additions); seller view decomposes gross → fees → net exactly.
-- Version drill: mid-checkout tier change leaves the open checkout priced; rate publish affects only new checkouts; closed-period figures immutable.
-- Copy drill: pricing page, dashboard summary, and checkout lines render identical percentages from the same config version (drift test in CI).
-- Free/tip drill: zero-price orders carry zero fees; tip orders carry the standard schedule (verified in ledger lines).
+- Identity drill: fixture sales reconcile quote = charged = ledger to the VND across tiers × kinds × rate versions. *GWT: Given fixture sales across tiers × kinds × rate versions; When quote, charge, and ledger run; Then all three reconcile to the VND.*
+- Display drill: shopper-facing totals equal payable amounts (no last-step additions); seller view decomposes gross → fees → net exactly. *GWT: Given a checkout with fee lines; When shopper and seller views render; Then shopper totals equal payable amounts with no last-step additions and the seller view decomposes gross → fees → net exactly.*
+- Version drill: mid-checkout tier change leaves the open checkout priced; rate publish affects only new checkouts; closed-period figures immutable. *GWT: Given a mid-checkout tier change and a rate publish; When pricing applies; Then the open checkout keeps its price, only new checkouts use the new rate, and closed-period figures stay immutable.*
+- Copy drill: pricing page, dashboard summary, and checkout lines render identical percentages from the same config version (drift test in CI). *GWT: Given the same config version; When pricing page, dashboard summary, and checkout lines render; Then they show identical percentages (drift test in CI).*
+- Free/tip drill: zero-price orders carry zero fees; tip orders carry the standard schedule (verified in ledger lines). *GWT: Given zero-price and tip orders; When ledger lines build; Then zero-price orders carry zero fees and tip orders carry the standard schedule.*
 
 ## Out of scope
 

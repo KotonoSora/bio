@@ -8,8 +8,8 @@ Define the public, crawler-visible Link-to-Bio page: server-rendered HTML per us
 
 ## Users
 
-- Visitor / search crawler / link-preview fetcher: cold-loads `/:username` with no JS.
-- Creator: publishes edits and expects them live within the purge SLA.
+- Visitor / search crawler / link-preview fetcher: *As a Visitor, crawler, or link-preview fetcher, I want to cold-load `/:username` with no JS so that the same content and tags render for browsers and crawlers alike.* Cold-loads `/:username` with no JS.
+- Creator: *As a Creator, I want published edits live within the purge SLA so that updates reach the edge cache without waiting on the SPA.* Publishes edits and expects them live within the purge SLA.
 
 ## Functional requirements
 
@@ -28,12 +28,12 @@ Define the public, crawler-visible Link-to-Bio page: server-rendered HTML per us
 
 ## Acceptance criteria
 
-- `curl` (no JS) on `/:username` and `/:username/cv`: returns 200 with title/meta/canonical/OG/Twitter/JSON-LD and visible block text; SPA fallback `index.html` without tags is a failure.
-- `/assets/*` still serves static files directly; SPA fallback only under `/app/*`.
-- Publish → public change visible in <2 min; cache-hit ratio >95% at the P1 k6 gate (10k concurrent public reads, p95 <500 ms).
-- Stampede test (many concurrent cold misses on one slug): single render executed, rest coalesced via KV lock.
-- `sitemap.xml` contains only `is_public=1` slugs; `robots.txt` served from Worker.
-- Username-change 301 (defined in `profile/public-profile.md`) preserved through the cache layer.
+- `curl` (no JS) on `/:username` and `/:username/cv`: returns 200 with title/meta/canonical/OG/Twitter/JSON-LD and visible block text; SPA fallback `index.html` without tags is a failure. *GWT: Given a no-JS `curl` on `/:username` and `/:username/cv`; When the response is inspected; Then it returns 200 with title/meta/canonical/OG/Twitter/JSON-LD and visible block text.*
+- `/assets/*` still serves static files directly; SPA fallback only under `/app/*`. *GWT: Given requests to `/assets/*` and `/app/*`; When routed; Then static files serve directly and SPA fallback applies only under `/app/*`.*
+- Publish → public change visible in <2 min; cache-hit ratio >95% at the P1 k6 gate (10k concurrent public reads, p95 <500 ms). *GWT: Given a publish and 10k concurrent public reads; When cache and latency are measured; Then the change is visible in <2 min with cache-hit ratio >95% and p95 <500 ms.*
+- Stampede test (many concurrent cold misses on one slug): single render executed, rest coalesced via KV lock. *GWT: Given many concurrent cold misses on one slug; When the KV lock coalesces them; Then a single render executes.*
+- `sitemap.xml` contains only `is_public=1` slugs; `robots.txt` served from Worker. *GWT: Given public and private profiles; When `sitemap.xml` and `robots.txt` are fetched; Then the sitemap contains only `is_public=1` slugs and `robots.txt` serves from the Worker.*
+- Username-change 301 (defined in `profile/public-profile.md`) preserved through the cache layer. *GWT: Given a username change; When the old slug is requested through the cache layer; Then it returns the defined 301.*
 
 ## Out of scope
 

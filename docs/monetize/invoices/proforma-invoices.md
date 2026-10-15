@@ -8,9 +8,17 @@ Let buyers produce paperwork BEFORE money moves: a proforma quote (plan/product,
 
 ## Users
 
-- Buyer (especially team/company buyers): downloads a quote, gets approval, then pays the quoted amount within its validity.
-- Finance requester: needs vendor details, amounts, and a reference number on company letterhead-style output.
-- Support/ops: traces a paid transfer back to its proforma when contents differ slightly.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer (especially team/company buyers) | Download a quote, get approval, then pay the quoted amount within its validity | Removes the stall at checkout on bank-transfer rails |
+| Finance requester | Need vendor details, amounts, and a reference number on company letterhead-style output | Routes paperwork through internal approval |
+| Support/ops | Trace a paid transfer back to its proforma when contents differ slightly | Binds the eventual transfer to a pre-registered expectation |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Download a quote, get approval, then pay the quoted amount within its validity | I can route paperwork through internal approval before money moves | Must |
+| US-02 | Finance requester | Have vendor details, amounts, and a reference number on company letterhead-style output | I can approve the purchase internally | Must |
+| US-03 | Support/ops | Trace a paid transfer back to its proforma when contents differ slightly | The transfer stays bound to a pre-registered expectation | Must |
 
 ## Functional requirements
 
@@ -29,11 +37,13 @@ Let buyers produce paperwork BEFORE money moves: a proforma quote (plan/product,
 
 ## Acceptance criteria
 
-- Quote-to-payment drill: issue proforma → pay full quoted amount within validity via two different rails → both orders link the same proforma, single grant each, amounts match to the dong.
-- Re-price drill: catalog price changes mid-validity → checkout charges the new amount, proforma marked superseded, one-click reissue offered; no silent over/under-charge.
-- Expiry drill: lapsed proforma converts nothing; payment against its ref follows the rail's normal unmatched-transfer flow.
-- Duplicate-request drill: second open-scope request returns the existing proforma, no duplicate rows.
-- IDOR probe: user A reading user B proformas → 403; RLS denies cross-user rows.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Quote-to-payment drill: issue proforma to pay full quoted amount within validity via two different rails; both orders link the same proforma, single grant each, amounts match to the dong | An issued proforma within validity | Full quoted amount is paid via two different rails | Both orders link the same proforma with a single grant each and amounts matching to the dong |
+| AC-02 | Re-price drill: catalog price changes mid-validity; checkout charges the new amount, proforma marked superseded, one-click reissue offered; no silent over/under-charge | A catalog price change mid-validity | Checkout runs | Checkout charges the new amount, the proforma is marked superseded, one-click reissue is offered, and no silent over/under-charge occurs |
+| AC-03 | Expiry drill: lapsed proforma converts nothing; payment against its ref follows the rail's normal unmatched-transfer flow | A lapsed proforma | Payment against its ref is made | It converts nothing and follows the rail's normal unmatched-transfer flow |
+| AC-04 | Duplicate-request drill: second open-scope request returns the existing proforma, no duplicate rows | An open proforma in scope and a second request | The second request runs | It returns the existing proforma with no duplicate rows |
+| AC-05 | IDOR probe: user A reading user B proformas returns 403; RLS denies cross-user rows | User A reading user B proformas | The read is attempted | The API returns 403 and RLS denies cross-user rows |
 
 ## Out of scope
 

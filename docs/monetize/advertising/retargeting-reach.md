@@ -8,9 +8,9 @@ Let attention compound: visitors who viewed a product but did not buy, readers w
 
 ## Users
 
-- Creator/advertiser (direct deal): builds "viewed X, didn't buy in 7 days," watches segment size live, aims inventory or consented email at it, reads lift.
-- Visitor: sees relevant onsite placements or an opted-in reminder — never cross-site pursuit, never unexplained targeting.
-- Privacy reviewer: verifies each segment's consent basis and first-party boundary before it serves.
+- Creator/advertiser (direct deal): *As a Creator/advertiser, I want to build "viewed X, didn't buy in 7 days," watch segment size live, aim inventory or consented email at it, read lift so that attention compounds as defined here.* builds "viewed X, didn't buy in 7 days," watches segment size live, aims inventory or consented email at it, reads lift.
+- Visitor: *As a Visitor, I want to see relevant onsite placements or an opted-in reminder — never cross-site pursuit, never unexplained targeting so that attention compounds as defined here.* sees relevant onsite placements or an opted-in reminder — never cross-site pursuit, never unexplained targeting.
+- Privacy reviewer: *As a Privacy reviewer, I want to verify each segment's consent basis and first-party boundary before it serves so that attention compounds as defined here.* verifies each segment's consent basis and first-party boundary before it serves.
 
 ## Functional requirements
 
@@ -21,6 +21,9 @@ Let attention compound: visitors who viewed a product but did not buy, readers w
 5. Frequency + fatigue: per-segment contact caps (email + onsite impression caps per recipient per week, creator-tunable within platform ceilings); exclusion segments (past buyers excluded from acquisition nudges by default); every retargeted message carries its cause ("You left this in checkout") and one-click stop.
 6. Measurement: holdout-first reporting (each retargeting flight reserves a no-contact control slice; lift reported vs control, not vs zero); segment reports show size, reach, conversion, and suppression counts. No lift claim without its control slice.
 
+- 7. Scale NFR (derived from rules 2 and 5 above): segment evaluation runs as a minutes-scale scheduled/queue consumer with honestly labeled lag and `as of` sizes, contact caps per recipient, and no per-hit synchronous writes — no new thresholds.
+- 8. Edge handling (derived from rules 3-4 above): off-platform audience export attempts stay refused (surface absent in v1); consent-ineligible recipients are suppressed with the reason logged and segments never pool across creators — never contacted and never exported.
+
 ## Data / API touches
 
 - New tables: `segments{segment_id, profile_id, definition_version, event_set, lookback_days, consent_basis}` + `segment_membership{segment_id, member_ref, entered_at, expires_at}` (TTL'd rows — expiry is the privacy mechanism, not a cleanup chore) + `retarget_flights{flight_id, segment_id, surface (onsite|email), control_pct, status}`. Standard `user_id` + RLS; all PG via `worker/db/*`.
@@ -30,10 +33,15 @@ Let attention compound: visitors who viewed a product but did not buy, readers w
 ## Acceptance criteria
 
 - Segment drill: fixture event streams produce exact membership (entry on qualifying event, expiry at lookback end, exclusion logic verified).
+  *GWT: Given Segment drill context; When the checked action occurs; Then fixture event streams produce exact membership (entry on qualifying event, expiry at lookback end, exclusion logic verified).*
 - Consent drill: marketing-opted-out abandoner receives lifecycle reminder only; promo variant refused by eligibility with the reason logged.
+  *GWT: Given Consent drill context; When marketing-opted-out abandoner receives lifecycle reminder only; Then promo variant refused by eligibility with the reason logged.*
 - Export-refusal drill: custom-audience upload attempted in v1 → 404/422 (surface absent, not silently stubbed).
+  *GWT: Given Export-refusal drill: custom-audience upload attempted in v1; When the transition executes; Then 404/422 (surface absent, not silently stubbed).*
 - Fatigue drill: over-cap recipients suppressed across surfaces; past-buyer exclusion holds; cause + one-click stop present on every message.
+  *GWT: Given Fatigue drill context; When over-cap recipients suppressed across surfaces; Then cause + one-click stop present on every message.*
 - Lift drill: flight with 10% holdout reports conversion vs control; report reconciles to underlying events within dedupe tolerance.
+  *GWT: Given Lift drill context; When flight with 10% holdout reports conversion vs control; Then report reconciles to underlying events within dedupe tolerance.*
 
 ## Out of scope
 

@@ -8,9 +8,17 @@ Define how codes come into existence and reach buyers: unguessable formats, bulk
 
 ## Users
 
-- Marketing/ops: generates a batch (10k influencer codes, 50 VIP single-use codes), exports for distribution, tracks channel performance.
-- Partner/influencer: receives an attributable prefix batch to share with their audience.
-- Buyer: receives a code that simply works — format details invisible.
+| Role | Permissions | Notes |
+|---|---|---|
+| Marketing/ops | Generate a batch (10k influencer codes, 50 VIP single-use codes), export for distribution, track channel performance | Plaintext list exportable exactly once at creation |
+| Partner/influencer | Receive an attributable prefix batch to share with their audience | Dashboards show counts, never buyer identities |
+| Buyer | Receive a code that simply works | Format details invisible |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Marketing/ops | Generate a batch, export for distribution, and track channel performance | Every issued code is unique, scoped, and traceable to its campaign and channel | Must |
+| US-02 | Partner/influencer | Receive an attributable prefix batch to share with my audience | Redemptions stamp channel performance without exposing buyer PII | Must |
+| US-03 | Buyer | Receive a code that simply works | Format details stay invisible | Must |
 
 ## Functional requirements
 
@@ -29,12 +37,14 @@ Define how codes come into existence and reach buyers: unguessable formats, bulk
 
 ## Acceptance criteria
 
-- Entropy/format drill: generated batches meet the charset/entropy rule; zero collisions across 100k-code stress batch; ambiguous characters absent.
-- Single-use race drill: 10 concurrent redemptions of one code — exactly one grant, nine clean rejections.
-- Export drill: plaintext available once, hashes-only afterward; export event in audit with actor + batch size.
-- Void drill: bulk-void flips only unredeemed codes; redeemed grants and their discounts stand untouched.
-- Partner-readout drill: channel aggregates correct with zero buyer PII in partner-visible output.
-- Auth probe: non-ops generation/export/void endpoints → 403; buyers cannot list or enumerate codes (no oracle via timing or error text).
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Entropy/format drill: generated batches meet the charset/entropy rule; zero collisions across 100k-code stress batch; ambiguous characters absent | Generated batches and a 100k-code stress batch | Generation runs | Batches meet the charset/entropy rule with zero collisions and ambiguous characters absent |
+| AC-02 | Single-use race drill: 10 concurrent redemptions of one code; exactly one grant, nine clean rejections | 10 concurrent redemptions of one single-use code | Redemptions race | Exactly one grants and nine get clean rejections |
+| AC-03 | Export drill: plaintext available once, hashes-only afterward; export event in audit with actor + batch size | A newly generated batch | Export is requested twice | Plaintext is available once and hashes-only afterward with the export event in audit |
+| AC-04 | Void drill: bulk-void flips only unredeemed codes; redeemed grants and their discounts stand untouched | Redeemed and unredeemed codes in a batch | Bulk-void runs | Only unredeemed codes flip while redeemed grants and discounts stand untouched |
+| AC-05 | Partner-readout drill: channel aggregates correct with zero buyer PII in partner-visible output | Channel redemptions | The partner readout runs | Aggregates are correct with zero buyer PII in partner-visible output |
+| AC-06 | Auth probe: non-ops generation/export/void endpoints return 403; buyers cannot list or enumerate codes (no oracle via timing or error text) | Non-ops generation/export/void attempts and buyer listing attempts | Access is attempted | Endpoints return 403 and buyers cannot list or enumerate codes |
 
 ## Out of scope
 

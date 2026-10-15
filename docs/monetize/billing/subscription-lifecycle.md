@@ -8,9 +8,17 @@ Define what happens after the grant: how long pro lasts, how it renews, what exp
 
 ## Users
 
-- Pro subscriber: sees period end, renews before lapse, cancels cleanly, understands exactly what downgrade touches.
-- Lapsed subscriber: gets reminders, a grace window, then a predictable, non-destructive downgrade.
-- Support/ops: cancels/refunds with clear period consequences; answers "will I lose my pages" with a documented no.
+| Role | Permissions | Notes |
+|---|---|---|
+| Pro subscriber | See period end, renew before lapse, cancel cleanly | Understands exactly what downgrade touches |
+| Lapsed subscriber | Receive reminders, a grace window, then predictable downgrade | Non-destructive and provably lossless |
+| Support/ops | Cancel/refund with clear period consequences | Answers "will I lose my pages" with a documented no |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Pro subscriber | See period end, renew before lapse, cancel cleanly, and understand exactly what downgrade touches | The plan experience is identical regardless of rail | Must |
+| US-02 | Lapsed subscriber | Get reminders, a grace window, then a predictable, non-destructive downgrade | Downgrade is provably lossless | Must |
+| US-03 | Support/ops | Cancel/refund with clear period consequences | I answer "will I lose my pages" with a documented no | Must |
 
 ## Functional requirements
 
@@ -30,12 +38,14 @@ Define what happens after the grant: how long pro lasts, how it renews, what exp
 
 ## Acceptance criteria
 
-- Time-travel drill (test clock): grant → reminders at −7d/−1d → grace with gates passing + banner → expiry with lossless downgrade (hidden/read-only extras, domain detached, template fallback, badge back) → re-upgrade restores everything.
-- Early-renewal drill: renewing mid-term extends from `period_end`, never from now; single current ledger row throughout.
-- Cancel drill: service runs to `period_end`, reminders stop, downgrade pre-scheduled and then executed as specified.
-- Stripe-native path (if enabled): provider subscription canceled alongside; no stray invoices; ledger still the visible truth.
-- Auth probe: user A cancelling/reading user B lifecycle → 403; RLS denies cross-user rows.
-- Expiry-job rerun safety: second run changes nothing (idempotent, audited once).
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Time-travel drill (test clock): grant to reminders at -7d/-1d to grace with gates passing + banner to expiry with lossless downgrade (hidden/read-only extras, domain detached, template fallback, badge back) to re-upgrade restoring everything | A grant advanced by test clock | Reminders, grace, expiry, and re-upgrade run | Reminders fire at -7d/-1d, grace passes gates with banner, expiry downgrades losslessly, and re-upgrade restores everything |
+| AC-02 | Early-renewal drill: renewing mid-term extends from `period_end`, never from now; single current ledger row throughout | A mid-term renewal | Renewal is granted | The term extends from `period_end` with a single current ledger row throughout |
+| AC-03 | Cancel drill: service runs to `period_end`, reminders stop, downgrade pre-scheduled and then executed as specified | A buyer-initiated cancel | Cancel is set | Service runs to `period_end`, reminders stop, and downgrade is pre-scheduled then executed as specified |
+| AC-04 | Stripe-native path (if enabled): provider subscription canceled alongside; no stray invoices; ledger still the visible truth | A Stripe-native subscription cancel where enabled | Cancel runs | The provider subscription is canceled alongside with no stray invoices and the ledger remains the visible truth |
+| AC-05 | Auth probe: user A cancelling/reading user B lifecycle returns 403; RLS denies cross-user rows | User A cancelling/reading user B lifecycle | The operation is attempted | The API returns 403 and RLS denies cross-user rows |
+| AC-06 | Expiry-job rerun safety: second run changes nothing (idempotent, audited once) | An already-run expiry job | The job reruns | Nothing changes with the run audited once |
 
 ## Out of scope
 

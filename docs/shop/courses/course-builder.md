@@ -8,9 +8,9 @@ Let creators host and sell courses without a third-party platform: outline of se
 
 ## Users
 
-- Creator: builds curriculum (sections → lessons), uploads video/materials, prices the course (free or paid), previews as a student.
-- Student: enrolls (buy or free-claim), watches in order, resumes last position across devices, downloads lesson materials.
-- Buyer-email claimant (P2-3 pattern): accesses with email + claim token where account-less purchase must still resolve.
+- Creator: *As a Creator, I want to build curriculum, upload video/materials, price the course, and preview as a student so that courses host without a third-party platform.* Builds curriculum (sections → lessons), uploads video/materials, prices the course (free or paid), previews as a student.
+- Student: *As a Student, I want to enroll, watch in order, resume last position across devices, and download materials so that progress is retained.* Enrolls (buy or free-claim), watches in order, resumes last position across devices, downloads lesson materials.
+- Buyer-email claimant (P2-3 pattern): *As a Buyer-email claimant, I want to access with email + claim token so that account-less purchases still resolve.* Accesses with email + claim token where account-less purchase must still resolve.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Let creators host and sell courses without a third-party platform: outline of se
 
 ## Acceptance criteria
 
-- Gate drill: unenrolled fetch of gated lesson bytes gets 403; preview lessons stream free; enrollment (free-claim and paid-grant) unlocks within pipeline lag.
-- Resume drill: stop mid-lesson on device A, resume on device B at stored position (±heartbeat interval tolerance).
-- Refund drill: refunded enrollment revokes access and certificate validity; progress rows retained per courtesy window, then purged.
-- Publish drill: course with missing video files refuses publish naming the lessons; heartbeat flood (1 s interval) throttled without PG write amplification.
-- IDOR drill: student A progress/enrollment reads for student B return 403.
+- Gate drill: unenrolled fetch of gated lesson bytes gets 403; preview lessons stream free; enrollment (free-claim and paid-grant) unlocks within pipeline lag. *GWT: Given unenrolled versus enrolled (free-claim or paid-grant) access; When lesson bytes are fetched; Then unenrolled gated fetches get 403, previews stream free, and enrollment unlocks within pipeline lag.*
+- Resume drill: stop mid-lesson on device A, resume on device B at stored position (±heartbeat interval tolerance). *GWT: Given a mid-lesson stop on device A with a server-stored position; When resuming on device B; Then playback resumes at the stored position (±heartbeat interval tolerance).*
+- Refund drill: refunded enrollment revokes access and certificate validity; progress rows retained per courtesy window, then purged. *GWT: Given a refunded enrollment; When access and certificate checks run; Then access and certificate validity are revoked with progress rows retained per courtesy window, then purged.*
+- Publish drill: course with missing video files refuses publish naming the lessons; heartbeat flood (1 s interval) throttled without PG write amplification. *GWT: Given a course with missing video files and a 1 s heartbeat flood; When publish runs and heartbeats arrive; Then publish is refused naming the lessons and the flood is throttled without PG write amplification.*
+- IDOR drill: student A progress/enrollment reads for student B return 403. *GWT: Given student B progress/enrollment; When student A attempts reads; Then access returns 403.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Turn automation conversations into a durable, consent-clean contact list: every 
 
 ## Users
 
-- Creator: sees who automation reached, filters by source keyword/post, exports to leads/CSV.
-- Contact (IG user): messaged once as promised, suppressible in one action, never auto-subscribed to anything else.
-- Marketer (later, P4 campaigns): inherits only explicitly opted-in contacts — the list is guilty-until-proven-consented for broadcast use.
+- Creator: *As a Creator, I want to see who automation reached, filter by source keyword/post, and export to leads/CSV so that conversations become a durable consent-clean list.* Sees who automation reached, filters by source keyword/post, exports to leads/CSV.
+- Contact (IG user): *As a Contact, I want to be messaged once as promised and suppressible in one action so that a comment never becomes a newsletter subscription.* Messaged once as promised, suppressible in one action, never auto-subscribed to anything else.
+- Marketer (later, P4 campaigns): *As a Marketer, I want to inherit only explicitly opted-in contacts so that broadcast use stays proven-consented.* Inherits only explicitly opted-in contacts — the list is guilty-until-proven-consented for broadcast use.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Turn automation conversations into a durable, consent-clean contact list: every 
 
 ## Acceptance criteria
 
-- Boundary drill: automation-only contact fails campaign eligibility (refused with the opt-in path stated); post-opt-in contact passes.
-- Suppression drill: opt-out mid-campaign halts that recipient's pending intents; cross-automation suppression holds; other creators unaffected (except platform-level blocks).
-- Export drill: CSV/leads handoff carries exact source + consent-class stamps; creator-scoped (no cross-profile rows); audited and rate-limited.
-- Reconciliation drill: quota-used figure equals countable contact rows for the period (fixture-verified, no drift).
-- IDOR drill: user A contact reads/exports against user B profiles return 403; public endpoints expose nothing enumerable.
+- Boundary drill: automation-only contact fails campaign eligibility (refused with the opt-in path stated); post-opt-in contact passes. *GWT: Given an automation-only or post-opt-in contact; When campaign eligibility is checked; Then automation-only fails with the opt-in path stated and post-opt-in passes.*
+- Suppression drill: opt-out mid-campaign halts that recipient's pending intents; cross-automation suppression holds; other creators unaffected (except platform-level blocks). *GWT: Given an opt-out mid-campaign; When pending intents and cross-automation sends evaluate; Then that recipient's intents halt, suppression holds cross-automation, and other creators are unaffected except by platform-level blocks.*
+- Export drill: CSV/leads handoff carries exact source + consent-class stamps; creator-scoped (no cross-profile rows); audited and rate-limited. *GWT: Given an export request; When the CSV/leads handoff runs; Then it carries exact source plus consent-class stamps, stays creator-scoped, and is audited and rate-limited.*
+- Reconciliation drill: quota-used figure equals countable contact rows for the period (fixture-verified, no drift). *GWT: Given quota state and contact rows for a period; When reconciled against fixtures; Then the quota-used figure equals countable rows with no drift.*
+- IDOR drill: user A contact reads/exports against user B profiles return 403; public endpoints expose nothing enumerable. *GWT: Given user A contact reads/exports against user B profiles; When requested; Then 403 results and public endpoints expose nothing enumerable.*
 
 ## Out of scope
 

@@ -8,9 +8,9 @@ Let users define PDF resume formats (section layout + design tokens + A4 print r
 
 ## Users
 
-- Format author: builds a format from a placeholder preview, publishes it to the shared gallery, versions or unpublishes it.
-- Reuser: browses the gallery, previews with placeholder data, clones a format into their own resumes.
-- Moderator/ops: removes abusive or infringing formats; support answers "whose format is this" from attribution alone.
+- Format author: *As a Format author, I want to build a format from a placeholder preview, publish it to the shared gallery, and version or unpublish it so that others can reuse my layout.* Builds a format from a placeholder preview, publishes it to the shared gallery, versions or unpublishes it.
+- Reuser: *As a Reuser, I want to browse the gallery, preview with placeholder data, and clone a format into my own resumes so that I can reuse shared layouts.* Browses the gallery, previews with placeholder data, clones a format into their own resumes.
+- Moderator/ops: *As a Moderator/ops, I want to remove abusive or infringing formats and answer attribution questions so that the gallery stays safe.* Removes abusive or infringing formats; support answers "whose format is this" from attribution alone.
 
 ## Functional requirements
 
@@ -30,14 +30,14 @@ Let users define PDF resume formats (section layout + design tokens + A4 print r
 
 ## Acceptance criteria
 
-- Scrub drill: publish attempted with snapshot/personal keys, inline styles, or scripts → rejected, zero rows published; verification job re-scan of all published formats finds zero personal-data keys.
-- Placeholder drill: author preview and gallery thumbnails contain only fictional placeholder content even when the author owns a fully populated resume.
-- Attribution drill: gallery card/detail and clone "based on" line show the author's username + profile link; post-rename follows 301; post-deletion shows the frozen former-username string.
-- Clone drill: reuser clones a published format → own resumes render snapshot text with the cloned layout; later author edits/unpublish do not alter existing clones.
-- IDOR probe (S-1/S-6): user A edits/publishes/clones-as-owner on user B formats → 403; direct PG as app role denied by RLS; public gallery readable anonymously within rate limits.
-- XSS/CSP drill (S-2): format-field injection renders stripped on builder, gallery, dashboard preview, and cv SSR; CSP holds on all four surfaces.
-- Abuse drill (S-5): anonymous gallery bursts throttled (Turnstile + WAF + rate rules); report-abuse → takedown hides gallery-wide within purge SLA.
-- Secrets drill: no secrets in repo/logs/bundles; uploader rejects non-image bytes and 2MB+ files with magic-byte checks (avatar-baseline mechanics reused for thumbnails).
+- Scrub drill: publish attempted with snapshot/personal keys, inline styles, or scripts → rejected, zero rows published; verification job re-scan of all published formats finds zero personal-data keys. *GWT: Given a publish attempt with snapshot/personal keys, inline styles, or scripts; When validation runs; Then it is rejected with zero rows published and the verification re-scan finds zero personal-data keys.*
+- Placeholder drill: author preview and gallery thumbnails contain only fictional placeholder content even when the author owns a fully populated resume. *GWT: Given an author with a fully populated resume; When author preview or gallery thumbnails render; Then they contain only fictional placeholder content.*
+- Attribution drill: gallery card/detail and clone "based on" line show the author's username + profile link; post-rename follows 301; post-deletion shows the frozen former-username string. *GWT: Given a published format with an author; When gallery card/detail and clone "based on" lines render across rename or deletion; Then they show the author's username + profile link, follow 301 post-rename, and show the frozen former-username string post-deletion.*
+- Clone drill: reuser clones a published format → own resumes render snapshot text with the cloned layout; later author edits/unpublish do not alter existing clones. *GWT: Given a published format; When a reuser clones it; Then the reuser's own resumes render snapshot text with the cloned layout and later author edits/unpublish do not alter existing clones.*
+- IDOR probe (S-1/S-6): user A edits/publishes/clones-as-owner on user B formats → 403; direct PG as app role denied by RLS; public gallery readable anonymously within rate limits. *GWT: Given user B formats; When user A attempts edits/publishes/clones-as-owner or direct PG as app role; Then access returns 403 / is denied by RLS while the public gallery stays readable anonymously within rate limits.*
+- XSS/CSP drill (S-2): format-field injection renders stripped on builder, gallery, dashboard preview, and cv SSR; CSP holds on all four surfaces. *GWT: Given format-field injection input; When rendered on builder, gallery, dashboard preview, and cv SSR; Then it renders stripped and CSP holds on all four surfaces.*
+- Abuse drill (S-5): anonymous gallery bursts throttled (Turnstile + WAF + rate rules); report-abuse → takedown hides gallery-wide within purge SLA. *GWT: Given anonymous gallery bursts; When rate rules apply and report-abuse triggers takedown; Then bursts are throttled and takedown hides the format gallery-wide within purge SLA.*
+- Secrets drill: no secrets in repo/logs/bundles; uploader rejects non-image bytes and 2MB+ files with magic-byte checks (avatar-baseline mechanics reused for thumbnails). *GWT: Given non-image bytes or 2MB+ files; When the uploader validates; Then they are rejected with magic-byte checks and no secrets appear in repo/logs/bundles.*
 
 ## Out of scope
 

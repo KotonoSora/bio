@@ -8,9 +8,9 @@ Define how the platform trusts ZaloPay: every callback's `mac` is recomputed wit
 
 ## Users
 
-- ZaloPay server: posts `{data, mac, type}` to the per-order `callback_url` on successful collection.
-- Buyer: receives entitlement (plan upgrade or product claim) after a genuine callback.
-- Ops: relies on idempotency during incident recovery and duplicate deliveries.
+- ZaloPay server: *As a ZaloPay server, I want to post `{data, mac, type}` to the per-order `callback_url` on successful collection so that the platform trusts ZaloPay as defined here.* posts `{data, mac, type}` to the per-order `callback_url` on successful collection.
+- Buyer: *As a Buyer, I want to receive entitlement (plan upgrade or product claim) after a genuine callback so that the platform trusts ZaloPay as defined here.* receives entitlement (plan upgrade or product claim) after a genuine callback.
+- Ops: *As an Ops, I want to rely on idempotency during incident recovery and duplicate deliveries so that the platform trusts ZaloPay as defined here.* relies on idempotency during incident recovery and duplicate deliveries.
 
 ## Functional requirements
 
@@ -29,10 +29,15 @@ Define how the platform trusts ZaloPay: every callback's `mac` is recomputed wit
 ## Acceptance criteria
 
 - Sandbox end-to-end: checkout → ZaloPay test pay → callback → `paid` + entitlement visible within the SLA.
+  *GWT: Given Sandbox end-to-end: checkout; When the transition executes; Then ZaloPay test pay → callback → `paid` + entitlement visible within the SLA.*
 - Replay test: same callback delivered twice (and more, mirroring redelivery) → single transition, single entitlement, single audit entry; repeats are durable no-ops.
+  *GWT: Given Replay test: same callback delivered twice (and more, mirroring redelivery); When the transition executes; Then single transition, single entitlement, single audit entry; repeats are durable no-ops.*
 - Tamper tests: bad `mac` → `-1`, nothing written; altered amount in `data` → failure, no grant; unknown `app_trans_id` → failure, no leak of valid refs.
+  *GWT: Given Tamper tests: bad `mac`; When the transition executes; Then `-1`, nothing written; altered amount in `data` → failure, no grant; unknown `app_trans_id` → failure, no leak of valid refs.*
 - Redirect hit with no callback yet: order stays `pending`, UX shows confirming (query repair covers it — settlement doc).
+  *GWT: Given Redirect hit with no callback yet context; When the checked action occurs; Then order stays `pending`, UX shows confirming (query repair covers it — settlement doc).*
 - Burst of bogus callbacks throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus callbacks throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 
 ## Out of scope
 

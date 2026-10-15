@@ -8,9 +8,17 @@ Let users leave completely and verifiably: request deletion in account settings,
 
 ## Users
 
-- Leaving user: requests deletion, understands exactly what vanishes and what legally must stay, changes their mind within grace, or confirms and departs.
-- Staying contact/buyer (indirect): their transactional receipts survive in minimized form; their data is never purged as collateral.
-- Finance/legal/auditor: retains the mandated financial footprint with nothing more.
+| Role | Permissions | Notes |
+| --- | --- | --- |
+| Leaving user | Request + cancel/restore own deletion (step-up gated, login + confirm within grace) | Requests deletion, understands exactly what vanishes and what legally must stay, changes their mind within grace, or confirms and departs. |
+| Staying contact/buyer (indirect) | — | Their transactional receipts survive in minimized form; their data is never purged as collateral. |
+| Finance/legal/auditor | — | Retains the mandated financial footprint with nothing more. |
+
+| Story ID | As a | I want to | So that | Priority |
+| --- | --- | --- | --- | --- |
+| US-01 | Leaving user | request deletion with a clear vanishes-vs-stays explanation and full undo within grace | I can leave completely and verifiably | High |
+| US-02 | Staying contact/buyer | my transactional receipts to survive minimized with no collateral purge | my records remain intact when another user leaves | High |
+| US-03 | Finance/legal/auditor | the mandated financial footprint retained with nothing more | tax/audit duties are met without excess retention | High |
 
 ## Functional requirements
 
@@ -29,11 +37,11 @@ Let users leave completely and verifiably: request deletion in account settings,
 
 ## Acceptance criteria
 
-- Flow drill: request → immediate 404s + sitemap drop + session death + scheduled-work cancellation; login within grace restores byte-identical state; day-30 purge emits a certificate whose counts reconcile with pre-purge inventory.
-- Billing drill: no charges during grace; paid-term service honored; reactivation never auto-recharges.
-- Retention drill: financial lines + legal-hold evidence survive minimized; everything else (including R2 bytes and vault rows) gone; probe suite green.
-- Collateral drill: org co-members, buyers, and support-case counterparts unaffected (row-level verification).
-- Cooldown drill: username/email reuse follows the decided policy exactly (squat attempt during cooling fails; post-policy reuse starts clean with no resurrected consent).
+- Flow drill: request → immediate 404s + sitemap drop + session death + scheduled-work cancellation; login within grace restores byte-identical state; day-30 purge emits a certificate whose counts reconcile with pre-purge inventory. *GWT: Given a deletion request in grace; When the user logs in to restore or the day-30 purge runs; Then state restores byte-identical or a certificate emits with counts reconciled to pre-purge inventory.*
+- Billing drill: no charges during grace; paid-term service honored; reactivation never auto-recharges. *GWT: Given an account in deletion grace; When billing runs or the user reactivates; Then no new charges occur, paid-term service is honored, and reactivation never auto-recharges.*
+- Retention drill: financial lines + legal-hold evidence survive minimized; everything else (including R2 bytes and vault rows) gone; probe suite green. *GWT: Given post-purge state; When the probe suite spot-checks tables and R2 keys; Then financial lines plus legal-hold evidence survive minimized, everything else is gone, and probes are green.*
+- Collateral drill: org co-members, buyers, and support-case counterparts unaffected (row-level verification). *GWT: Given a deleter with shared org/buyer/support rows; When purge scopes to owned rows; Then co-members, buyers, and counterparts are unaffected at row level.*
+- Cooldown drill: username/email reuse follows the decided policy exactly (squat attempt during cooling fails; post-policy reuse starts clean with no resurrected consent). *GWT: Given the cooling policy; When a squat is attempted during cooling or reuse is attempted after; Then cooling squats fail and post-policy reuse starts clean with no resurrected consent.*
 
 ## Out of scope
 

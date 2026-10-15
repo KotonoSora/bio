@@ -8,9 +8,9 @@ Define the platform's one marketing send path: Resend broadcasts to active leads
 
 ## Users
 
-- Operator/marketer: composes a broadcast, previews it, sends now to the active audience, reads delivered/open/click stats.
-- Lead/recipient: receives wanted mail, unsubscribes in one click when it stops being wanted.
-- Deliverability (as a stakeholder): shared Resend reputation shielded by consent hygiene, throttling, and complaint handling.
+- Operator/marketer: *As an Operator/marketer, I want to compose a broadcast, preview it, send now to the active audience, read delivered/open/click stats so that the platform's one marketing send path as defined here.* composes a broadcast, previews it, sends now to the active audience, reads delivered/open/click stats.
+- Lead/recipient: *As a Lead/recipient, I want to receive wanted mail, unsubscribe in one click when it stops being wanted so that the platform's one marketing send path as defined here.* receives wanted mail, unsubscribes in one click when it stops being wanted.
+- Deliverability (as a stakeholder): *As a Deliverability, I want to keep shared Resend reputation shielded by consent hygiene, throttling, and complaint handling so that the platform's one marketing send path as defined here.* shared Resend reputation shielded by consent hygiene, throttling, and complaint handling.
 
 ## Functional requirements
 
@@ -21,6 +21,8 @@ Define the platform's one marketing send path: Resend broadcasts to active leads
 5. Reputation guardrails: per-campaign and per-day volume caps (config), complaint-rate threshold that auto-pauses further sends and pages ops, dedicated sending domain/subdomain separated from transactional receipts where deliverability practice demands (see Q2). A burned marketing sender must never take down grant/receipt delivery.
 6. v1 exclusions (stated plainly per PLAN): no audience segments (active-all only), no scheduled/drip sends, no A/B subject testing (see experimentation doc for the future method), no affiliate/creator co-sends. Each exclusion names the future doc that will lift it.
 
+- 7. Scale NFR (derived from rules 4-5 above): sends enforce the configured per-campaign and per-day volume caps with complaint-rate auto-pause that pages ops, and stats reconcile through idempotent webhook events — no new thresholds and transactional receipts stay separate.
+
 ## Data / API touches
 
 - New tables `campaigns{id, subject, body_ref, audience_snapshot_count, status (draft|sending|sent|paused), stats_json}` + Resend event log (idempotent event ids); bodies in R2 (versioned, reviewed). Audience reads from the audience doc's tables at send time (live query, never a stale CSV). All PG via `worker/db/*`; RLS restricts to marketing/ops roles.
@@ -30,16 +32,22 @@ Define the platform's one marketing send path: Resend broadcasts to active leads
 ## Acceptance criteria
 
 - Eligibility drill: suppressed/unsubscribed/bounced/complained addresses excluded even when hand-added to a send list; pre-send count matches delivered-to set exactly.
+  *GWT: Given Eligibility drill context; When suppressed/unsubscribed/bounced/complained addresses excluded even when hand-added to a send list; Then pre-send count matches delivered-to set exactly.*
 - Two-step drill: no single action sends (confirm requires review state); paused mid-batch halts within seconds; resumed batch never double-sends (per-recipient idempotency).
+  *GWT: Given Two-step drill context; When no single action sends (confirm requires review state); Then resumed batch never double-sends (per-recipient idempotency).*
 - Stats drill: seeded deliveries/opens/clicks/bounces/complaints reconcile event-to-aggregate exactly; bounce auto-suppresses; complaint auto-suppresses + pages.
+  *GWT: Given Stats drill context; When seeded deliveries/opens/clicks/bounces/complaints reconcile event-to-aggregate exactly; Then complaint auto-suppresses + pages.*
 - Reputation drill: complaint-rate breach auto-pauses sends and pages; transactional receipt delivery provably unaffected during the pause.
+  *GWT: Given Reputation drill context; When complaint-rate breach auto-pauses sends and pages; Then transactional receipt delivery provably unaffected during the pause.*
 - v1-exclusion drill: segment/schedule/A-B controls absent from UI and API (attempts 404/422, not silent no-ops).
+  *GWT: Given v1-exclusion drill context; When the checked action occurs; Then segment/schedule/A-B controls absent from UI and API (attempts 404/422, not silent no-ops).*
 - Unsubscribe drill: one click, no login, effective before the next send (verified by immediate re-query).
+  *GWT: Given Unsubscribe drill context; When the checked action occurs; Then one click, no login, effective before the next send (verified by immediate re-query).*
 
 ## Out of scope
 
 - Audience states and list management (see `marketing/audience-lists.md`); consent classes and preference center (see `marketing/consent-preferences.md`).
-- Transactional receipts and lifecycle reminders (their own docs/channels — shared suppression only); promo/affiliate/advertising content (their own minors); segments/scheduling/A-B (named future work); P5.
+- Transactional receipts and lifecycle reminders (their own delivery channels — shared suppression only); promo/affiliate/advertising content (their own minors); segments/scheduling/A-B (named future work); P5.
 
 ## Open questions
 

@@ -8,9 +8,9 @@ Define how money starts moving via VNPay: an authenticated checkout creates a tr
 
 ## Users
 
-- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, pays on VNPay, lands back on the platform.
-- Creator/seller: receives entitlement on IPN grant.
-- Support/ops: looks up an order by `orderCode` / `vnp_TransactionNo` to reconcile disputes.
+- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): *As a Buyer, I want to start checkout, pay on VNPay, land back on the platform so that money starts moving via VNPay as defined here.* starts checkout, pays on VNPay, lands back on the platform.
+- Creator/seller: *As a Creator/seller, I want to receive entitlement on IPN grant so that money starts moving via VNPay as defined here.* receives entitlement on IPN grant.
+- Support/ops: *As a Support/ops, I want to look up an order by `orderCode` / `vnp_TransactionNo` to reconcile disputes so that money starts moving via VNPay as defined here.* looks up an order by `orderCode` / `vnp_TransactionNo` to reconcile disputes.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Define how money starts moving via VNPay: an authenticated checkout creates a tr
 ## Acceptance criteria
 
 - Sandbox checkout for plan and for product: VNPay page opens, amount exact to the VND, `orders` row pending with unique `orderCode` echoed as `vnp_TxnRef`.
+  *GWT: Given Sandbox checkout for plan and for product context; When the checked action occurs; Then VNPay page opens, amount exact to the VND, `orders` row pending with unique `orderCode` echoed as `vnp_TxnRef`.*
 - Amount tamper (client sends lower amount): server re-prices to canonical; mismatch logged.
+  *GWT: Given Amount tamper (client sends lower amount) context; When server re-prices to canonical; Then mismatch logged.*
 - Expired payment attempt on VNPay's page surfaces the expired-checkout UX; order flips `expired` and is never grantable by a late IPN (see IPN doc).
+  *GWT: Given Expired payment attempt on VNPay's page surfaces the expired-checkout UX; When the next step executes; Then order flips `expired` and is never grantable by a late IPN (see IPN doc).*
 - Off-origin return address: rejected 422 at checkout build.
+  *GWT: Given Off-origin return address context; When the checked action occurs; Then rejected 422 at checkout build.*
 - IDOR probe: user A reading user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A reading user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no TmnCode/HashSecret in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no TmnCode/HashSecret in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

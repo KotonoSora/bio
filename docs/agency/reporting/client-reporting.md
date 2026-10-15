@@ -8,9 +8,9 @@ Show agencies and their clients exactly how every managed profile performs — v
 
 ## Users
 
-- Agency owner/manager: compares client profiles, spots underperformers, proves retainer value with combined reports.
-- Member: sees assigned clients' performance in working views.
-- Client: sees their own profiles' performance (identical figures to their personal dashboard) plus their rank context where shared.
+- Agency owner/manager: *As an Agency owner/manager, I want to compare client profiles, spot underperformers, and prove retainer value with combined reports so that managed performance is exact per profile and rolled up.* Compares client profiles, spots underperformers, proves retainer value with combined reports.
+- Member: *As a Member, I want to see assigned clients' performance in working views so that daily work stays inside my assignment set.* Sees assigned clients' performance in working views.
+- Client: *As a Client, I want to see my own profiles' performance identical to my dashboard plus rank context so that agency figures always match my own.* Sees their own profiles' performance (identical figures to their personal dashboard) plus their rank context where shared.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Show agencies and their clients exactly how every managed profile performs — v
 
 ## Acceptance criteria
 
-- Identity drill: fixture figures match creator-dashboard values cell-for-cell across profiles, rollups, and exports at equal `generated_at`.
-- Scope drill: member sees assigned only; client sees own only (+ own rank); unlinked profile disappears from views/exports/leaderboard within cache-purge SLA; cross-client `profile_id` guessing returns 403.
-- Leaderboard drill: ranking correct per metric with low-traffic badging; historical snapshot immutable after period close (new data does not rewrite it).
-- Share drill: client share-links work without login until expiry, then 410; no session confusion with staff logins.
-- Load drill: 100-profile org rollup within read budget (no per-profile N+1 waterfall — batched aggregate reads).
+- Identity drill: fixture figures match creator-dashboard values cell-for-cell across profiles, rollups, and exports at equal `generated_at`. *GWT: Given agency and creator-dashboard reads at equal `generated_at`; When compared; Then fixture figures match cell-for-cell across profiles, rollups, and exports.*
+- Scope drill: member sees assigned only; client sees own only (+ own rank); unlinked profile disappears from views/exports/leaderboard within cache-purge SLA; cross-client `profile_id` guessing returns 403. *GWT: Given member, client, unlinked, and cross-client-guessing requests; When views/exports/leaderboard resolve; Then scoping holds, unlinked profiles vanish within cache-purge SLA, and guessing returns 403.*
+- Leaderboard drill: ranking correct per metric with low-traffic badging; historical snapshot immutable after period close (new data does not rewrite it). *GWT: Given ranked profiles and a closed period; When leaderboard and snapshots evaluate; Then ranking is correct per metric with low-traffic badging and historical snapshots stay immutable.*
+- Share drill: client share-links work without login until expiry, then 410; no session confusion with staff logins. *GWT: Given a signed client share-link before and after expiry; When opened; Then it works without login until expiry, then returns 410, with no staff-session confusion.*
+- Load drill: 100-profile org rollup within read budget (no per-profile N+1 waterfall — batched aggregate reads). *GWT: Given a 100-profile org rollup; When reads fan out; Then the rollup completes within read budget via batched aggregate reads with no N+1 waterfall.*
 
 ## Out of scope
 

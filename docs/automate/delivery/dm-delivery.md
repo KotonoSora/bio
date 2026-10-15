@@ -8,9 +8,9 @@ Deliver exactly what the comment promised and nothing more: one public reply plu
 
 ## Users
 
-- Commenter: receives a relevant reply + single DM with the promised link, then silence unless they comment again.
-- Creator: composes reply/DM templates with one link slot, watches delivery status per trigger event.
-- Platform integrity (as a stakeholder): account bans avoided through window compliance, rate discipline, and template review.
+- Commenter: *As a Commenter, I want to receive a relevant reply plus a single DM with the promised link and then silence so that one comment earns exactly what was promised.* Receives a relevant reply + single DM with the promised link, then silence unless they comment again.
+- Creator: *As a Creator, I want to compose reply/DM templates with one link slot and watch delivery status per trigger event so that delivery stays restrained and observable.* Composes reply/DM templates with one link slot, watches delivery status per trigger event.
+- Platform integrity (as a stakeholder): *As a Platform integrity, I want window compliance, rate discipline, and template review so that account bans are avoided.* Account bans avoided through window compliance, rate discipline, and template review.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Deliver exactly what the comment promised and nothing more: one public reply plu
 
 ## Acceptance criteria
 
-- One-link drill: template with zero or two+ links rejected at save; sent DMs contain exactly the approved link (provider-mock inspection).
-- Window drill: intent older than 24 h marks `window_lapsed` with no send attempt; fresh re-comment creates a new intent normally.
-- Quota drill: contact 101 in the free year holds with upgrade notice; pro monthly reset verified against fixtures; already-contacted re-comments do not inflate counts.
-- Replay drill: duplicate queue delivery of one intent sends once (idempotency key holds).
-- Ban-safety drill: simulated platform error spike auto-pauses within budget; quiet-hours holds release after 08:00; opt-out recipient never messaged again across automations.
+- One-link drill: template with zero or two+ links rejected at save; sent DMs contain exactly the approved link (provider-mock inspection). *GWT: Given a template with zero or two-plus links or an approved send; When saved or inspected via provider-mock; Then invalid templates are rejected at save and sent DMs contain exactly the approved link.*
+- Window drill: intent older than 24 h marks `window_lapsed` with no send attempt; fresh re-comment creates a new intent normally. *GWT: Given an intent older than 24 h or a fresh re-comment; When the window check runs; Then stale intents mark `window_lapsed` with no send and re-comments create a new intent normally.*
+- Quota drill: contact 101 in the free year holds with upgrade notice; pro monthly reset verified against fixtures; already-contacted re-comments do not inflate counts. *GWT: Given free-year and pro-monthly quota state; When the 101st contact or a re-comment arrives or the month resets; Then over-quota holds with upgrade notice, resets verify against fixtures, and re-comments do not inflate counts.*
+- Replay drill: duplicate queue delivery of one intent sends once (idempotency key holds). *GWT: Given one intent delivered twice via the queue; When the consumer processes both; Then exactly one send occurs via the idempotency key.*
+- Ban-safety drill: simulated platform error spike auto-pauses within budget; quiet-hours holds release after 08:00; opt-out recipient never messaged again across automations. *GWT: Given an error spike, quiet-hours holds, or an opt-out recipient; When delivery evaluates; Then spikes auto-pause within budget, holds release after 08:00, and opt-outs are never messaged again.*
 
 ## Out of scope
 

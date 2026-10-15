@@ -8,9 +8,9 @@ Define the single append-only record of what was sold, for how much, and what ha
 
 ## Users
 
-- Finance/operator: reads net revenue by day, provider, plan, product, campaign — one query, no reconciliation spreadsheets.
-- Support/ops: traces any buyer money question to one immutable line and its linked reversal lines.
-- Auditor: replays platform revenue from append-only facts plus the provider webhooks that caused them.
+- Finance/operator: *As a Finance/operator, I want to read net revenue by day, provider, plan, product, campaign — one query, no reconciliation spreadsheets so that the single append-only record of what was sold, for how much, and what happened to the money afterward as defined here.* reads net revenue by day, provider, plan, product, campaign — one query, no reconciliation spreadsheets.
+- Support/ops: *As a Support/ops, I want to trace any buyer money question to one immutable line and its linked reversal lines so that the single append-only record of what was sold, for how much, and what happened to the money afterward as defined here.* traces any buyer money question to one immutable line and its linked reversal lines.
+- Auditor: *As an Auditor, I want to replay platform revenue from append-only facts plus the provider webhooks that caused them so that the single append-only record of what was sold, for how much, and what happened to the money afterward as defined here.* replays platform revenue from append-only facts plus the provider webhooks that caused them.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define the single append-only record of what was sold, for how much, and what ha
 ## Acceptance criteria
 
 - Grant drill on three rails (redirect, wallet/card, bank rail): exactly one sales line each, amounts matching charged totals to the dong, unique-guarded against replay.
+  *GWT: Given Grant drill on three rails (redirect, wallet/card, bank rail) context; When the checked action occurs; Then exactly one sales line each, amounts matching charged totals to the dong, unique-guarded against replay.*
 - Refund/partial/dispute drill: adjustment lines net correctly; originals byte-identical; net-revenue query matches hand computation.
+  *GWT: Given Refund/partial/dispute drill context; When adjustment lines net correctly; Then net-revenue query matches hand computation.*
 - Correction drill: bookkeeping fix appends a reasoned adjustment; no UPDATE/DELETE path exists in code or migrations.
+  *GWT: Given Correction drill context; When bookkeeping fix appends a reasoned adjustment; Then no UPDATE/DELETE path exists in code or migrations.*
 - Replay drill: duplicate grant/webhook traffic emits zero additional lines across all providers.
+  *GWT: Given Replay drill context; When the checked action occurs; Then duplicate grant/webhook traffic emits zero additional lines across all providers.*
 - Auth probe: buyers hitting ops sales endpoints → 403; non-finance roles denied; RLS denies cross-scope rows.
+  *GWT: Given Auth probe: buyers hitting ops sales endpoints; When the transition executes; Then 403; non-finance roles denied; RLS denies cross-scope rows.*
 
 ## Out of scope
 

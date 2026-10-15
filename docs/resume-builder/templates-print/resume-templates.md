@@ -8,9 +8,9 @@ Define how resumes look on screen and on paper from a single frozen snapshot. Sc
 
 ## Users
 
-- Job seeker: previews templates on screen, prints / saves PDF for applications.
-- Recruiter / viewer: reads the public `/:username/cv` SSR page or a printed PDF.
-- Template contributor (internal): adds a token-based template without touching user data code.
+- Job seeker: *As a Job seeker, I want to preview templates on screen and print / save PDF for applications so that I can apply with a frozen snapshot.* Previews templates on screen, prints / saves PDF for applications.
+- Recruiter / viewer: *As a Recruiter / viewer, I want to read the public `/:username/cv` SSR page or a printed PDF so that I can review the resume.* Reads the public `/:username/cv` SSR page or a printed PDF.
+- Template contributor (internal): *As a Template contributor, I want to add a token-based template without touching user data code so that the gallery grows safely.* Adds a token-based template without touching user data code.
 
 ## Functional requirements
 
@@ -30,12 +30,12 @@ Define how resumes look on screen and on paper from a single frozen snapshot. Sc
 
 ## Acceptance criteria
 
-- Same snapshot across all templates: text content identical, only layout changes.
-- `@media print` on A4: single-column flow, no dashboard chrome, colors preserved with `print-color-adjust: exact`; tested in Chrome + Safari print preview.
-- `window.print()` from dashboard produces the frozen snapshot, not live draft edits, unless user explicitly saved first.
-- Cold `curl` on `/:username/cv` (no JS) contains resume text + per-profile title/meta/canonical/OG/Twitter + JSON-LD `Person`.
-- Custom CSS/JS injection attempt via any resume field: stripped or neutralized; page CSP `default-src 'self'` holds.
-- No `worker/` import of Node-only or headless-browser packages (grep gate).
+- Same snapshot across all templates: text content identical, only layout changes. *GWT: Given the same snapshot; When rendered across all templates; Then text content is identical with only layout changed.*
+- `@media print` on A4: single-column flow, no dashboard chrome, colors preserved with `print-color-adjust: exact`; tested in Chrome + Safari print preview. *GWT: Given a print request on A4; When `@media print` renders; Then single-column flow with no dashboard chrome and preserved colors via `print-color-adjust: exact` holds in Chrome + Safari print preview.*
+- `window.print()` from dashboard produces the frozen snapshot, not live draft edits, unless user explicitly saved first. *GWT: Given a frozen snapshot with unsaved draft edits; When `window.print()` runs from the dashboard; Then it produces the frozen snapshot unless the user explicitly saved first.*
+- Cold `curl` on `/:username/cv` (no JS) contains resume text + per-profile title/meta/canonical/OG/Twitter + JSON-LD `Person`. *GWT: Given the public `/:username/cv`; When fetched cold with `curl` (no JS); Then it contains resume text + per-profile title/meta/canonical/OG/Twitter + JSON-LD `Person`.*
+- Custom CSS/JS injection attempt via any resume field: stripped or neutralized; page CSP `default-src 'self'` holds. *GWT: Given a custom CSS/JS injection attempt via any resume field; When rendered; Then it is stripped or neutralized and page CSP `default-src 'self'` holds.*
+- No `worker/` import of Node-only or headless-browser packages (grep gate). *GWT: Given the `worker/` codebase; When scanned for Node-only or headless-browser imports; Then no such imports are found.*
 
 ## Out of scope
 

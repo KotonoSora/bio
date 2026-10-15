@@ -8,9 +8,9 @@ Define how money starts moving via ZaloPay: an authenticated checkout creates a 
 
 ## Users
 
-- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, pays via the ZaloPay order page, lands back on the platform.
-- Creator/seller: receives entitlement on callback grant.
-- Support/ops: looks up an order by `orderCode` / `app_trans_id` / `zp_trans_id` to reconcile disputes.
+- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): *As a Buyer, I want to start checkout, pay via the ZaloPay order page, land back on the platform so that money starts moving via ZaloPay as defined here.* starts checkout, pays via the ZaloPay order page, lands back on the platform.
+- Creator/seller: *As a Creator/seller, I want to receive entitlement on callback grant so that money starts moving via ZaloPay as defined here.* receives entitlement on callback grant.
+- Support/ops: *As a Support/ops, I want to look up an order by `orderCode` / `app_trans_id` / `zp_trans_id` to reconcile disputes so that money starts moving via ZaloPay as defined here.* looks up an order by `orderCode` / `app_trans_id` / `zp_trans_id` to reconcile disputes.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Define how money starts moving via ZaloPay: an authenticated checkout creates a 
 ## Acceptance criteria
 
 - Sandbox checkout for plan and for product: ZaloPay order page opens, amount exact to the VND, `orders` row pending with unique `orderCode` and well-formed `app_trans_id`.
+  *GWT: Given Sandbox checkout for plan and for product context; When the checked action occurs; Then ZaloPay order page opens, amount exact to the VND, `orders` row pending with unique `orderCode` and well-formed `app_trans_id`.*
 - Amount tamper (client sends lower amount): server re-prices to canonical; mismatch logged.
+  *GWT: Given Amount tamper (client sends lower amount) context; When server re-prices to canonical; Then mismatch logged.*
 - Off-origin redirect/callback addresses: rejected 422 at order build.
+  *GWT: Given Off-origin redirect/callback addresses context; When the checked action occurs; Then rejected 422 at order build.*
 - Expired-unpaid order flips `expired` and is never grantable by a late callback (settlement doc owns the sweep).
+  *GWT: Given the preconditions for this check hold; When expired-unpaid order flips `expired` and is never grantable by a late callback (settlement doc owns the sweep); Then the expected outcome stated here is observed.*
 - IDOR probe: user A reading user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A reading user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no app_id/key1/key2 in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no app_id/key1/key2 in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

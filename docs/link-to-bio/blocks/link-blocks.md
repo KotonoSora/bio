@@ -8,8 +8,8 @@ Define the editable content list of a Link-to-Bio page: an ordered set of blocks
 
 ## Users
 
-- Creator: adds, edits, reorders, hides, and schedules blocks from the dashboard.
-- Visitor: sees only visible, currently-scheduled blocks in dashboard-defined order.
+- Creator: *As a Creator, I want to add, edit, reorder, hide, and schedule blocks from the dashboard so that my page content stays ordered without a later type migration.* Adds, edits, reorders, hides, and schedules blocks from the dashboard.
+- Visitor: *As a Visitor, I want to see only visible, currently-scheduled blocks in dashboard-defined order so that hidden or out-of-window content never leaks publicly.* Sees only visible, currently-scheduled blocks in dashboard-defined order.
 
 ## Functional requirements
 
@@ -28,12 +28,12 @@ Define the editable content list of a Link-to-Bio page: an ordered set of blocks
 
 ## Acceptance criteria
 
-- Reorder via drag then reload: order persists identically on dashboard and public page.
-- Hidden or out-of-window block: absent from public HTML/JSON, still listed in dashboard with status reason.
-- Unknown `type` or non-`https:` URL on create/update: rejected 422, nothing written.
-- Public page renders blocks strictly by ascending `position`; ties broken by stable row order.
-- IDOR probe: user A mutating user B `profile_id`/block returns 403; RLS denies at DB.
-- XSS probe: script/iframe/event-handler in any payload field stripped; anchors carry `rel="noopener ugc"`; CSP holds.
+- Reorder via drag then reload: order persists identically on dashboard and public page. *GWT: Given a drag reorder; When the dashboard and public page reload; Then the order persists identically on both.*
+- Hidden or out-of-window block: absent from public HTML/JSON, still listed in dashboard with status reason. *GWT: Given a hidden or out-of-window block; When the public page and dashboard render; Then it is absent from public HTML/JSON and still listed in the dashboard with a status reason.*
+- Unknown `type` or non-`https:` URL on create/update: rejected 422, nothing written. *GWT: Given an unknown `type` or non-`https:` URL on create/update; When submitted; Then the API rejects with 422 and nothing is written.*
+- Public page renders blocks strictly by ascending `position`; ties broken by stable row order. *GWT: Given blocks with ascending `position` and ties; When the public page renders; Then blocks appear strictly by ascending `position` with ties broken by stable row order.*
+- IDOR probe: user A mutating user B `profile_id`/block returns 403; RLS denies at DB. *GWT: Given user A mutating user B `profile_id`/block; When evaluated; Then the API returns 403 and RLS denies at DB.*
+- XSS probe: script/iframe/event-handler in any payload field stripped; anchors carry `rel="noopener ugc"`; CSP holds. *GWT: Given script/iframe/event-handler input in any payload field; When rendered; Then it is stripped, anchors carry `rel="noopener ugc"`, and CSP holds.*
 
 ## Out of scope
 

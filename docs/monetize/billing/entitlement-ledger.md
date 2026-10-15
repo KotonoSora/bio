@@ -8,9 +8,17 @@ Define the one entitlement record all eight provider paths write and all feature
 
 ## Users
 
-- Gated feature code (domain attach, realtime analytics, premium templates, AI generation): asks "what is this user's effective plan right now" and gets one answer.
-- Provider grant handlers (all `monetize/*` provider webhook docs): record paid outcomes here after their atomic order transition.
-- Support/ops: reads a user's plan history to resolve "I paid but I'm still free" tickets.
+| Role | Permissions | Notes |
+|---|---|---|
+| Gated feature code (domain attach, realtime analytics, premium templates, AI generation) | Ask what the user's effective plan is right now | Gets one answer from the single current row |
+| Provider grant handlers (all `monetize/*` provider webhook docs) | Record paid outcomes in the ledger after the atomic order transition | Every gate reads one consistent view |
+| Support/ops | Read a user's plan history | Resolves "I paid but I'm still free" tickets from one record |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Gated feature code | Ask "what is this user's effective plan right now" | I get one answer from the single current row | Must |
+| US-02 | Provider grant handler | Record paid outcomes in the ledger after the atomic order transition | Every gate reads one consistent view | Must |
+| US-03 | Support/ops | Read a user's plan history | I resolve "I paid but I'm still free" tickets from one record | Must |
 
 ## Functional requirements
 
@@ -29,12 +37,14 @@ Define the one entitlement record all eight provider paths write and all feature
 
 ## Acceptance criteria
 
-- Two paid plan orders in sequence: exactly one current row, full history preserved, `GET /api/v1/plan` reflects the latest within the grant SLA.
-- Product-only purchase: zero `subscriptions` writes; plan reads unchanged.
-- Gate probe across all eight providers' grants: each paid plan grant is visible to every gate (domain, realtime, templates, AI) within the SLA — no provider-specific lag or second source.
-- Free-from-signup: brand-new user has a `free/active` row; no gate ever encounters a missing row (NOT NULL + signup hook verified).
-- IDOR probe: user A reading user B subscription rows returns 403; RLS denies cross-user rows at DB.
-- Concurrent grants (double webhook + sweep racing): single current row, single audit chain — no split-brain plans.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Two paid plan orders in sequence: exactly one current row, full history preserved, `GET /api/v1/plan` reflects the latest within the grant SLA | Two paid plan orders in sequence | Both grants complete | Exactly one current row exists, full history is preserved, and `GET /api/v1/plan` reflects the latest within the grant SLA |
+| AC-02 | Product-only purchase: zero `subscriptions` writes; plan reads unchanged | A product-only purchase | The order is paid | Zero `subscriptions` writes occur and plan reads are unchanged |
+| AC-03 | Gate probe across all eight providers' grants: each paid plan grant is visible to every gate (domain, realtime, templates, AI) within the SLA with no provider-specific lag or second source | A paid plan grant on any of the eight providers | Every gate is checked | The grant is visible to every gate within the SLA |
+| AC-04 | Free-from-signup: brand-new user has a `free/active` row; no gate ever encounters a missing row (NOT NULL + signup hook verified) | A brand-new user signup | Gates resolve the plan | A `free/active` row exists and no gate encounters a missing row |
+| AC-05 | IDOR probe: user A reading user B subscription rows returns 403; RLS denies cross-user rows at DB | User A reading user B subscription rows | The read is attempted | The API returns 403 and RLS denies cross-user rows at DB |
+| AC-06 | Concurrent grants (double webhook + sweep racing): single current row, single audit chain with no split-brain plans | Concurrent grants from double webhook + sweep racing | All complete | A single current row and single audit chain remain |
 
 ## Out of scope
 

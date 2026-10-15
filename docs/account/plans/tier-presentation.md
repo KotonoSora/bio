@@ -8,9 +8,9 @@ State what the pricing page and account screens promise — and make each promis
 
 ## Users
 
-- Buyer: compares tiers, tries pro, pays yearly with known savings, cancels or changes mid-term without fear.
-- Marketing/support: quotes only what this doc guarantees; answers "will I lose X?" from the lifecycle reference.
-- Reviewer: verifies every pricing-page claim resolves to an enforcement point.
+- Buyer: *As a Buyer, I want to compare two tiers, try pro, pay yearly with known savings, and cancel or change mid-term with exact effects so that no headline hides a smaller truth.* Compares tiers, tries pro, pays yearly with known savings, cancels or changes mid-term without fear.
+- Marketing/support: *As a Marketing/support, I want to quote only guaranteed claims and answer "will I lose X?" from the lifecycle reference so that buyers get traceable promises.* Quotes only what this doc guarantees; answers "will I lose X?" from the lifecycle reference.
+- Reviewer: *As a Reviewer, I want every pricing-page claim to resolve to an enforcement point so that each promise is traceable.* Verifies every pricing-page claim resolves to an enforcement point.
 
 ## Functional requirements
 
@@ -28,11 +28,11 @@ State what the pricing page and account screens promise — and make each promis
 
 ## Acceptance criteria
 
-- Claim-trace drill: every pricing-page sentence (tiers, savings %, trial days, cancel effect, change effects) resolves to an enforcing spec + config value; stale claim after a config change fails CI.
-- Cancel drill: logged-in cancel completes in two clicks (open + confirm) with service-to-term-end honored, reminders stopped, downgrade pre-scheduled losslessly; Stripe ledgers show no further invoices.
-- Trial drill: eligible user starts trial without payment instrument (one-shot rails), sees the true day-count from config, converts or downgrades losslessly at expiry.
-- Change drill: mid-term upgrade stacks, term-switch re-prices at renewal with stated dates; no screen implies proration.
-- Discount drill: yearly checkout math equals 12× monthly minus the configured discount to the VND; finance-ratified value ≤44%.
+- Claim-trace drill: every pricing-page sentence (tiers, savings %, trial days, cancel effect, change effects) resolves to an enforcing spec + config value; stale claim after a config change fails CI. *GWT: Given any pricing-page sentence; When traced after a config change; Then it resolves to an enforcing spec plus config value, and stale claims fail CI.*
+- Cancel drill: logged-in cancel completes in two clicks (open + confirm) with service-to-term-end honored, reminders stopped, downgrade pre-scheduled losslessly; Stripe ledgers show no further invoices. *GWT: Given a logged-in subscriber; When they open and confirm cancel; Then service runs to term-end, reminders stop, downgrade is pre-scheduled losslessly, and no further invoices appear.*
+- Trial drill: eligible user starts trial without payment instrument (one-shot rails), sees the true day-count from config, converts or downgrades losslessly at expiry. *GWT: Given an eligible user; When they start the trial and reach expiry; Then no instrument is required on one-shot rails, the day-count matches config, and conversion or downgrade is lossless.*
+- Change drill: mid-term upgrade stacks, term-switch re-prices at renewal with stated dates; no screen implies proration. *GWT: Given a mid-term upgrade or term-switch; When the change completes; Then upgrades stack and term-switches re-price at renewal with stated dates and no proration implied.*
+- Discount drill: yearly checkout math equals 12× monthly minus the configured discount to the VND; finance-ratified value ≤44%. *GWT: Given monthly pricing and the configured discount; When yearly checkout runs; Then the charge equals 12× monthly minus the configured discount to the VND with value ≤44%.*
 
 ## Out of scope
 

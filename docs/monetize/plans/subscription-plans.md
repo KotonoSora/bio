@@ -8,9 +8,17 @@ Define what money buys: a two-tier plan matrix (free vs pro) with server-enforce
 
 ## Users
 
-- Free user: one profile, unlimited links, tips, basic resume, platform badge.
-- Pro subscriber: removes gates — unlimited profiles, custom domain, realtime analytics, premium templates/logo, AI JD-tailor allowance.
-- Buyer of single products (course/digital/tip/paywall): unaffected by plan tier except where the shop major explicitly grants plan-holder discounts (none in v1).
+| Role | Permissions | Notes |
+|---|---|---|
+| Free user | One profile, unlimited links, tips, basic resume, platform badge | Knows what money buys before upgrading |
+| Pro subscriber | Unlimited profiles, custom domain, realtime analytics, premium templates/logo, AI JD-tailor allowance | Gates removed; every gate re-checked on the server |
+| Buyer of single products (course/digital/tip/paywall) | Purchases unaffected by plan tier except where shop major explicitly grants plan-holder discounts (none in v1) | Single products stay separate from plans in v1 |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Free user | Have one profile, unlimited links, tips, basic resume, and platform badge | I know what money buys before upgrading | Must |
+| US-02 | Pro subscriber | Have removed gates: unlimited profiles, custom domain, realtime analytics, premium templates/logo, AI JD-tailor allowance | Every gate is re-checked on the server | Must |
+| US-03 | Buyer of single products | Have my purchase unaffected by plan tier except where the shop major explicitly grants plan-holder discounts | Single products stay separate from plans in v1 | Must |
 
 ## Functional requirements
 
@@ -29,12 +37,14 @@ Define what money buys: a two-tier plan matrix (free vs pro) with server-enforce
 
 ## Acceptance criteria
 
-- Free user calling each pro endpoint directly (domain attach, realtime, premium template, AI over quota): 403 + `upgrade_required`; nothing applied.
-- AI over-quota and period-reset behavior verified by advancing the test clock; ledger and KV agree after reconciliation.
-- Downgrade simulation: excess profiles hidden/read-only per the decided rule; no data loss; badge restored.
-- IDOR probe: user A cannot read or consume user B plan/credits; RLS denies at DB.
-- Prompt-injection probe in JD/resume fields: sanitized, no system-prompt leakage, CSP holds on result rendering.
-- k6 gate (P3 exit, 100k concurrent normal-use mix) passes with AI calls capped and non-AI reads p95 <500 ms.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Free user calling each pro endpoint directly (domain attach, realtime, premium template, AI over quota): 403 + `upgrade_required`; nothing applied | A free user calling each pro endpoint directly | Domain attach, realtime, premium template, or AI over quota is called | The API returns 403 with `upgrade_required` and nothing is applied |
+| AC-02 | AI over-quota and period-reset behavior verified by advancing the test clock; ledger and KV agree after reconciliation | AI usage over quota and a period reset | The test clock is advanced | Over-quota requests reject with an upgrade prompt and ledger and KV agree after reconciliation |
+| AC-03 | Downgrade simulation: excess profiles hidden/read-only per the decided rule; no data loss; badge restored | A pro downgrade | Downgrade executes | Excess profiles are hidden/read-only per the decided rule with no data loss and badge restored |
+| AC-04 | IDOR probe: user A cannot read or consume user B plan/credits; RLS denies at DB | User A reading or consuming user B plan/credits | The operation is attempted | Access is denied and RLS denies at DB |
+| AC-05 | Prompt-injection probe in JD/resume fields: sanitized, no system-prompt leakage, CSP holds on result rendering | Prompt-injection content in JD/resume fields | The tailor request runs | Inputs are sanitized with no system-prompt leakage and CSP holds on result rendering |
+| AC-06 | k6 gate (P3 exit, 100k concurrent normal-use mix) passes with AI calls capped and non-AI reads p95 under 500 ms | The P3-exit 100k concurrent normal-use mix | The k6 gate runs | It passes with AI calls capped and non-AI reads p95 under 500 ms |
 
 ## Out of scope
 

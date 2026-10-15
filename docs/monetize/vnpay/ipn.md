@@ -8,9 +8,9 @@ Define how the platform trusts VNPay: the browser return is verified and used fo
 
 ## Users
 
-- Buyer: lands on `/app/billing/return`, sees success/pending/failure, polls order status.
-- VNPay server: calls the registered IPN URL server-to-server on every completed payment.
-- Ops: replays or re-triggers IPN during incident recovery without double-granting.
+- Buyer: *As a Buyer, I want to land on `/app/billing/return`, see success/pending/failure, poll order status so that the platform trusts VNPay as defined here.* lands on `/app/billing/return`, sees success/pending/failure, polls order status.
+- VNPay server: *As a VNPay server, I want to call the registered IPN URL server-to-server on every completed payment so that the platform trusts VNPay as defined here.* calls the registered IPN URL server-to-server on every completed payment.
+- Ops: *As an Ops, I want to replay or re-trigger IPN during incident recovery without double-granting so that the platform trusts VNPay as defined here.* replays or re-triggers IPN during incident recovery without double-granting.
 
 ## Functional requirements
 
@@ -29,10 +29,15 @@ Define how the platform trusts VNPay: the browser return is verified and used fo
 ## Acceptance criteria
 
 - Sandbox end-to-end: checkout → VNPay test pay → return page shows confirming → IPN arrives → `paid` + entitlement visible within the SLA.
+  *GWT: Given Sandbox end-to-end: checkout; When the transition executes; Then VNPay test pay → return page shows confirming → IPN arrives → `paid` + entitlement visible within the SLA.*
 - Replay test: same IPN delivered twice → single transition, single entitlement, single audit entry; second response already-confirmed, zero side effects.
+  *GWT: Given Replay test: same IPN delivered twice; When the transition executes; Then single transition, single entitlement, single audit entry; second response already-confirmed, zero side effects.*
 - Tamper tests: bad `vnp_SecureHash` → failure/`97`; altered amount → invalid-amount, no grant; unknown `vnp_TxnRef` → order-not-found, no leak of valid refs.
+  *GWT: Given Tamper tests: bad `vnp_SecureHash`; When the transition executes; Then failure/`97`; altered amount → invalid-amount, no grant; unknown `vnp_TxnRef` → order-not-found, no leak of valid refs.*
 - Return-page direct hit with `ResponseCode=00` but no IPN yet: order stays `pending`, UX shows confirming (queryDr repair covers it — settlement doc).
+  *GWT: Given Return-page direct hit with `ResponseCode=00` but no IPN yet context; When the checked action occurs; Then order stays `pending`, UX shows confirming (queryDr repair covers it — settlement doc).*
 - Burst of bogus IPNs throttled by WAF/rate rules; valid traffic unaffected.
+  *GWT: Given Burst of bogus IPNs throttled by WAF/rate rules; When the next step executes; Then valid traffic unaffected.*
 
 ## Out of scope
 

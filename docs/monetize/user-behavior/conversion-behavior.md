@@ -8,9 +8,9 @@ Turn journey trails into conversion decisions: which frictions actually cost pai
 
 ## Users
 
-- Operator/founder: gets a ranked friction backlog (leak × reach × confidence) each cycle.
-- Experiment designer: picks the next test from evidence, with baseline rates attached.
-- Support lead: learns which error classes and provider failures drive contacts, and fixes messaging first.
+- Operator/founder: *As an Operator/founder, I want to get a ranked friction backlog (leak × reach × confidence) each cycle so that turn journey trails into conversion decisions as defined here.* gets a ranked friction backlog (leak × reach × confidence) each cycle.
+- Experiment designer: *As an Experiment designer, I want to pick the next test from evidence, with baseline rates attached so that turn journey trails into conversion decisions as defined here.* picks the next test from evidence, with baseline rates attached.
+- Support lead: *As a Support lead, I want to learn which error classes and provider failures drive contacts, and fixes messaging first so that turn journey trails into conversion decisions as defined here.* learns which error classes and provider failures drive contacts, and fixes messaging first.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Turn journey trails into conversion decisions: which frictions actually cost pai
 ## Acceptance criteria
 
 - Ranking drill: seeded friction (provider outage on one rail, confusing coupon error) ranks first and second by revenue-at-stake with correct baselines; anecdote-heavy but low-impact issues rank low.
+  *GWT: Given Ranking drill context; When seeded friction (provider outage on one rail, confusing coupon error) ranks first and second by revenue-at-stake with correct baselines; Then anecdote-heavy but low-impact issues rank low.*
 - Segment drill: sub-floor segments collapse to "other" in every readout; no segment re-identifies buyers (review gate on minimum-bucket enforcement).
+  *GWT: Given Segment drill context; When sub-floor segments collapse to "other" in every readout; Then no segment re-identifies buyers (review gate on minimum-bucket enforcement).*
 - Playbook drill: each named hesitation pattern links to its remediation experiment or fix; refresh-storm spike during an incident auto-suggests the confirming-UX fix.
+  *GWT: Given Playbook drill context; When each named hesitation pattern links to its remediation experiment or fix; Then refresh-storm spike during an incident auto-suggests the confirming-UX fix.*
 - Correlation-discipline drill: no readout claims causation without a linked experiment; causal language blocked by review checklist.
+  *GWT: Given Correlation-discipline drill context; When no readout claims causation without a linked experiment; Then causal language blocked by review checklist.*
 - Privacy drill: price-sensitivity work provably feeds only aggregate experiments, never personalized treatment (code + review gate).
+  *GWT: Given Privacy drill context; When the checked action occurs; Then price-sensitivity work provably feeds only aggregate experiments, never personalized treatment (code + review gate).*
 
 ## Out of scope
 

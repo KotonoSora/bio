@@ -8,10 +8,10 @@ Let every account be created and accessed exclusively through third-party SSO (G
 
 ## Users
 
-- Creator/visitor: signs up or logs in with one click via a provider button; links extra providers for resilience; unlinks a provider without losing access.
-- Returning user with changed email: still reaches the same account via stable provider `sub`, not via the mutable email string.
+- Creator/visitor: *As a Creator/visitor, I want to sign up or log in with one click via a provider button and link extra providers so that access is exclusive to SSO with resilience.* Signs up or logs in with one click via a provider button; links extra providers for resilience; unlinks a provider without losing access.
+- Returning user with changed email: *As a Returning user with changed email, I want to still reach the same account via stable provider `sub` so that a mutable email string never locks me out.* Still reaches the same account via stable provider `sub`, not via the mutable email string.
 - Attacker (adversarial): forges no callback, replays no code, links no attacker IdP to a victim account, enumerates no user list via auth responses.
-- Support/ops: recovers access without ever seeing or setting a secret; rotates provider client secrets without code deploys.
+- Support/ops: *As a Support/ops, I want to recover access without ever seeing or setting a secret and rotate provider client secrets without code deploys so that recovery stays safe.* Recovers access without ever seeing or setting a secret; rotates provider client secrets without code deploys.
 
 ## Functional requirements
 
@@ -34,15 +34,15 @@ Let every account be created and accessed exclusively through third-party SSO (G
 
 ## Acceptance criteria
 
-- Password-dead drill: email/password/signup/reset endpoints return 404 or `auth_disabled`; DB probe finds no populated password verifiers; UI contains no password field or reset link.
-- Happy-path drill (per provider × new vs returning): new SSO → username screen → dashboard + session cookie flags correct; returning SSO → same `users.id` even after IdP email change (stable `sub` match); private-relay / email-denied logins succeed with completion prompt, not a block.
-- Collision drill: IdP email matching another account does not merge — login lands on `sub`-matched account with conflict notice; no cross-user data exposure.
-- Callback-security drill: replayed `code`/`state`, mismatched PKCE, expired `state` (>10 min), cross-account `state` reuse, and off-allowlist `callbackURL` all fail closed with generic error; no session issued.
-- Linking drill: second provider links with fresh step-up only; unlink of last provider refused; unlink with ≥2 succeeds and both logins still resolve to one `users.id`.
-- IDOR/RLS drill (S-1/S-6): `userA` session cannot read/write `userB` profile/block/order/deletion row (403 at API + denied at DB as app role); `audit_log` covers link/unlink/recovery/impersonation events.
-- Abuse drill (S-5): rapid `/api/auth/*` bursts throttled (Turnstile + WAF + per-IP backoff); enumeration analysis shows no reliable existing-vs-new oracle.
-- XSS/CSP drill (S-2): IdP-supplied name/picture-borne markup stripped; CSP holds on login/callback/username screens.
-- Secrets drill: `grep -r client_secret|private_key` finds nothing in repo; rotation runbook executes without downtime; avatar prefill rejects SVG/HTML/5MB fakes (S-4).
+- Password-dead drill: email/password/signup/reset endpoints return 404 or `auth_disabled`; DB probe finds no populated password verifiers; UI contains no password field or reset link. *GWT: Given any email/password/signup/reset attempt; When the endpoint or DB/UI is probed; Then endpoints return 404 or `auth_disabled`, no verifiers are populated, and no password field or reset link exists.*
+- Happy-path drill (per provider × new vs returning): new SSO → username screen → dashboard + session cookie flags correct; returning SSO → same `users.id` even after IdP email change (stable `sub` match); private-relay / email-denied logins succeed with completion prompt, not a block. *GWT: Given a new or returning SSO login including private-relay or email-denied cases; When the flow completes; Then new users reach the username screen plus dashboard with correct cookie flags, and returning users resolve to the same `users.id` via stable `sub` with a completion prompt where needed.*
+- Collision drill: IdP email matching another account does not merge — login lands on `sub`-matched account with conflict notice; no cross-user data exposure. *GWT: Given an IdP email colliding with another account; When login completes; Then it lands on the `sub`-matched account with a conflict notice and no cross-user data exposure.*
+- Callback-security drill: replayed `code`/`state`, mismatched PKCE, expired `state` (>10 min), cross-account `state` reuse, and off-allowlist `callbackURL` all fail closed with generic error; no session issued. *GWT: Given a replayed code/state, mismatched PKCE, expired state, cross-account reuse, or off-allowlist callbackURL; When the callback is processed; Then it fails closed with a generic error and no session is issued.*
+- Linking drill: second provider links with fresh step-up only; unlink of last provider refused; unlink with ≥2 succeeds and both logins still resolve to one `users.id`. *GWT: Given an authenticated link/unlink request; When step-up freshness and remaining-link count are checked; Then second-provider links need fresh step-up, last-link unlinks are refused, and unlink with ≥2 keeps both logins on one `users.id`.*
+- IDOR/RLS drill (S-1/S-6): `userA` session cannot read/write `userB` profile/block/order/deletion row (403 at API + denied at DB as app role); `audit_log` covers link/unlink/recovery/impersonation events. *GWT: Given a `userA` session targeting `userB` rows; When reads or writes are attempted; Then the API returns 403, the DB denies as app role, and `audit_log` covers link/unlink/recovery/impersonation events.*
+- Abuse drill (S-5): rapid `/api/auth/*` bursts throttled (Turnstile + WAF + per-IP backoff); enumeration analysis shows no reliable existing-vs-new oracle. *GWT: Given rapid `/api/auth/*` bursts; When throttles apply; Then Turnstile plus WAF plus per-IP backoff throttle them with no reliable existing-vs-new oracle.*
+- XSS/CSP drill (S-2): IdP-supplied name/picture-borne markup stripped; CSP holds on login/callback/username screens. *GWT: Given IdP-supplied name/picture markup; When login/callback/username screens render; Then markup is stripped and CSP holds.*
+- Secrets drill: `grep -r client_secret|private_key` finds nothing in repo; rotation runbook executes without downtime; avatar prefill rejects SVG/HTML/5MB fakes (S-4). *GWT: Given repo and rotation plus avatar-prefill inputs; When the grep gate, rotation runbook, and fake uploads run; Then no secrets are found, rotation completes without downtime, and SVG/HTML/5MB fakes are rejected.*
 
 ## Out of scope
 

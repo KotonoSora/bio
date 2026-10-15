@@ -8,9 +8,9 @@ Close every gap the payment-link round-trip can leave: buyers who cancel on PayO
 
 ## Users
 
-- Buyer: cancels cleanly, sees accurate link/order state, escapes "confirming" limbo via status re-check.
-- Support/ops: cancels links, looks up live link status by `orderCode`, resolves stuck orders.
-- System (scheduled job): sweeps stale `pending` orders against PayOS truth.
+- Buyer: *As a Buyer, I want to cancel cleanly, see accurate link/order state, escape "confirming" limbo via status re-check so that gap the payment-link round-trip can leave as defined here.* cancels cleanly, sees accurate link/order state, escapes "confirming" limbo via status re-check.
+- Support/ops: *As a Support/ops, I want to cancel links, look up live link status by `orderCode`, resolve stuck orders so that gap the payment-link round-trip can leave as defined here.* cancels links, looks up live link status by `orderCode`, resolves stuck orders.
+- System (scheduled job): *As a System, I want to sweep stale `pending` orders against PayOS truth so that gap the payment-link round-trip can leave as defined here.* sweeps stale `pending` orders against PayOS truth.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Close every gap the payment-link round-trip can leave: buyers who cancel on PayO
 ## Acceptance criteria
 
 - Cancel drill (sandbox): buyer cancels on PayOS page → lands on cancel URL → order `cancelled`, PayOS link dead (re-open refuses payment), late webhook rejected with no grant.
+  *GWT: Given Cancel drill (sandbox): buyer cancels on PayOS page; When the transition executes; Then lands on cancel URL → order `cancelled`, PayOS link dead (re-open refuses payment), late webhook rejected with no grant.*
 - Expiry drill: unpaid link past `expiredAt` → order `expired`, link unusable.
+  *GWT: Given Expiry drill: unpaid link past `expiredAt`; When the transition executes; Then order `expired`, link unusable.*
 - Webhook-suppression drill (block receiver, complete sandbox payment): return page shows confirming, on-demand status query grants exactly once; redelivered webhook afterward is a no-op.
+  *GWT: Given Webhook-suppression drill (block receiver, complete sandbox payment) context; When return page shows confirming, on-demand status query grants exactly once; Then redelivered webhook afterward is a no-op.*
 - Sweep drill: stale pendings with gateway-paid settle correctly, no doubles; mismatches held for ops.
+  *GWT: Given Sweep drill context; When stale pendings with gateway-paid settle correctly, no doubles; Then mismatches held for ops.*
 - Auth probe: user A cancelling/querying user B orders → 403; RLS denies cross-owner rows.
+  *GWT: Given Auth probe: user A cancelling/querying user B orders; When the transition executes; Then 403; RLS denies cross-owner rows.*
 
 ## Out of scope
 

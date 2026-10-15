@@ -8,9 +8,9 @@ Deliver the full analytics experience on phones without building or maintaining 
 
 ## Users
 
-- Creator on mobile: checks overview, per-link performance, audience splits, realtime (pro), and earnings (where shipped) from a phone, including from an installed PWA icon.
-- Creator on desktop: sees the identical figures in a wider arrangement — no mobile-only or desktop-only metrics.
-- Platform (maintenance): ships one dashboard codebase with responsive layouts instead of three (web + iOS + Android).
+- Creator on mobile: *As a Creator on mobile, I want to check overview, per-link performance, audience splits, realtime, and earnings from a phone so that a launch can be followed from the venue floor with exactly desktop figures.* Checks overview, per-link performance, audience splits, realtime (pro), and earnings (where shipped) from a phone, including from an installed PWA icon.
+- Creator on desktop: *As a Creator on desktop, I want the identical figures in a wider arrangement so that no mobile-only or desktop-only metrics cause mismatched reads.* Sees the identical figures in a wider arrangement — no mobile-only or desktop-only metrics.
+- Platform (maintenance): *As a Platform maintainer, I want one dashboard codebase with responsive layouts so that web, iOS, and Android do not require three shipped codebases.* Ships one dashboard codebase with responsive layouts instead of three (web + iOS + Android).
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Deliver the full analytics experience on phones without building or maintaining 
 
 ## Acceptance criteria
 
-- Install drill: PWA installs from Chrome Android and iOS Safari share-sheet with correct icon/name; offline open shows shell + stale warning, never numbers presented as fresh.
-- Same-numbers drill: scripted fixture reads identical across desktop, mobile browser, and installed PWA for all five analytics surfaces (overview, links, audience, realtime, unified).
-- Performance drill: analytics bundle for the mobile route stays within budget; background-tab polling pauses (verified via request logs).
-- Service-worker drill: API responses are never served from worker cache (cache-storage inspection); shell/assets are.
-- Security drill: session handling unchanged (cookie session, RLS/owner scoping); IDOR probes on mobile routes behave identically to desktop.
+- Install drill: PWA installs from Chrome Android and iOS Safari share-sheet with correct icon/name; offline open shows shell + stale warning, never numbers presented as fresh. *GWT: Given an offline open of the installed PWA; When the shell renders; Then it shows the shell + stale warning and never presents numbers as fresh.*
+- Same-numbers drill: scripted fixture reads identical across desktop, mobile browser, and installed PWA for all five analytics surfaces (overview, links, audience, realtime, unified). *GWT: Given scripted fixtures at the same `generated_at`; When read across desktop, mobile browser, and installed PWA; Then all five analytics surfaces are identical.*
+- Performance drill: analytics bundle for the mobile route stays within budget; background-tab polling pauses (verified via request logs). *GWT: Given a backgrounded dashboard tab; When request logs are checked; Then realtime polling pauses and the mobile-route bundle stays within budget.*
+- Service-worker drill: API responses are never served from worker cache (cache-storage inspection); shell/assets are. *GWT: Given cached shell/assets and fresh API data; When cache storage is inspected; Then API responses are never served from worker cache while shell/assets are.*
+- Security drill: session handling unchanged (cookie session, RLS/owner scoping); IDOR probes on mobile routes behave identically to desktop. *GWT: Given IDOR probes on mobile routes; When evaluated; Then they behave identically to desktop with cookie-session RLS/owner scoping intact.*
 
 ## Out of scope
 

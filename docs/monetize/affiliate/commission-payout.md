@@ -8,9 +8,9 @@ Define how confirmed attributions become money in affiliates' hands: commission 
 
 ## Users
 
-- Affiliate: watches pending → confirmed → payable → paid states, meets a threshold, receives bank payout with a statement.
-- Program operator: runs the payout cycle, handles failures and tax paperwork, answers "where is my money" from one ledger.
-- Finance: books commission expense off the same ledger, withholds/reports only as counsel directs.
+- Affiliate: *As an Affiliate, I want to watch pending → confirmed → payable → paid states, meet a threshold, receive bank payout with a statement so that confirmed attributions become money in affiliates' hands as defined here.* watches pending → confirmed → payable → paid states, meets a threshold, receives bank payout with a statement.
+- Program operator: *As a Program operator, I want to run the payout cycle, handle failures and tax paperwork, answer "where is my money" from one ledger so that confirmed attributions become money in affiliates' hands as defined here.* runs the payout cycle, handles failures and tax paperwork, answers "where is my money" from one ledger.
+- Finance: *As a Finance, I want to book commission expense off the same ledger, withholds/report only as counsel directs so that confirmed attributions become money in affiliates' hands as defined here.* books commission expense off the same ledger, withholds/reports only as counsel directs.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Define how confirmed attributions become money in affiliates' hands: commission 
 ## Acceptance criteria
 
 - Computation drill: tier change mid-month affects only later attributions; partial refund nets the line proportionally; rounding (if any) favors affiliate and is logged.
+  *GWT: Given Computation drill context; When tier change mid-month affects only later attributions; Then rounding (if any) favors affiliate and is logged.*
 - Cycle drill (sandbox): freeze → instruct → execute → reconcile → `paid` with matching statements and emails; one failed line blocks nothing else and opens exactly one ops case.
+  *GWT: Given Cycle drill (sandbox): freeze; When the transition executes; Then instruct → execute → reconcile → `paid` with matching statements and emails; one failed line blocks nothing else and opens exactly one ops case.*
 - Reversal drill: post-payout reversal becomes a notified debit against future payables — no silent bank pull, full audit chain.
+  *GWT: Given Reversal drill context; When the checked action occurs; Then post-payout reversal becomes a notified debit against future payables — no silent bank pull, full audit chain.*
 - Duplicate-execution drill: re-running a batch confirm is a no-op (idempotent); double-instruct impossible while frozen.
+  *GWT: Given Duplicate-execution drill context; When re-running a batch confirm is a no-op (idempotent); Then double-instruct impossible while frozen.*
 - Tax drill: affiliate without complete tax fields cannot enter a payout batch (blocked with a fix-it notice, earnings intact).
+  *GWT: Given Tax drill context; When the checked action occurs; Then affiliate without complete tax fields cannot enter a payout batch (blocked with a fix-it notice, earnings intact).*
 - Auth probe: affiliate A reading affiliate B earnings/statements → 403; RLS denies cross-affiliate rows.
+  *GWT: Given Auth probe: affiliate A reading affiliate B earnings/statements; When the transition executes; Then 403; RLS denies cross-affiliate rows.*
 
 ## Out of scope
 

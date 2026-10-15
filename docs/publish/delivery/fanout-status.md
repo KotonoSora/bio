@@ -8,9 +8,9 @@ Deliver the "7 of 7 published" promise honestly: background fan-out across seven
 
 ## Users
 
-- Creator: watches per-platform status live, retries failed targets individually, sees exactly where a post stands ("7 of 7 published" or precisely which leg failed and why).
-- Ops: sees provider-side failure clusters, pauses a network leg globally during an outage, replays poisoned jobs after a fix.
-- Buyer/visitor: unaffected — publishing never touches public pages.
+- Creator: *As a Creator, I want to watch per-platform status live, retry failed targets individually, and see exactly where a post stands so that partial failure is visible and retryable.* Watches per-platform status live, retries failed targets individually, sees exactly where a post stands ("7 of 7 published" or precisely which leg failed and why).
+- Ops: *As an Ops, I want to see provider-side failure clusters, pause a network leg globally during an outage, and replay poisoned jobs so that publishing recovers in order.* Sees provider-side failure clusters, pauses a network leg globally during an outage, replays poisoned jobs after a fix.
+- Buyer/visitor: *As a Buyer/visitor, I want publishing to never touch public pages so that I am unaffected.* Unaffected — publishing never touches public pages.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Deliver the "7 of 7 published" promise honestly: background fan-out across seven
 
 ## Acceptance criteria
 
-- Honesty drill: fixture run with 5 success + 1 fail + 1 timeout shows exactly "5 of 7 published" with the two legs named, reasoned, and individually retryable.
-- Idempotency drill: redelivered queue message + ambiguous-timeout retry flow produce exactly one provider-side post (or an explicit confirm gate where the API cannot guarantee it).
-- Retry-class drill: rate-limit failure auto-retries to success; revoked-token failure lands `failed` with re-connect guidance and no futile retries.
-- Outage drill: network pause halts only that leg; resume replays in order; poison message quarantines with ops page after N redeliveries.
-- Load drill: full 7-target fan-out p95 dispatch-to-first-status within budget; queue depth pages before creator-visible staleness.
+- Honesty drill: fixture run with 5 success + 1 fail + 1 timeout shows exactly "5 of 7 published" with the two legs named, reasoned, and individually retryable. *GWT: Given a fixture run with 5 success plus 1 fail plus 1 timeout; When the status view renders; Then it shows exactly "5 of 7 published" with both legs named, reasoned, and individually retryable.*
+- Idempotency drill: redelivered queue message + ambiguous-timeout retry flow produce exactly one provider-side post (or an explicit confirm gate where the API cannot guarantee it). *GWT: Given a redelivered message or ambiguous-timeout retry; When dispatch resolves; Then exactly one provider-side post results or an explicit confirm gate holds.*
+- Retry-class drill: rate-limit failure auto-retries to success; revoked-token failure lands `failed` with re-connect guidance and no futile retries. *GWT: Given rate-limit vs revoked-token failures; When retry classifies; Then rate-limits auto-retry to success and revoked tokens land `failed` with re-connect guidance and no futile retries.*
+- Outage drill: network pause halts only that leg; resume replays in order; poison message quarantines with ops page after N redeliveries. *GWT: Given a network pause and poison redeliveries; When pause/resume and quarantine run; Then only that leg halts, resume replays in order, and poison quarantines with ops page after N redeliveries.*
+- Load drill: full 7-target fan-out p95 dispatch-to-first-status within budget; queue depth pages before creator-visible staleness. *GWT: Given a full 7-target fan-out and queue depth growth; When dispatch runs; Then p95 dispatch-to-first-status stays within budget and depth pages before creator-visible staleness.*
 
 ## Out of scope
 

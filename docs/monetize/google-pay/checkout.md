@@ -8,9 +8,9 @@ Define how money starts moving via Google Pay: an authenticated checkout creates
 
 ## Users
 
-- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, authorizes in the Google Pay sheet, sees immediate confirmation or a pending state.
-- Creator/seller: receives entitlement on charge-confirmed grant.
-- Support/ops: looks up an order by `orderCode` / PSP transaction id to reconcile disputes and chargebacks.
+- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): *As a Buyer, I want to start checkout, authoriz in the Google Pay sheet, see immediate confirmation or a pending state so that money starts moving via Google Pay as defined here.* starts checkout, authorizes in the Google Pay sheet, sees immediate confirmation or a pending state.
+- Creator/seller: *As a Creator/seller, I want to receive entitlement on charge-confirmed grant so that money starts moving via Google Pay as defined here.* receives entitlement on charge-confirmed grant.
+- Support/ops: *As a Support/ops, I want to look up an order by `orderCode` / PSP transaction id to reconcile disputes and chargebacks so that money starts moving via Google Pay as defined here.* looks up an order by `orderCode` / PSP transaction id to reconcile disputes and chargebacks.
 
 ## Functional requirements
 
@@ -32,12 +32,19 @@ Define how money starts moving via Google Pay: an authenticated checkout creates
 ## Acceptance criteria
 
 - UAT with Google sample tokens in `TEST` environment: checkout → sheet → token → PSP-sandbox charge → `paid` + entitlement visible within the SLA.
+  *GWT: Given UAT with Google sample tokens in `TEST` environment: checkout; When the transition executes; Then sheet → token → PSP-sandbox charge → `paid` + entitlement visible within the SLA.*
 - Amount tamper (client alters totalPrice): server-side binding rejects before any PSP call; mismatch logged.
+  *GWT: Given Amount tamper (client alters totalPrice) context; When server-side binding rejects before any PSP call; Then mismatch logged.*
 - Direct/PAN_ONLY tokenization attempt: refused by configuration (gateway-only allowlist, grep gate on tokenization type).
+  *GWT: Given Direct/PAN_ONLY tokenization attempt context; When the checked action occurs; Then refused by configuration (gateway-only allowlist, grep gate on tokenization type).*
 - Raw token/PAN material in logs, DB (beyond PSP reference), or client storage: none (grep + review gate).
+  *GWT: Given the preconditions for this check hold; When raw token/PAN material in logs, DB (beyond PSP reference), or client storage: none (grep + review gate); Then the expected outcome stated here is observed.*
 - Stuck "authorizing" past timeout: order recovers via the settlement doc's status path, never double-charges.
+  *GWT: Given Stuck "authorizing" past timeout context; When the checked action occurs; Then order recovers via the settlement doc's status path, never double-charges.*
 - IDOR probe: user A operating on user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A operating on user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no PSP keys or Google merchant credentials in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no PSP keys or Google merchant credentials in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

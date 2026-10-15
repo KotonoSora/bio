@@ -8,9 +8,9 @@ Close every gap the PaymentIntent round-trip can leave: buyers who abandon 3DS, 
 
 ## Users
 
-- Buyer stuck on "confirming" (3DS abandoned, asynchronous method pending, webhook delayed): gets resolution via status verify instead of limbo.
-- Support/ops: looks up live intent status, issues refunds, assembles dispute evidence.
-- System (scheduled job): sweeps `authorizing`/stale-`pending` orders against Stripe truth.
+- Buyer stuck on "confirming" (3DS abandoned, asynchronous method pending, webhook delayed): *As a Buyer stuck on "confirming", I want to get resolution via status verify instead of limbo so that gap the PaymentIntent round-trip can leave as defined here.* gets resolution via status verify instead of limbo.
+- Support/ops: *As a Support/ops, I want to look up live intent status, issue refunds, assemble dispute evidence so that gap the PaymentIntent round-trip can leave as defined here.* looks up live intent status, issues refunds, assembles dispute evidence.
+- System (scheduled job): *As a System, I want to sweep `authorizing`/stale-`pending` orders against Stripe truth so that gap the PaymentIntent round-trip can leave as defined here.* sweeps `authorizing`/stale-`pending` orders against Stripe truth.
 
 ## Functional requirements
 
@@ -31,10 +31,15 @@ Close every gap the PaymentIntent round-trip can leave: buyers who abandon 3DS, 
 ## Acceptance criteria
 
 - 3DS-abandon drill (sandbox): order parks in confirming, on-demand retrieve returns non-terminal, sweep later expires it; no grant, nothing captured.
+  *GWT: Given 3DS-abandon drill (sandbox) context; When order parks in confirming, on-demand retrieve returns non-terminal, sweep later expires it; Then no grant, nothing captured.*
 - Webhook-suppression drill: retrieve grants exactly once on `succeeded`; redelivered webhook afterward is a no-op.
+  *GWT: Given Webhook-suppression drill context; When retrieve grants exactly once on `succeeded`; Then redelivered webhook afterward is a no-op.*
 - Refund drill (sandbox, full + partial): references recorded, entitlements revoked per rule, re-grant impossible.
+  *GWT: Given Refund drill (sandbox, full + partial) context; When the checked action occurs; Then references recorded, entitlements revoked per rule, re-grant impossible.*
 - Dispute drill: dispute webhook freezes the order, evidence submitted before the deadline, win/loss transitions applied correctly.
+  *GWT: Given Dispute drill context; When the checked action occurs; Then dispute webhook freezes the order, evidence submitted before the deadline, win/loss transitions applied correctly.*
 - Auth probe: non-ops user on ops endpoints → 403; RLS denies cross-owner rows.
+  *GWT: Given Auth probe: non-ops user on ops endpoints; When the transition executes; Then 403; RLS denies cross-owner rows.*
 
 ## Out of scope
 

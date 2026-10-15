@@ -8,9 +8,18 @@ Define the single buyer journey from price intent to a tracked pending order: pr
 
 ## Users
 
-- Buyer: previews the exact charge, pays once, returns to a clear pending/success/failure state.
-- Frontend checkout: quotes without creating rows, creates idempotently, polls one status shape.
-- Support/ops: looks up an order by `orderCode`, cancels stuck pendings, explains expiry without ambiguity.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Preview the exact charge, pay once, return to pending/success/failure state | Double-submit, expiry, and return behavior identical on every rail |
+| Frontend checkout | Quote without creating rows, create idempotently, poll one status shape | Follows the single buyer journey from price intent to tracked pending order |
+| Support/ops | Look up an order by `orderCode`, cancel stuck pendings | Explains expiry without ambiguity |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Preview the exact charge, pay once, and return to a clear pending/success/failure state | Double-submit, expiry, and return behavior are identical on every rail | Must |
+| US-02 | Frontend checkout | Quote without creating rows, create idempotently, and poll one status shape | I follow the single buyer journey from price intent to a tracked pending order | Must |
+| US-03 | Support/ops | Look up an order by `orderCode` and cancel stuck pendings | I explain expiry without ambiguity | Must |
+
 - Attacker (adversarial): double-submits, tampers amounts, forges return URLs, races cancel against grant — and gains nothing.
 
 ## Functional requirements
@@ -31,15 +40,17 @@ Define the single buyer journey from price intent to a tracked pending order: pr
 
 ## Acceptance criteria
 
-- No-default drill: omitted `provider` on create → 422 with eligible list (never a silent provider fallback); quote with no `provider` previews all eligible without creating.
-- Quote-charged identity: quote amount equals created `amount_vnd` to the VND across plan/product × provider × coupon cells; client amount tamper re-priced server-side and logged.
-- Double-submit drill (per provider handoff kind): same key/fingerprint → single row + same handoff; key reuse across intents → 422; keyless double-click → single row.
-- Validation drill: ineligible provider, bad coupon, malformed email, off-origin return/cancel → 422 with no order row and no catalog leakage.
-- Expiry drill: unpaid order flips to `expired` once (sweep rerun is a no-op); expired UX offers new checkout only; late confirmation against `expired|cancelled` grants nothing and logs.
-- Cancel-race drill: cancel concurrent with provider confirmation resolves to exactly one terminal outcome per the status-model edges; no resurrection out of terminal states.
-- Return drill: forged success params with no provider confirmation change nothing; all redirect providers converge on the one pending page with correct canonical rendering.
-- IDOR probe (S-1/S-6): user A quoting/creating/reading/cancelling user B orders → 403; RLS denies cross-user rows at DB; webhook-style calls authenticate by provider scheme, never by session.
-- XSS/CSP + abuse + secrets: quote/pending/error rendering strips script/iframe/event-handlers with CSP holding (S-2); rapid quote/checkout bursts throttled via Turnstile + WAF (S-5); secrets grep across repo/logs/bundles clean with rotation per P5-4 (avatar upload N/A to this flow — covered in P1b-4).
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | No-default drill: omitted `provider` on create returns 422 with eligible list (never a silent provider fallback); quote with no `provider` previews all eligible without creating | A create with omitted `provider` and a quote with no `provider` | Create and quote run | Create returns 422 with the eligible list and quote previews all eligible without creating |
+| AC-02 | Quote-charged identity: quote amount equals created `amount_vnd` to the VND across plan/product x provider x coupon cells; client amount tamper re-priced server-side and logged | A quote across plan/product x provider x coupon cells | The order is created including with tampered client amounts | Quote amount equals created `amount_vnd` to the VND with tamper re-priced server-side and logged |
+| AC-03 | Double-submit drill (per provider handoff kind): same key/fingerprint yields single row + same handoff; key reuse across intents returns 422; keyless double-click yields single row | A double-submit per provider handoff kind | The same key/fingerprint is reused, a key is reused across intents, or a keyless double-click occurs | The same key/fingerprint yields a single row with the same handoff, key reuse across intents returns 422, and keyless double-click yields a single row |
+| AC-04 | Validation drill: ineligible provider, bad coupon, malformed email, off-origin return/cancel returns 422 with no order row and no catalog leakage | An ineligible provider, bad coupon, malformed email, or off-origin return/cancel | Checkout validation runs | The API returns 422 with no order row and no catalog leakage |
+| AC-05 | Expiry drill: unpaid order flips to `expired` once (sweep rerun is a no-op); expired UX offers new checkout only; late confirmation against `expired`/`cancelled` grants nothing and logs | An unpaid pending order | The expiry sweep runs including reruns and late confirmations arrive | The order flips to `expired` once, expired UX offers new checkout only, and late confirmation against `expired`/`cancelled` grants nothing and logs |
+| AC-06 | Cancel-race drill: cancel concurrent with provider confirmation resolves to exactly one terminal outcome per the status-model edges; no resurrection out of terminal states | Cancel concurrent with provider confirmation | Both race | Exactly one terminal outcome per the status-model edges results with no resurrection out of terminal states |
+| AC-07 | Return drill: forged success params with no provider confirmation change nothing; all redirect providers converge on the one pending page with correct canonical rendering | Forged success params with no provider confirmation | Return handling runs | Nothing changes and all redirect providers converge on the one pending page with correct canonical rendering |
+| AC-08 | IDOR probe (S-1/S-6): user A quoting/creating/reading/cancelling user B orders returns 403; RLS denies cross-user rows at DB; webhook-style calls authenticate by provider scheme, never by session | User A quoting/creating/reading/cancelling user B orders | The operation is attempted | The API returns 403, RLS denies cross-user rows at DB, and webhook-style calls authenticate by provider scheme |
+| AC-09 | XSS/CSP + abuse + secrets: quote/pending/error rendering strips script/iframe/event-handlers with CSP holding (S-2); rapid quote/checkout bursts throttled via Turnstile + WAF (S-5); secrets grep clean with rotation per P5-4 (avatar upload N/A to this flow, covered in P1b-4) | Rendered quote/pending/error output and rapid quote/checkout bursts plus repo/logs/bundles under secrets grep | XSS, abuse, and secrets probes run | Rendering strips script/iframe/event-handlers with CSP holding (S-2), bursts are throttled via Turnstile + WAF (S-5), and secrets grep stays clean with rotation per P5-4 |
 
 ## Out of scope
 

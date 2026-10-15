@@ -8,9 +8,17 @@ Reserve the minimal database shape for future agency seats so P4 roster work nee
 
 ## Users
 
-- P3 developer: creates the tables with constraints now, writes no agency queries beyond existence checks.
-- P4 developer (future): inherits clean tables to build invite/role/impersonation/leaderboard on.
-- Organization owner (future user): named here only to fix the vocabulary; served in P4.
+| Role | Permissions | Notes |
+|---|---|---|
+| P3 developer | Create the tables with constraints now | Writes no agency queries beyond existence checks |
+| P4 developer (future) | Inherit clean tables to build invite/role/impersonation/leaderboard on | Served in P4, not P3 |
+| Organization owner (future user) | Named here only to fix the vocabulary | Served in P4 |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | P3 developer | Create the tables with constraints now | P4 roster work needs no destructive migration | Must |
+| US-02 | P4 developer | Inherit clean tables to build invite/role/impersonation/leaderboard on | Nothing behavioral ships in P3 | Should |
+| US-03 | Organization owner | Have my vocabulary fixed now | I am served in P4 | Should |
 
 ## Functional requirements
 
@@ -28,11 +36,13 @@ Reserve the minimal database shape for future agency seats so P4 roster work nee
 
 ## Acceptance criteria
 
-- Migration applies cleanly on a fresh database and on the staging mirror; tables, FKs, indexes, and RLS policies all present.
-- Direct PG probe as app role: cross-org row reads denied; unauthenticated API access to `/api/v1/orgs` rejected.
-- Grep gate on the P3 tree: no `impersonat*`, invite-accept, role-grant, or leaderboard aggregation code paths exist outside comments referencing this doc.
-- `audit_log` captures the table-creation/membership-seed events with actor/action/target.
-- P4 readiness note filed: the exact DDL is referenced by the future agency spec, requiring no rewrite.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Migration applies cleanly on a fresh database and on the staging mirror; tables, FKs, indexes, and RLS policies all present | A fresh database and the staging mirror | The P3 migration applies | Tables, FKs, indexes, and RLS policies are all present |
+| AC-02 | Direct PG probe as app role: cross-org row reads denied; unauthenticated API access to `/api/v1/orgs` rejected | Cross-org row reads as app role and unauthenticated API access | The probe runs | Cross-org reads are denied and unauthenticated access to `/api/v1/orgs` is rejected |
+| AC-03 | Grep gate on the P3 tree: no `impersonat*`, invite-accept, role-grant, or leaderboard aggregation code paths exist outside comments referencing this doc | The P3 tree | The grep gate scans | No impersonation, invite-accept, role-grant, or leaderboard aggregation code paths exist outside comments referencing this doc |
+| AC-04 | `audit_log` captures the table-creation/membership-seed events with actor/action/target | Table-creation/membership-seed events | They occur | `audit_log` captures them with actor/action/target |
+| AC-05 | P4 readiness note filed: the exact DDL is referenced by the future agency spec, requiring no rewrite | The P4 future agency spec | Readiness is checked | The exact DDL is referenced requiring no rewrite |
 
 ## Out of scope
 

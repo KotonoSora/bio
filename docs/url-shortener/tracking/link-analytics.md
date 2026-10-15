@@ -8,9 +8,9 @@ Define how short-link opens become trustworthy counts: the hit pipeline, bot/fra
 
 ## Users
 
-- Link owner (creator/operator/affiliate/advertiser): sees opens, uniques, devices, referrers, and scan-vs-click splits per link.
-- Dispute reviewer: replays any billed/reported count from stored evidence.
-- Visitor: counted once per genuine open, never tracked across links into a behavioral profile.
+- Link owner (creator/operator/affiliate/advertiser): *As a Link owner, I want to see opens, uniques, devices, referrers, and scan-vs-click splits per link so that spend decisions use trustworthy counts.* Sees opens, uniques, devices, referrers, and scan-vs-click splits per link.
+- Dispute reviewer: *As a Dispute reviewer, I want to replay any billed/reported count from stored evidence so that figures stay dispute-replayable.* Replays any billed/reported count from stored evidence.
+- Visitor: *As a Visitor, I want to be counted once per genuine open so that I am never tracked across links into a behavioral profile.* Counted once per genuine open, never tracked across links into a behavioral profile.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Define how short-link opens become trustworthy counts: the hit pipeline, bot/fra
 
 ## Acceptance criteria
 
-- Counting drill: scripted genuine opens (mixed devices/referrers) reconcile hit-for-hit with aggregates; prefetch/bot traffic excluded per the decided posture.
-- Hot-path drill: resolve latency unchanged with counting enabled vs disabled (benchmarked); queue outage degrades to sweep-repair with no loss and no doubles.
-- Flood drill: single-source velocity flood quarantined from aggregates with an ops case; legitimate traffic in the same window unaffected.
-- Separation drill (under load): zero short-link rows in creator analytics and vice versa; dual-counted bio-block case documented and verified.
-- Replay drill: any reported figure replays from evidence within TTL; filter-exclusion math (raw − excluded = reported) holds exactly.
+- Counting drill: scripted genuine opens (mixed devices/referrers) reconcile hit-for-hit with aggregates; prefetch/bot traffic excluded per the decided posture. *GWT: Given scripted genuine opens with mixed devices/referrers plus prefetch/bot traffic; When aggregates build; Then genuine opens reconcile hit-for-hit and prefetch/bot traffic is excluded per the decided posture.*
+- Hot-path drill: resolve latency unchanged with counting enabled vs disabled (benchmarked); queue outage degrades to sweep-repair with no loss and no doubles. *GWT: Given counting enabled vs disabled and a queue outage; When resolve runs and recovery runs; Then resolve latency is unchanged (benchmarked) and outage degrades to sweep-repair with no loss and no doubles.*
+- Flood drill: single-source velocity flood quarantined from aggregates with an ops case; legitimate traffic in the same window unaffected. *GWT: Given a single-source velocity flood with concurrent legitimate traffic; When filtering runs; Then the flood is quarantined from aggregates with an ops case and legitimate traffic stays unaffected.*
+- Separation drill (under load): zero short-link rows in creator analytics and vice versa; dual-counted bio-block case documented and verified. *GWT: Given short-link and creator analytics under load with a bio-block short URL; When hits are recorded; Then zero short-link rows appear in creator analytics and vice versa, with the dual-counted bio-block case documented and verified.*
+- Replay drill: any reported figure replays from evidence within TTL; filter-exclusion math (raw − excluded = reported) holds exactly. *GWT: Given any reported figure within TTL; When replayed from retained evidence; Then it replays exactly with filter-exclusion math (raw − excluded = reported) holding.*
 
 ## Out of scope
 

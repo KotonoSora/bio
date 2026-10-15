@@ -8,9 +8,17 @@ Define how a plan is bought without privileging any rail: the same pro monthly/y
 
 ## Users
 
-- Buyer: picks a term (monthly/yearly), picks any eligible rail, pays, receives pro.
-- Frontend plan page: quotes every eligible rail for the chosen term, sends the chosen `provider` explicitly.
-- Support/ops: explains per-rail differences (handoff kind, renewal shape, refund path) from one matrix instead of eight consoles.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Pick a term (monthly/yearly), pick any eligible rail, pay, receive pro | Same terms quoted and charged identically on every rail |
+| Frontend plan page | Quote every eligible rail for the chosen term, send chosen `provider` explicitly | Buyer always chooses explicitly with no fallback |
+| Support/ops | Explain per-rail differences (handoff kind, renewal shape, refund path) from one matrix | Avoids eight consoles |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Pick a term (monthly/yearly), pick any eligible rail, pay, and receive pro | The same terms are quoted and charged identically on every rail | Must |
+| US-02 | Frontend plan page | Quote every eligible rail for the chosen term and send the chosen `provider` explicitly | The buyer always chooses explicitly with no fallback | Must |
+| US-03 | Support/ops | Explain per-rail differences (handoff kind, renewal shape, refund path) from one matrix | I avoid eight consoles | Must |
 
 ## Functional requirements
 
@@ -30,12 +38,14 @@ Define how a plan is bought without privileging any rail: the same pro monthly/y
 
 ## Acceptance criteria
 
-- Eight-rail plan matrix drill: pro monthly × 8 + pro yearly × 8 quote/create/grant paths verified via API — identical amounts per term across rails (modulo documented rail fees, if any), identical ledger entitlements and gate effects.
-- No-default drill: omitted `provider` on plan checkout → 422 with eligible list; unknown code → 422; grep gate finds no hardcoded provider default or fallback ordering in plan/checkout code.
-- Quote-charged-ledger identity: quoted amount = charged `amount_vnd` = receipt amount to the VND on every plan × term × rail cell; tampered client amounts re-priced and logged.
-- Grant-visibility drill: a paid plan grant on each rail is readable at `GET /api/v1/plan` and passes every gate (domain, realtime, templates, AI) within the SLA; 0-VND promo plan grants without touching any rail.
-- Renewal/cancel drill: one-shot rails renew by fresh checkout with early-renewal extension from `period_end`; Stripe-native (where enabled) cancels at PSP with no stray invoices; downgrade is lossless on every rail.
-- Baseline: IDOR 403 cross-user with RLS deny (S-1/S-6); plan/quote/error rendering XSS-stripped with CSP holding (S-2); anonymous quote/checkout Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation (P5-4).
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Eight-rail plan matrix drill: pro monthly x 8 + pro yearly x 8 quote/create/grant paths verified via API; identical amounts per term across rails (modulo documented rail fees, if any), identical ledger entitlements and gate effects | Pro monthly x 8 + pro yearly x 8 quote/create/grant paths | Each path is verified via API | Amounts are identical per term across rails with identical ledger entitlements and gate effects |
+| AC-02 | No-default drill: omitted `provider` on plan checkout returns 422 with eligible list; unknown code returns 422; grep gate finds no hardcoded provider default or fallback ordering in plan/checkout code | A plan checkout with omitted or unknown `provider` | Checkout is created and the grep gate scans plan/checkout code | Omitted `provider` returns 422 with the eligible list, unknown codes return 422, and the grep gate finds no hardcoded default or fallback ordering |
+| AC-03 | Quote-charged-ledger identity: quoted amount equals charged `amount_vnd` equals receipt amount to the VND on every plan x term x rail cell; tampered client amounts re-priced and logged | Every plan x term x rail cell | Quote, charge, and receipt are compared including with tampered client amounts | Quoted amount equals charged `amount_vnd` equals receipt amount to the VND with tamper re-priced and logged |
+| AC-04 | Grant-visibility drill: a paid plan grant on each rail is readable at `GET /api/v1/plan` and passes every gate (domain, realtime, templates, AI) within the SLA; 0-VND promo plan grants without touching any rail | A paid plan grant on each rail and a 0-VND promo plan grant | `GET /api/v1/plan` and every gate are checked | Each rail grant is readable and passes every gate within the SLA and the 0-VND grant completes without touching any rail |
+| AC-05 | Renewal/cancel drill: one-shot rails renew by fresh checkout with early-renewal extension from `period_end`; Stripe-native (where enabled) cancels at PSP with no stray invoices; downgrade is lossless on every rail | Renewal/cancel on one-shot rails and Stripe-native where enabled | Renewal and cancel run | One-shot rails renew by fresh checkout extending from `period_end`, Stripe-native cancels at PSP with no stray invoices, and downgrade is lossless on every rail |
+| AC-06 | Baseline: IDOR 403 cross-user with RLS deny (S-1/S-6); plan/quote/error rendering XSS-stripped with CSP holding (S-2); anonymous quote/checkout Turnstile + WAF throttled (S-5); secrets grep clean with quarterly rotation (P5-4) | Cross-user access, rendered plan/quote/error output, anonymous quote/checkout, and repo under secrets grep | IDOR, XSS, abuse, and secrets probes run | Cross-user access returns 403 with RLS deny (S-1/S-6), rendering is XSS-stripped with CSP holding (S-2), anonymous traffic is Turnstile + WAF throttled (S-5), and secrets grep stays clean with quarterly rotation |
 
 ## Out of scope
 

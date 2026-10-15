@@ -8,9 +8,9 @@ Sell files and gated content with one secure pattern: pay first, receive a perso
 
 ## Users
 
-- Creator: uploads files, sets prices, writes free previews with gated full content.
-- Buyer: pays once, downloads within the access window, re-accesses while entitled.
-- Non-buyer: sees previews and price only — full bytes never leak through preview surfaces or CDN guessing.
+- Creator: *As a Creator, I want to upload files, set prices, and write free previews with gated full content so that files sell securely.* Uploads files, sets prices, writes free previews with gated full content.
+- Buyer: *As a Buyer, I want to pay once, download within the access window, and re-access while entitled so that purchases stay available.* Pays once, downloads within the access window, re-accesses while entitled.
+- Non-buyer: *As a Non-buyer, I want to see previews and price only so that full bytes never leak through preview surfaces.* Sees previews and price only — full bytes never leak through preview surfaces or CDN guessing.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Sell files and gated content with one secure pattern: pay first, receive a perso
 
 ## Acceptance criteria
 
-- Grant drill: signed URL mints only after grant-confirmed payment; pre-payment and refunded-buyer requests get 403 with no URL.
-- Expiry drill: lapsed/over-count entitlements refuse with the correct reason; courtesy extension restores exactly the granted window.
-- Leak drill: preview HTML/JSON contains zero locked bytes; R2 key guessing does not resolve (random keys, no listing); shared signed URL fails after single use / expiry.
-- Version drill: re-upload preserves old-version buyer access; upgrade flag correctly charges or grants new version.
-- Upload drill: oversized, fake-mime, and scriptable-type uploads rejected before R2 write.
+- Grant drill: signed URL mints only after grant-confirmed payment; pre-payment and refunded-buyer requests get 403 with no URL. *GWT: Given grant-confirmed, pre-payment, or refunded-buyer state; When a signed URL is requested; Then only grant-confirmed mints a URL while pre-payment and refunded-buyer requests get 403 with no URL.*
+- Expiry drill: lapsed/over-count entitlements refuse with the correct reason; courtesy extension restores exactly the granted window. *GWT: Given lapsed/over-count entitlements with a courtesy extension; When access is requested; Then lapsed/over-count requests refuse with the correct reason and extension restores exactly the granted window.*
+- Leak drill: preview HTML/JSON contains zero locked bytes; R2 key guessing does not resolve (random keys, no listing); shared signed URL fails after single use / expiry. *GWT: Given preview HTML/JSON, guessed R2 keys, and shared signed URLs; When accessed; Then previews contain zero locked bytes, guessed keys do not resolve, and shared URLs fail after single use / expiry.*
+- Version drill: re-upload preserves old-version buyer access; upgrade flag correctly charges or grants new version. *GWT: Given a creator re-upload with an upgrade flag; When old and new versions are accessed; Then old-version buyer access is preserved and the upgrade flag correctly charges or grants the new version.*
+- Upload drill: oversized, fake-mime, and scriptable-type uploads rejected before R2 write. *GWT: Given oversized, fake-mime, or scriptable-type uploads; When validation runs; Then they are rejected before R2 write.*
 
 ## Out of scope
 

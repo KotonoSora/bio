@@ -8,9 +8,9 @@ Close every gap the redirect + IPN round-trip can leave: buyers who close the br
 
 ## Users
 
-- Buyer stuck on "confirming" (return seen, IPN delayed): gets resolution via on-demand verify instead of limbo.
-- Support/ops: looks up a transaction by `orderCode`/`vnp_TransactionNo`, triggers verify, issues refunds.
-- System (scheduled job): sweeps stale `pending` orders and diffs them against VNPay truth.
+- Buyer stuck on "confirming" (return seen, IPN delayed): *As a Buyer stuck on "confirming", I want to get resolution via on-demand verify instead of limbo so that gap the redirect + IPN round-trip can leave as defined here.* gets resolution via on-demand verify instead of limbo.
+- Support/ops: *As a Support/ops, I want to look up a transaction by `orderCode`/`vnp_TransactionNo`, trigger verify, issue refunds so that gap the redirect + IPN round-trip can leave as defined here.* looks up a transaction by `orderCode`/`vnp_TransactionNo`, triggers verify, issues refunds.
+- System (scheduled job): *As a System, I want to sweep stale `pending` orders and diff them against VNPay truth so that gap the redirect + IPN round-trip can leave as defined here.* sweeps stale `pending` orders and diffs them against VNPay truth.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Close every gap the redirect + IPN round-trip can leave: buyers who close the br
 ## Acceptance criteria
 
 - IPN-suppression drill (block IPN, complete sandbox payment): return page shows confirming, on-demand queryDr grants exactly once; redelivered IPN afterward is a no-op already-confirmed.
+  *GWT: Given IPN-suppression drill (block IPN, complete sandbox payment) context; When return page shows confirming, on-demand queryDr grants exactly once; Then redelivered IPN afterward is a no-op already-confirmed.*
 - Sweep drill (stale pendings with gateway-success): all settled correctly, no doubles, mismatches held for ops.
+  *GWT: Given Sweep drill (stale pendings with gateway-success) context; When the checked action occurs; Then all settled correctly, no doubles, mismatches held for ops.*
 - Refund drill (sandbox): status `refunded` with gateway reference recorded, entitlement revoked, re-grant impossible.
+  *GWT: Given Refund drill (sandbox) context; When the checked action occurs; Then status `refunded` with gateway reference recorded, entitlement revoked, re-grant impossible.*
 - Auth probe: non-ops user on ops endpoints → 403; RLS denies cross-owner rows.
+  *GWT: Given Auth probe: non-ops user on ops endpoints; When the transition executes; Then 403; RLS denies cross-owner rows.*
 - Gateway-error handling: transient queryDr failures retry with backoff; persistent auth errors page instead of spinning.
+  *GWT: Given Gateway-error handling context; When transient queryDr failures retry with backoff; Then persistent auth errors page instead of spinning.*
 
 ## Out of scope
 

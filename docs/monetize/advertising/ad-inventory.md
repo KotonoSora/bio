@@ -8,9 +8,9 @@ Define what the platform sells to advertisers: the placement catalog (platform-o
 
 ## Users
 
-- Advertiser (direct deal): buys placements for a period/audience, receives performance reports.
-- Creator: opts page inventory in or out, keeps full control of adjacency (category blocks).
-- Visitor: sees clearly labeled sponsored units that never impersonate creator content.
+- Advertiser (direct deal): *As an Advertiser, I want to buy placements for a period/audience, receive performance reports so that what the platform sells to advertisers as defined here.* buys placements for a period/audience, receives performance reports.
+- Creator: *As a Creator, I want to opt page inventory in or out, keep full control of adjacency (category blocks) so that what the platform sells to advertisers as defined here.* opts page inventory in or out, keeps full control of adjacency (category blocks).
+- Visitor: *As a Visitor, I want to see clearly labeled sponsored units that never impersonate creator content so that what the platform sells to advertisers as defined here.* sees clearly labeled sponsored units that never impersonate creator content.
 
 ## Functional requirements
 
@@ -21,6 +21,8 @@ Define what the platform sells to advertisers: the placement catalog (platform-o
 5. Creator opt-in: per-profile toggle (default OFF), plus per-page category declaration that feeds both targeting and safety matching; opting out mid-flight stops serving immediately with no penalty. Free-plan creators may opt in (ad revenue is separate from plan gates); pro gets no forced ads, ever.
 6. Separation guarantee: ad impressions/clicks flow through the ad measurement pipeline only (`advertising/ad-serving-measurement.md`) — creator `profile_views`/`link_clicks` analytics are never polluted by ad traffic.
 
+- 7. Edge handling (derived from rules 3-5 above): prohibited-vertical creatives and category-block conflicts are rejected at approval or excluded from serving and never served; a takedown pauses the creative everywhere with an audited action — no silent serve and no partial states.
+
 ## Data / API touches
 
 - New tables `ad_placements{catalog}` (config) + `ad_flights{...}` + `ad_creatives{flight_id, assets, headline, cta_url, approval}` with RLS posture (advertiser reads own flights; creators read own opt-in state; config restricted to ad-ops role). Creative assets in R2 with the same validation discipline as avatars (size/type/magic-byte). All PG via `worker/db/*`.
@@ -30,10 +32,15 @@ Define what the platform sells to advertisers: the placement catalog (platform-o
 ## Acceptance criteria
 
 - Catalog drill: each placement renders its exact format/position/labeling on desktop + mobile; checkout/payment surfaces provably ad-free (grep + review gate).
+  *GWT: Given Catalog drill context; When each placement renders its exact format/position/labeling on desktop + mobile; Then checkout/payment surfaces provably ad-free (grep + review gate).*
 - Safety drill: prohibited-vertical creative rejected at approval; creator category-block respected in serving; takedown pauses a live creative everywhere within minutes.
+  *GWT: Given Safety drill context; When prohibited-vertical creative rejected at approval; Then takedown pauses a live creative everywhere within minutes.*
 - Opt-in drill: default-off for new profiles; mid-flight opt-out stops serving immediately; pro pages never forced.
+  *GWT: Given Opt-in drill context; When default-off for new profiles; Then pro pages never forced.*
 - Separation drill: ad traffic produces zero rows in creator analytics tables under load.
+  *GWT: Given Separation drill context; When the checked action occurs; Then ad traffic produces zero rows in creator analytics tables under load.*
 - Auth probe: advertiser A reading advertiser B flights → 403; creators cannot touch flights; RLS denies cross-scope rows.
+  *GWT: Given Auth probe: advertiser A reading advertiser B flights; When the transition executes; Then 403; creators cannot touch flights; RLS denies cross-scope rows.*
 
 ## Out of scope
 

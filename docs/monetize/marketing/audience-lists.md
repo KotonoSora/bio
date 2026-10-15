@@ -8,9 +8,9 @@ Define the audience as a living, hygienic list — not a pile of emails: lifecyc
 
 ## Users
 
-- Operator/marketer: sees list health (active, suppressed, bounced, complained), imports carefully, exports for analysis.
-- Lead: captured once with source + consent, never duplicated into multi-address noise.
-- Deliverability (as a stakeholder): bounces and complaints leave the active set automatically and stay out.
+- Operator/marketer: *As an Operator/marketer, I want to see list health (active, suppressed, bounced, complained), import carefully, export for analysis so that the audience as a living, hygienic list as defined here.* sees list health (active, suppressed, bounced, complained), imports carefully, exports for analysis.
+- Lead: *As a Lead, I want to be captured once with source + consent, never duplicated into multi-address noise so that the audience as a living, hygienic list as defined here.* captured once with source + consent, never duplicated into multi-address noise.
+- Deliverability (as a stakeholder): *As a Deliverability, I want to keep bounces and complaints leaving the active set automatically and staying out so that the audience as a living, hygienic list as defined here.* bounces and complaints leave the active set automatically and stay out.
 
 ## Functional requirements
 
@@ -30,10 +30,15 @@ Define the audience as a living, hygienic list — not a pile of emails: lifecyc
 ## Acceptance criteria
 
 - Lifecycle drill: hard bounce → immediate suppression; three soft bounces → suppression; complaint → terminal; re-capture never loosens a strict state; all transitions in history.
+  *GWT: Given Lifecycle drill: hard bounce; When the transition executes; Then immediate suppression; three soft bounces → suppression; complaint → terminal; re-capture never loosens a strict state; all transitions in history.*
 - Import drill: 10k-row CSV with duplicates/invalid/suppressed rows imports cleanly with an exact row-level report; no suppressed resurrection; abuse budgets hold.
+  *GWT: Given Import drill context; When 10k-row CSV with duplicates/invalid/suppressed rows imports cleanly with an exact row-level report; Then abuse budgets hold.*
 - Hygiene drill: seeded stale addresses park out of eligibility per the rule; health report matches hand computation; bounce/complaint webhooks transition states within seconds.
+  *GWT: Given Hygiene drill context; When seeded stale addresses park out of eligibility per the rule; Then bounce/complaint webhooks transition states within seconds.*
 - Export drill: CSV contains consent columns, respects scoping (creator vs platform), audited and rate-limited; suppressed full-data export blocked without a case.
+  *GWT: Given Export drill context; When CSV contains consent columns, respects scoping (creator vs platform), audited and rate-limited; Then suppressed full-data export blocked without a case.*
 - Silo drill: creator form leads never appear in platform broadcast eligibility (cross-audience leak probe returns empty).
+  *GWT: Given Silo drill context; When the checked action occurs; Then creator form leads never appear in platform broadcast eligibility (cross-audience leak probe returns empty).*
 
 ## Out of scope
 

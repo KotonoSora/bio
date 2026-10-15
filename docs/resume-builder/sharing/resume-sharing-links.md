@@ -8,9 +8,9 @@ Let one frozen resume snapshot be shared through every link type a job seeker ne
 
 ## Users
 
-- Job seeker: copies any link type for applications, prints, or QR codes; revokes by unpublishing.
-- Recruiter/viewer/crawler: opens any type with no login and reads the same snapshot text (crawler sees tags without JS).
-- Support: answers "which link shows what version" from one matrix.
+- Job seeker: *As a Job seeker, I want to copy any link type for applications, prints, or QR codes and revoke by unpublishing so that one snapshot shares everywhere.* Copies any link type for applications, prints, or QR codes; revokes by unpublishing.
+- Recruiter/viewer/crawler: *As a Recruiter/viewer/crawler, I want to open any type with no login and read the same snapshot text so that review works without JS.* Opens any type with no login and reads the same snapshot text (crawler sees tags without JS).
+- Support: *As a Support, I want to answer "which link shows what version" from one matrix so that sharing questions resolve consistently.* Answers "which link shows what version" from one matrix.
 
 ## Functional requirements
 
@@ -31,13 +31,13 @@ Let one frozen resume snapshot be shared through every link type a job seeker ne
 
 ## Acceptance criteria
 
-- Parity drill: same snapshot text on all five types (curl, no JS); template switch changes layout only; draft edits invisible until Save Snapshot.
-- Privacy drill: private/unlinked document → 404 on standard/SEO/custom/bio and safe-error on shortened; re-publish restores within purge SLA; username change 301s.
-- Short-link drill: mint → resolves to canonical cv URL; expiry/disabled → safe error, never stale content; slug contains no personal data.
-- IDOR probe (S-1/S-6): user A share-link reads/writes against user B documents → 403; direct PG as app role denied by RLS.
-- XSS/CSP drill (S-2): script/iframe/event-handler in any resume field stripped on all five render paths; CSP holds.
-- Abuse drill (S-5): anonymous bursts on cv/short/custom paths throttled (Turnstile + WAF + rate rules); unlimited legitimate views/exports unaffected.
-- Secrets drill: no secrets in repo/logs/bundles; `wrangler secret` only; `.gitignore` guards `.wrangler/`, `.dev.vars*`. (Avatar pipeline N/A here — owned by P1b-4.)
+- Parity drill: same snapshot text on all five types (curl, no JS); template switch changes layout only; draft edits invisible until Save Snapshot. *GWT: Given one frozen snapshot; When fetched across all five types with curl (no JS) after a template switch with unsaved draft edits; Then snapshot text matches on all five, layout-only changes apply, and draft edits stay invisible until Save Snapshot.*
+- Privacy drill: private/unlinked document → 404 on standard/SEO/custom/bio and safe-error on shortened; re-publish restores within purge SLA; username change 301s. *GWT: Given a private/unlinked document; When each link type is opened and then re-published or the username changes; Then standard/SEO/custom/bio return 404 and shortened returns safe-error, re-publish restores within purge SLA, and username change 301s.*
+- Short-link drill: mint → resolves to canonical cv URL; expiry/disabled → safe error, never stale content; slug contains no personal data. *GWT: Given a minted short link for the canonical cv URL; When resolved live versus after expiry/disabled; Then live resolves to the canonical cv URL and expired/disabled returns safe error with no stale content and no personal data in the slug.*
+- IDOR probe (S-1/S-6): user A share-link reads/writes against user B documents → 403; direct PG as app role denied by RLS. *GWT: Given user B documents; When user A attempts share-link reads/writes or direct PG as app role; Then access returns 403 / is denied by RLS.*
+- XSS/CSP drill (S-2): script/iframe/event-handler in any resume field stripped on all five render paths; CSP holds. *GWT: Given script/iframe/event-handler input in any resume field; When rendered on all five paths; Then it is stripped and CSP holds.*
+- Abuse drill (S-5): anonymous bursts on cv/short/custom paths throttled (Turnstile + WAF + rate rules); unlimited legitimate views/exports unaffected. *GWT: Given anonymous bursts on cv/short/custom paths; When rate rules apply; Then bursts are throttled while unlimited legitimate views/exports stay unaffected.*
+- Secrets drill: no secrets in repo/logs/bundles; `wrangler secret` only; `.gitignore` guards `.wrangler/`, `.dev.vars*`. (Avatar pipeline N/A here — owned by P1b-4.) *GWT: Given repo/logs/bundles and secret handling; When audited; Then no secrets appear with `wrangler secret` only and `.gitignore` guarding `.wrangler/`, `.dev.vars*`.*
 
 ## Out of scope
 

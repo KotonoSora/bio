@@ -8,9 +8,9 @@ Define the public identity of a Link-to-Bio page: one profile per user in v1, ad
 
 ## Users
 
-- Creator: claims a username, sets display name/bio/avatar, toggles public/private.
-- Visitor: opens `/:username` without login; sees the page only when `is_public=1`.
-- Returning visitor / QR scanner: follows an old username after a rename and lands on the new URL via 301.
+- Creator: *As a Creator, I want to claim a username and set display name, bio, avatar, and public/private visibility so that my page has one stable public identity.* Claims a username, sets display name/bio/avatar, toggles public/private.
+- Visitor: *As a Visitor, I want to open `/:username` without login so that I see the page only when it is public.* Opens `/:username` without login; sees the page only when `is_public=1`.
+- Returning visitor / QR scanner: *As a Returning visitor / QR scanner, I want an old username after a rename to land on the new URL via 301 so that saved bio links, QR codes, and printed CVs keep working.* Follows an old username after a rename and lands on the new URL via 301.
 
 ## Functional requirements
 
@@ -29,12 +29,12 @@ Define the public identity of a Link-to-Bio page: one profile per user in v1, ad
 
 ## Acceptance criteria
 
-- Uppercase, duplicate, or reserved username: rejected at API with 422 and at DB with constraint violation (both verified in tests).
-- `is_public=0` profile: public `GET /:username` returns 404, absent from `sitemap.xml`; dashboard still renders it.
-- Rename `alice` → `alice-dev`: `GET /alice` returns 301 to `/alice-dev`; claiming `alice` afterward is rejected.
-- IDOR probe: user A `GET/PUT /api/v1/profile` with user B identifiers returns 403; direct PG as app role denied by RLS.
-- XSS probe: script/iframe/event-handler in `bio`/`display_name` stripped; CSP holds on dashboard and public page.
-- Sanitization: stored links require `https:` scheme; rendered anchors carry `rel="noopener ugc"`.
+- Uppercase, duplicate, or reserved username: rejected at API with 422 and at DB with constraint violation (both verified in tests). *GWT: Given an uppercase, duplicate, or reserved username; When claimed; Then the API rejects with 422 and the DB rejects with a constraint violation.*
+- `is_public=0` profile: public `GET /:username` returns 404, absent from `sitemap.xml`; dashboard still renders it. *GWT: Given a profile with `is_public=0`; When the public `GET /:username` is requested; Then it returns 404, stays absent from `sitemap.xml`, and still renders in the dashboard.*
+- Rename `alice` → `alice-dev`: `GET /alice` returns 301 to `/alice-dev`; claiming `alice` afterward is rejected. *GWT: Given a rename from `alice` to `alice-dev`; When `GET /alice` is requested and `alice` is re-claimed; Then the old URL returns 301 to `/alice-dev` and the re-claim is rejected.*
+- IDOR probe: user A `GET/PUT /api/v1/profile` with user B identifiers returns 403; direct PG as app role denied by RLS. *GWT: Given user A calling `GET/PUT /api/v1/profile` with user B identifiers; When evaluated; Then the API returns 403 and direct PG as app role is denied by RLS.*
+- XSS probe: script/iframe/event-handler in `bio`/`display_name` stripped; CSP holds on dashboard and public page. *GWT: Given script/iframe/event-handler input in `bio`/`display_name`; When rendered; Then the markup is stripped and CSP holds on dashboard and public page.*
+- Sanitization: stored links require `https:` scheme; rendered anchors carry `rel="noopener ugc"`. *GWT: Given a stored link without an `https:` scheme; When saved and rendered; Then it is rejected and rendered anchors carry `rel="noopener ugc"`.*
 
 ## Out of scope
 

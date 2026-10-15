@@ -8,8 +8,8 @@ Let pro creators serve their page from their own hostname with zero wrong-site r
 
 ## Users
 
-- Creator (pro): adds a hostname, sets a TXT record, waits for verification, goes live, removes the domain freely.
-- Visitor: opens `creator.com` and gets the bound profile with correct SEO tags (canonical = custom host) or a clean error for unknown/unverified hosts.
+- Creator (pro): *As a Creator, I want to add a hostname, set a TXT record, wait for verification, go live, and remove the domain freely so that my page serves from my own hostname with zero wrong-site risk.* Adds a hostname, sets a TXT record, waits for verification, goes live, removes the domain freely.
+- Visitor: *As a Visitor, I want to open `creator.com` and get the bound profile with correct SEO tags or a clean error so that verified hosts render and unknown hosts fail cleanly.* Opens `creator.com` and gets the bound profile with correct SEO tags (canonical = custom host) or a clean error for unknown/unverified hosts.
 - Abuser (adversarial): points their domain at our IPs, claims another profile, or rides an ex-owner's DNS — and gets nothing.
 
 ## Functional requirements
@@ -29,11 +29,11 @@ Let pro creators serve their page from their own hostname with zero wrong-site r
 
 ## Acceptance criteria
 
-- Takeover drill: unbound/claimed-elsewhere hostname serves the neutral error (never any profile); successful TXT control transfers binding only through full re-verification with audit.
-- Lapse drill: TXT removal detected by periodic recheck → `unverified` + serving halt + notice; restoration re-verifies cleanly.
-- Downgrade drill: pro lapse stops custom-host serving within the window while `/:username` stays live; DNS records untouched; re-upgrade restores without re-verification inside the hold (see Q2).
-- Cache drill: publish purges host-namespaced keys; slug + host matrix green; unknown-host negatives cached (no DB amplification under scan).
-- IDOR drill: user A domain CRUD against user B profiles returns 403; Host-header probing cannot surface private (`is_public=0`) profiles.
+- Takeover drill: unbound/claimed-elsewhere hostname serves the neutral error (never any profile); successful TXT control transfers binding only through full re-verification with audit. *GWT: Given an unbound or claimed-elsewhere hostname; When it is requested or TXT control changes; Then the neutral error serves and transfers complete only through full re-verification with audit.*
+- Lapse drill: TXT removal detected by periodic recheck → `unverified` + serving halt + notice; restoration re-verifies cleanly. *GWT: Given a live binding with TXT removed; When the periodic recheck runs; Then the row flips to `unverified` with serving halt plus notice, and restoration re-verifies cleanly.*
+- Downgrade drill: pro lapse stops custom-host serving within the window while `/:username` stays live; DNS records untouched; re-upgrade restores without re-verification inside the hold (see Q2). *GWT: Given a pro lapse; When the entitlement window elapses; Then custom-host serving stops while `/:username` stays live, DNS stays untouched, and re-upgrade inside the hold restores without re-verification.*
+- Cache drill: publish purges host-namespaced keys; slug + host matrix green; unknown-host negatives cached (no DB amplification under scan). *GWT: Given a publish or a scan of unknown hosts; When cache and resolver run; Then host-namespaced keys purge, the slug-plus-host matrix stays green, and unknown-host negatives cache with no DB amplification.*
+- IDOR drill: user A domain CRUD against user B profiles returns 403; Host-header probing cannot surface private (`is_public=0`) profiles. *GWT: Given user A domain CRUD against user B profiles or Host-header probing; When the request resolves; Then CRUD returns 403 and private profiles never surface.*
 
 ## Out of scope
 

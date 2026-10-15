@@ -8,9 +8,9 @@ Make every Link-to-Me page work where its traffic actually comes from: inside Ti
 
 ## Users
 
-- Visitor (mobile, usually inside an in-app webview): page loads fast, taps links that open where they work.
-- Creator: links behave correctly without per-link configuration.
-- Destination owner (shop checkout, video host): receives traffic in a real browser/app context with cookies and payments intact.
+- Visitor (mobile, usually inside an in-app webview): *As a mobile Visitor inside an in-app webview, I want the page to load fast and links to open where they work so that checkouts, forms, and videos do not break inside a webview.* Page loads fast, taps links that open where they work.
+- Creator: *As a Creator, I want links to behave correctly without per-link configuration so that every outbound tap lands in a real browser or app context.* Links behave correctly without per-link configuration.
+- Destination owner (shop checkout, video host): *As a Destination owner, I want traffic in a real browser/app context so that cookies and payments stay intact.* Receives traffic in a real browser/app context with cookies and payments intact.
 
 ## Functional requirements
 
@@ -29,12 +29,12 @@ Make every Link-to-Me page work where its traffic actually comes from: inside Ti
 
 ## Acceptance criteria
 
-- Cold-curl (no JS) on `/:username`: anchors carry `target="_blank" rel="noopener ugc"`; banner markup present; SEO tags from `public-page/share-seo.md` unchanged.
-- Device-matrix drill: on each listed webview, banner appears and its primary action lands the reference URL in the system browser or native app; copy-link fallback always succeeds.
-- Tap-target audit: every public-page interactive element ≥44 px on a 360 px viewport; blocking JS ≤50 KB verified in build output.
-- Cache drill: publish → change live <2 min; cache-hit ratio gate (>95% at P1 k6) still met with banner included.
-- No-scheme-injection probe: block payload with `intent:`/`javascript:`/custom-scheme URL rejected 422 at API (only server-side rewrites of valid `https:` URLs may emit deep-link forms).
-- Analytics drill: banner-eligible visits report escape-taps as beacon events without extra PG writes per hit.
+- Cold-curl (no JS) on `/:username`: anchors carry `target="_blank" rel="noopener ugc"`; banner markup present; SEO tags from `public-page/share-seo.md` unchanged. *GWT: Given a cold-curl with no JS on `/:username`; When the SSR payload is inspected; Then anchors carry `target="_blank" rel="noopener ugc"`, banner markup is present, and SEO tags are unchanged.*
+- Device-matrix drill: on each listed webview, banner appears and its primary action lands the reference URL in the system browser or native app; copy-link fallback always succeeds. *GWT: Given each listed webview; When the banner primary action or copy-link fallback is used; Then the banner appears and the reference URL lands in the system browser or native app with copy-link always succeeding.*
+- Tap-target audit: every public-page interactive element ≥44 px on a 360 px viewport; blocking JS ≤50 KB verified in build output. *GWT: Given a 360 px viewport and the build output; When audited; Then every interactive element is ≥44 px and blocking JS is ≤50 KB.*
+- Cache drill: publish → change live <2 min; cache-hit ratio gate (>95% at P1 k6) still met with banner included. *GWT: Given a publish with the banner included; When the cache is measured; Then the change is live in <2 min and the cache-hit ratio stays >95% at P1 k6.*
+- No-scheme-injection probe: block payload with `intent:`/`javascript:`/custom-scheme URL rejected 422 at API (only server-side rewrites of valid `https:` URLs may emit deep-link forms). *GWT: Given a block payload with `intent:`/`javascript:`/custom-scheme URL; When submitted; Then the API rejects with 422 and only server-side rewrites of valid `https:` URLs emit deep-link forms.*
+- Analytics drill: banner-eligible visits report escape-taps as beacon events without extra PG writes per hit. *GWT: Given banner-eligible visits with escape-taps; When reported; Then they arrive as beacon events without extra PG writes per hit.*
 
 ## Out of scope
 

@@ -8,9 +8,17 @@ Give every buyer one trustworthy billing history: plan purchases, product purcha
 
 ## Users
 
-- Buyer: receives a receipt email on every paid grant and refund; re-downloads history for reimbursement or tax filing.
-- Support/ops: cites one receipt id per dispute instead of hunting provider consoles.
-- Finance: exports order/refund rows for bookkeeping (reports themselves stay out of scope).
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Receive receipt email on every paid grant and refund; re-download history | One trustworthy billing history for reimbursement or tax filing |
+| Support/ops | Cite one receipt id per dispute | Uses a single artifact instead of eight provider dashboards |
+| Finance | Export order/refund rows for bookkeeping | Reports themselves stay out of scope |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Receive a receipt email on every paid grant and refund and re-download history | I have one trustworthy billing history for reimbursement or tax filing | Must |
+| US-02 | Support/ops | Cite one receipt id per dispute | I use a single artifact instead of eight provider dashboards | Must |
+| US-03 | Finance | Export order/refund rows for bookkeeping | Receipts prove every grant to the buyer | Must |
 
 ## Functional requirements
 
@@ -29,12 +37,14 @@ Give every buyer one trustworthy billing history: plan purchases, product purcha
 
 ## Acceptance criteria
 
-- Paid grant on any provider → receipt email within the delivery SLA + history row with matching ids, amounts, and references; print view renders clean A4.
-- Refund drill: credit note appended to the original receipt, email sent, history row `refunded` — original entry never edited.
-- Tamper/IDOR probe: user A fetching user B receipts → 403; RLS denies cross-user rows; receipt URLs unguessable (orderCode + owner scope, no sequential public ids).
-- Unsubscribed-from-marketing buyer still receives transactional receipts; marketing-campaign sends remain a separate, P4-gated system.
-- Footer carries the non-VAT-invoice disclaimer verbatim on every receipt and email.
-- Email-outage drill: queued retries, no grant blocked on send failure, backlog visible in ops metrics.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Paid grant on any provider yields receipt email within the delivery SLA + history row with matching ids, amounts, and references; print view renders clean A4 | A paid grant on any provider | Grant completes | A receipt email sends within the delivery SLA with a history row carrying matching ids, amounts, and references and a clean A4 print view |
+| AC-02 | Refund drill: credit note appended to the original receipt, email sent, history row `refunded` with original entry never edited | A refund on a paid order | Refund executes | A credit note is appended to the original receipt, email is sent, the history row reads `refunded`, and the original entry is never edited |
+| AC-03 | Tamper/IDOR probe: user A fetching user B receipts returns 403; RLS denies cross-user rows; receipt URLs unguessable (orderCode + owner scope, no sequential public ids) | User A fetching user B receipts | The fetch is attempted | The API returns 403 and RLS denies cross-user rows |
+| AC-04 | Unsubscribed-from-marketing buyer still receives transactional receipts; marketing-campaign sends remain a separate, P4-gated system | A buyer unsubscribed from marketing | A transactional receipt sends | The buyer still receives it while marketing-campaign sends remain a separate P4-gated system |
+| AC-05 | Footer carries the non-VAT-invoice disclaimer verbatim on every receipt and email | Every receipt and email | Rendering occurs | The footer carries the non-VAT-invoice disclaimer verbatim |
+| AC-06 | Email-outage drill: queued retries, no grant blocked on send failure, backlog visible in ops metrics | An email outage during grant/refund | Delivery fails | Sends queue with retries, no grant is blocked on send failure, and backlog is visible in ops metrics |
 
 ## Out of scope
 

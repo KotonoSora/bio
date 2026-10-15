@@ -8,9 +8,9 @@ Define how money starts moving via SePay: an authenticated checkout creates a tr
 
 ## Users
 
-- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, scans VietQR or copies transfer details, pays from their bank app.
-- Creator/seller: receives entitlement on matched-transfer grant.
-- Support/ops: looks up an order by `orderCode`, or hunts an unmatched transfer by content/amount in the SePay dashboard.
+- Buyer (logged-in owner for plans; buyer-email claim for products per shop major): *As a Buyer, I want to start checkout, scan VietQR or copy transfer details, pay from their bank app so that money starts moving via SePay as defined here.* starts checkout, scans VietQR or copies transfer details, pays from their bank app.
+- Creator/seller: *As a Creator/seller, I want to receive entitlement on matched-transfer grant so that money starts moving via SePay as defined here.* receives entitlement on matched-transfer grant.
+- Support/ops: *As a Support/ops, I want to look up an order by `orderCode`, or hunt an unmatched transfer by content/amount in the SePay dashboard so that money starts moving via SePay as defined here.* looks up an order by `orderCode`, or hunts an unmatched transfer by content/amount in the SePay dashboard.
 
 ## Functional requirements
 
@@ -31,11 +31,17 @@ Define how money starts moving via SePay: an authenticated checkout creates a tr
 ## Acceptance criteria
 
 - Checkout for plan and for product: `orders` row pending with unique `orderCode`, VietQR scans to the exact amount with `transfer_content` prefilled, details render ASCII-safe.
+  *GWT: Given Checkout for plan and for product context; When the checked action occurs; Then `orders` row pending with unique `orderCode`, VietQR scans to the exact amount with `transfer_content` prefilled, details render ASCII-safe.*
 - Amount tamper (client sends lower amount): server re-prices to the canonical amount; mismatch logged.
+  *GWT: Given Amount tamper (client sends lower amount) context; When server re-prices to the canonical amount; Then mismatch logged.*
 - Retry/double-click while pending: single row, single `orderCode`, same transfer details re-issued — no duplicate rows.
+  *GWT: Given Retry/double-click while pending context; When the checked action occurs; Then single row, single `orderCode`, same transfer details re-issued — no duplicate rows.*
 - Cancel sets `cancelled`; TTL lapse sets `expired`; both stop matching (except the settlement grace rule).
+  *GWT: Given Cancel sets `cancelled`; When the next step executes; Then both stop matching (except the settlement grace rule).*
 - IDOR probe: user A reading user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A reading user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no SePay key or bank credential in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no SePay key or bank credential in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

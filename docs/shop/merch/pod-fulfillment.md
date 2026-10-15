@@ -8,9 +8,9 @@ Let creators sell merch with zero inventory: AI-assisted designs applied to prin
 
 ## Users
 
-- Creator: generates/picks a design, applies it to garments, sets profit via the calculator (see `merch/profit-calculator.md`), publishes.
-- Buyer: orders a size/variant, gets ship-to address collected at checkout, tracks print-to-delivery status.
-- Fulfillment partner (integration): receives print jobs, reports status, bills base costs.
+- Creator: *As a Creator, I want to generate/pick a design, apply it to garments, set profit, and publish so that merch sells with zero inventory.* Generates/picks a design, applies it to garments, sets profit via the calculator (see `merch/profit-calculator.md`), publishes.
+- Buyer: *As a Buyer, I want to order a size/variant with ship-to collected at checkout so that print-to-delivery status stays trackable.* Orders a size/variant, gets ship-to address collected at checkout, tracks print-to-delivery status.
+- Fulfillment partner (integration): *As a Fulfillment partner, I want to receive print jobs, report status, and bill base costs so that print and ship execute.* Receives print jobs, reports status, bills base costs.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Let creators sell merch with zero inventory: AI-assisted designs applied to prin
 
 ## Acceptance criteria
 
-- No-dispatch drill: unpaid/cancelled merch orders create zero print jobs (job table empty; partner mock receives nothing).
-- Idempotency drill: duplicate paid-webhook delivery dispatches exactly one job (unique job key holds under replay).
-- Status drill: partner callback sequence advances buyer-visible status end-to-end; tampered callback rejected (401) with no state change.
-- AI-gating drill: generation endpoint 403s while the AI scope is unapproved, or debits shared credits once approved — one behavior, decided at plan update, never both/neither.
-- Upload drill: non-image, oversized, and SVG/HTML artwork rejected before R2 write.
+- No-dispatch drill: unpaid/cancelled merch orders create zero print jobs (job table empty; partner mock receives nothing). *GWT: Given unpaid/cancelled merch orders; When the dispatch hook runs; Then zero print jobs are created with the partner mock receiving nothing.*
+- Idempotency drill: duplicate paid-webhook delivery dispatches exactly one job (unique job key holds under replay). *GWT: Given a duplicate paid-webhook delivery; When dispatch runs; Then exactly one job is dispatched with the unique job key holding under replay.*
+- Status drill: partner callback sequence advances buyer-visible status end-to-end; tampered callback rejected (401) with no state change. *GWT: Given a partner callback sequence including a tampered callback; When callbacks arrive; Then valid callbacks advance buyer-visible status end-to-end and tampered callbacks are rejected (401) with no state change.*
+- AI-gating drill: generation endpoint 403s while the AI scope is unapproved, or debits shared credits once approved — one behavior, decided at plan update, never both/neither. *GWT: Given the AI scope unapproved or approved; When the generation endpoint is called; Then it 403s while unapproved or debits shared credits once approved, per the plan-update decision.*
+- Upload drill: non-image, oversized, and SVG/HTML artwork rejected before R2 write. *GWT: Given non-image, oversized, or SVG/HTML artwork; When upload validation runs; Then it is rejected before R2 write.*
 
 ## Out of scope
 

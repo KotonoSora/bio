@@ -8,9 +8,9 @@ Make "post everywhere" a single calm flow: one video, one caption, target platfo
 
 ## Users
 
-- Creator: uploads once, writes once, picks platforms + accounts, sends now or schedules, reviews the calendar.
-- Planner (same person, weekly view): drags posts across days, spots gaps, avoids double-posting a campaign.
-- Quota policy (as a stakeholder): free lifetime cap and pro rolling-cycle fairness enforced at schedule time.
+- Creator: *As a Creator, I want to upload once, write once, pick platforms plus accounts, send now or schedule, and review the calendar so that "post everywhere" is one calm flow.* Uploads once, writes once, picks platforms + accounts, sends now or schedules, reviews the calendar.
+- Planner (same person, weekly view): *As a Planner, I want to drag posts across days, spot gaps, and avoid double-posting a campaign so that the week stays deconflicted.* Drags posts across days, spots gaps, avoids double-posting a campaign.
+- Quota policy (as a stakeholder): *As a Quota policy, I want the free lifetime cap and pro rolling-cycle fairness enforced at schedule time so that quota failures happen in the composer with guidance.* Free lifetime cap and pro rolling-cycle fairness enforced at schedule time.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Make "post everywhere" a single calm flow: one video, one caption, target platfo
 
 ## Acceptance criteria
 
-- Gate drill: 3:01 video, 301 MB file, 2,201-char caption, disallowed codec — each rejected pre-queue with the specific limit cited.
-- Quota drill: 10th lifetime free post sends; 11th refused with lifetime-exhausted messaging; pro rolling-cycle accounting verified against fixtures (retried failures count once).
-- Calendar drill: scheduled/sent/late/failed posts render in correct slots; reschedule moves the slot; cancel pre-lock removes it with no dispatch.
-- Lock drill: edit/reschedule inside the freeze window refused; past-due dispatch delivers with `late` flag + creator notice.
-- IDOR drill: user A post/calendar CRUD against user B ids returns 403; public has zero access to draft/scheduled content.
+- Gate drill: 3:01 video, 301 MB file, 2,201-char caption, disallowed codec — each rejected pre-queue with the specific limit cited. *GWT: Given a 3:01 video, 301 MB file, 2,201-char caption, or disallowed codec; When scheduling validates; Then each is rejected pre-queue with the specific limit cited.*
+- Quota drill: 10th lifetime free post sends; 11th refused with lifetime-exhausted messaging; pro rolling-cycle accounting verified against fixtures (retried failures count once). *GWT: Given free lifetime counts and pro rolling-cycle fixtures; When the 10th, 11th, or retried post sends; Then the 10th sends, the 11th is refused with lifetime-exhausted messaging, and retried failures count once.*
+- Calendar drill: scheduled/sent/late/failed posts render in correct slots; reschedule moves the slot; cancel pre-lock removes it with no dispatch. *GWT: Given scheduled/sent/late/failed posts; When the calendar renders or reschedule/cancel runs; Then posts render in correct slots, reschedules move slots, and pre-lock cancels remove with no dispatch.*
+- Lock drill: edit/reschedule inside the freeze window refused; past-due dispatch delivers with `late` flag + creator notice. *GWT: Given an edit inside the freeze window or a past-due dispatch; When processed; Then freeze-window edits are refused and past-due dispatches deliver with `late` flag plus notice.*
+- IDOR drill: user A post/calendar CRUD against user B ids returns 403; public has zero access to draft/scheduled content. *GWT: Given user A CRUD against user B ids or public access to drafts; When requested; Then 403 results and public has zero access to draft/scheduled content.*
 
 ## Out of scope
 

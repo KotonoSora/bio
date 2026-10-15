@@ -8,11 +8,11 @@ Decide every "can X do Y" question in one place so individual feature specs neve
 
 ## Users
 
-- Creator: owns profiles, blocks, documents, products, leads, domains; grants org roles to collaborators.
-- Collaborator (manager/member): acts within an org role, never beyond it.
-- Agency operator (P4): acts inside a scoped Act-as-user session with full audit, never via backdoor edits.
+- Creator: *As a Creator, I want to own profiles, blocks, documents, products, leads, and domains and grant org roles to collaborators so that every "can X do Y" question resolves in one deny-by-default model.* Owns profiles, blocks, documents, products, leads, domains; grants org roles to collaborators.
+- Collaborator (manager/member): *As a Collaborator, I want to act within my org role so that I gain only what ownership, entitlement, or an explicit role grants.* Acts within an org role, never beyond it.
+- Agency operator (P4): *As an Agency operator, I want to act inside a scoped Act-as-user session with full audit so that impersonation stays attributable and revocable.* Acts inside a scoped Act-as-user session with full audit, never via backdoor edits.
 - Attacker (adversarial): replays another user's IDs, guesses private slugs, escalates role, rides a lapsed grant — and gets 403s.
-- Auditor: reconstructs who did what from `audit_log` alone.
+- Auditor: *As an Auditor, I want to reconstruct who did what from `audit_log` alone so that every grant is provable.* Reconstructs who did what from `audit_log` alone.
 
 ## Functional requirements
 
@@ -34,12 +34,12 @@ Decide every "can X do Y" question in one place so individual feature specs neve
 
 ## Acceptance criteria
 
-- IDOR drill (S-1): `userA` session reads/writes/deletes `userB` profile/block/document/product/order/lead/domain → 403 (or 404 for private reads) everywhere; no endpoint trusts client `user_id`.
-- RLS drill (S-6): direct PG connection as app role with `userA` context returns zero `userB` rows across all business tables; `audit_log` shows grant/role/domain/impersonation events with actor + subject.
-- Gate drill: expired-pro session reproducing a pro-only call (custom domain bind, realtime window, extra profile, AI generation over cap) refused with the upgrade path; re-upgrade restores within the window without data loss.
-- Role drill: member sees only assigned profiles; manager invite/remove flows respect the matrix; revoked member's next request denied (≤60s); owner-only actions as member → 403.
-- Step-up drill: each sensitive action without fresh SSO re-auth refused; grant older than 10 min refused; Act-as-user outside assignment/time-box refused and logged as denied attempt.
-- Baseline: XSS strip + CSP holds on username/display-name surfaces (S-2); Turnstile + WAF throttle anonymous bursts (S-5); avatar prefill 2MB + magic-byte + R2 random key (S-4); no secrets in repo (S-7 migration/build/preview green).
+- IDOR drill (S-1): `userA` session reads/writes/deletes `userB` profile/block/document/product/order/lead/domain → 403 (or 404 for private reads) everywhere; no endpoint trusts client `user_id`. *GWT: Given a `userA` session targeting `userB` rows; When any read/write/delete is attempted; Then 403 (or 404 for private reads) results everywhere and no endpoint trusts client `user_id`.*
+- RLS drill (S-6): direct PG connection as app role with `userA` context returns zero `userB` rows across all business tables; `audit_log` shows grant/role/domain/impersonation events with actor + subject. *GWT: Given a direct PG connection as app role with `userA` context; When business tables are queried; Then zero `userB` rows return and `audit_log` shows events with actor plus subject.*
+- Gate drill: expired-pro session reproducing a pro-only call (custom domain bind, realtime window, extra profile, AI generation over cap) refused with the upgrade path; re-upgrade restores within the window without data loss. *GWT: Given an expired-pro session; When a pro-only call is attempted and then re-upgrade occurs; Then the call is refused with the upgrade path and re-upgrade restores within the window without data loss.*
+- Role drill: member sees only assigned profiles; manager invite/remove flows respect the matrix; revoked member's next request denied (≤60s); owner-only actions as member → 403. *GWT: Given member/manager roles and a revoked member; When profile views, invite/remove flows, or owner-only actions run; Then members see assigned only, flows respect the matrix, revoked members are denied within 60s, and owner-only actions as member return 403.*
+- Step-up drill: each sensitive action without fresh SSO re-auth refused; grant older than 10 min refused; Act-as-user outside assignment/time-box refused and logged as denied attempt. *GWT: Given a sensitive or Act-as-user action without fresh SSO re-auth, with a stale grant, or outside assignment/time-box; When attempted; Then it is refused and logged as a denied attempt.*
+- Baseline: XSS strip + CSP holds on username/display-name surfaces (S-2); Turnstile + WAF throttle anonymous bursts (S-5); avatar prefill 2MB + magic-byte + R2 random key (S-4); no secrets in repo (S-7 migration/build/preview green). *GWT: Given username/display-name inputs, anonymous bursts, avatar uploads, and repo scans; When S-2/S-5/S-4/S-7 checks run; Then XSS is stripped with CSP holding, bursts throttle, avatars validate to R2 random keys, and no secrets are found.*
 
 ## Out of scope
 

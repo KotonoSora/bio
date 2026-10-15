@@ -8,9 +8,9 @@ Turn raw views and clicks into audience understanding: who returns, what devices
 
 ## Users
 
-- Creator: segments visitors (new vs returning, device, city/country, referrer, UTM campaign), compares periods, ranks links by click-through rate.
-- Pro creator: longer history windows and UTM-level breakdowns (gating below).
-- Visitor: counted exactly as before — no additional beacons, cookies, or fingerprinting beyond the base pipeline.
+- Creator: *As a Creator, I want to segment visitors and rank links by click-through rate so that I understand who returns and why they tap.* Segments visitors (new vs returning, device, city/country, referrer, UTM campaign), compares periods, ranks links by click-through rate.
+- Pro creator: *As a Pro creator, I want longer history windows and UTM-level breakdowns so that deeper audience reads stay in the same pipeline without new tracking.* Longer history windows and UTM-level breakdowns (gating below).
+- Visitor: *As a Visitor, I want to be counted exactly as before so that no additional beacons, cookies, or fingerprinting follow my visit.* Counted exactly as before — no additional beacons, cookies, or fingerprinting beyond the base pipeline.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Turn raw views and clicks into audience understanding: who returns, what devices
 
 ## Acceptance criteria
 
-- Parity drill: seeded traffic reproduces hand-computed new/returning, device, geo, UTM, and CTR figures exactly within dedupe tolerance.
-- Gating drill: free account requesting 365-day or hourly-granularity reads gets clamped (206/422 with the allowed range stated); direct API call cannot bypass.
-- No-regression drill: beacon payload size and queue throughput unchanged vs the base pipeline; zero per-hit PG writes still holds under load.
-- Privacy drill: no raw IP in any PG row; cross-profile stitching query returns nothing by construction (spot-checked in review).
-- Period-compare drill: weekday-aligned overlays verified against fixture data with known spikes.
+- Parity drill: seeded traffic reproduces hand-computed new/returning, device, geo, UTM, and CTR figures exactly within dedupe tolerance. *GWT: Given seeded traffic with hand-computed figures; When aggregates are read; Then new/returning, device, geo, UTM, and CTR match exactly within dedupe tolerance.*
+- Gating drill: free account requesting 365-day or hourly-granularity reads gets clamped (206/422 with the allowed range stated); direct API call cannot bypass. *GWT: Given a free account requesting 365-day or hourly-granularity reads; When the read endpoint evaluates the range; Then it clamps with 206/422 stating the allowed range.*
+- No-regression drill: beacon payload size and queue throughput unchanged vs the base pipeline; zero per-hit PG writes still holds under load. *GWT: Given sustained load on the base pipeline; When beacon payload size, queue throughput, and PG writes are measured; Then payload and throughput are unchanged and zero per-hit PG writes holds.*
+- Privacy drill: no raw IP in any PG row; cross-profile stitching query returns nothing by construction (spot-checked in review). *GWT: Given any PG row and a cross-profile stitching query; When inspected; Then no raw IP appears and the stitching query returns nothing.*
+- Period-compare drill: weekday-aligned overlays verified against fixture data with known spikes. *GWT: Given fixture data with known spikes; When previous-period and year-ago overlays render; Then weekday-aligned compare matches the fixture.*
 
 ## Out of scope
 

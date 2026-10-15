@@ -8,10 +8,10 @@ Define how money starts moving via Apple Pay: an authenticated checkout creates 
 
 ## Users
 
-- Buyer on a capable Apple device/browser (logged-in owner for plans; buyer-email claim for products per shop major): starts checkout, pays in the sheet, sees confirmation or a pending state.
-- Buyer on an incapable device/browser: never sees a dead button — is offered the sibling providers instead.
-- Creator/seller: receives entitlement on charge-confirmed grant.
-- Support/ops: looks up an order by `orderCode` / PSP transaction id to reconcile disputes and chargebacks.
+- Buyer on a capable Apple device/browser (logged-in owner for plans; buyer-email claim for products per shop major): *As a Buyer on a capable Apple device/browser, I want to start checkout, pay in the sheet, see confirmation or a pending state so that money starts moving via Apple Pay as defined here.* starts checkout, pays in the sheet, sees confirmation or a pending state.
+- Buyer on an incapable device/browser: *As a Buyer on an incapable device/browser, I want to never see a dead button — is offered the sibling providers instead so that money starts moving via Apple Pay as defined here.* never sees a dead button — is offered the sibling providers instead.
+- Creator/seller: *As a Creator/seller, I want to receive entitlement on charge-confirmed grant so that money starts moving via Apple Pay as defined here.* receives entitlement on charge-confirmed grant.
+- Support/ops: *As a Support/ops, I want to look up an order by `orderCode` / PSP transaction id to reconcile disputes and chargebacks so that money starts moving via Apple Pay as defined here.* looks up an order by `orderCode` / PSP transaction id to reconcile disputes and chargebacks.
 
 ## Functional requirements
 
@@ -33,13 +33,21 @@ Define how money starts moving via Apple Pay: an authenticated checkout creates 
 ## Acceptance criteria
 
 - Capable-device UAT (PSP sandbox + Apple sandbox/test cards): checkout → validated sheet → token → charge → `paid` + entitlement within the SLA.
+  *GWT: Given Capable-device UAT (PSP sandbox + Apple sandbox/test cards): checkout; When the transition executes; Then validated sheet → token → charge → `paid` + entitlement within the SLA.*
 - Incapable browser/device: no Apple Pay button rendered; sibling providers offered; zero console errors.
+  *GWT: Given Incapable browser/device context; When no Apple Pay button rendered; Then zero console errors.*
 - Domain association file: byte-identical at `/.well-known/…` with HTTP 200, no redirect, reachable by Apple's verifiers (SPA fallback must not swallow it); domain shows Verified.
+  *GWT: Given Domain association file context; When byte-identical at `/.well-known/…` with HTTP 200, no redirect, reachable by Apple's verifiers (SPA fallback must not swallow it); Then domain shows Verified.*
 - Amount tamper (client alters total): server-side binding rejects before any PSP call; mismatch logged.
+  *GWT: Given Amount tamper (client alters total) context; When server-side binding rejects before any PSP call; Then mismatch logged.*
 - Raw token material in logs, DB (beyond PSP reference), or client storage: none (grep + review gate).
+  *GWT: Given the preconditions for this check hold; When raw token material in logs, DB (beyond PSP reference), or client storage: none (grep + review gate); Then the expected outcome stated here is observed.*
 - Stuck "authorizing" past timeout: recoverable via the settlement doc's status path, never double-charged.
+  *GWT: Given Stuck "authorizing" past timeout context; When the checked action occurs; Then recoverable via the settlement doc's status path, never double-charged.*
 - IDOR probe: user A operating on user B orders returns 403; RLS denies cross-user rows at DB.
+  *GWT: Given IDOR probe context; When user A operating on user B orders returns 403; Then RLS denies cross-user rows at DB.*
 - Secrets probe: no PSP keys, certificates, or private keys in repo, logs, or client bundle (grep gate).
+  *GWT: Given Secrets probe context; When the checked action occurs; Then no PSP keys, certificates, or private keys in repo, logs, or client bundle (grep gate).*
 
 ## Out of scope
 

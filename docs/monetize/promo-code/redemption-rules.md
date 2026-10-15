@@ -8,9 +8,17 @@ Define the exact buyer experience and rule set at redemption time: where codes a
 
 ## Users
 
-- Buyer: enters a code at checkout (or on the plan page pre-checkout), sees the discounted total before paying, gets a clear correctable error on problems.
-- Trial/credit holder: understands how a coupon interacts with existing benefits instead of guessing.
-- Fraud reviewer: sees flagged redemption patterns with context instead of raw logs.
+| Role | Permissions | Notes |
+|---|---|---|
+| Buyer | Enter a code at checkout (or on the plan page pre-checkout), see the discounted total before paying | Gets a clear correctable error on problems |
+| Trial/credit holder | Understand how a coupon interacts with existing benefits | Avoids guessing on stacking |
+| Fraud reviewer | See flagged redemption patterns with context | Uses signals + counts instead of raw logs |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Buyer | Enter a code at checkout, see the discounted total before paying, and get a clear correctable error on problems | Combinable discounts never compound into unintended free pro | Must |
+| US-02 | Trial/credit holder | Understand how a coupon interacts with existing benefits | I avoid guessing on stacking | Must |
+| US-03 | Fraud reviewer | See flagged redemption patterns with context | I work from signals + counts instead of raw logs | Must |
 
 ## Functional requirements
 
@@ -29,11 +37,13 @@ Define the exact buyer experience and rule set at redemption time: where codes a
 
 ## Acceptance criteria
 
-- Stacking drill: two coupons on one order → second replaces first only with confirmation; coupon + trial + credits combine exactly per the matrix; renewal with an expired campaign charges full catalog price with honest copy.
-- Oracle drill: invalid/expired/exhausted/ineligible codes indistinguishable by timing or error text (except the two safe hints); throttling engages under brute force.
-- Quote/grant race drill: campaign paused between quote and pay → grant refused, full-price one-click offered, no partial discount.
-- Abuse drill: self-referral ring voids credits while preserving paid orders; velocity anomaly auto-pauses the campaign and opens a review case; no auto-bans.
-- Accessibility drill: full keyboard + screen-reader redemption pass; math in figures + words.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Stacking drill: two coupons on one order; second replaces first only with confirmation; coupon + trial + credits combine exactly per the matrix; renewal with an expired campaign charges full catalog price with honest copy | Two coupons on one order and coupon + trial + credits | Stacking and renewal run | The second replaces the first only with confirmation, combinations follow the matrix exactly, and renewal with an expired campaign charges full catalog price with honest copy |
+| AC-02 | Oracle drill: invalid/expired/exhausted/ineligible codes indistinguishable by timing or error text (except the two safe hints); throttling engages under brute force | Invalid/expired/exhausted/ineligible codes and brute force | Validation runs | Codes stay indistinguishable by timing or error text except the two safe hints and throttling engages under brute force |
+| AC-03 | Quote/grant race drill: campaign paused between quote and pay; grant refused, full-price one-click offered, no partial discount | A campaign paused between quote and pay | Grant runs | Grant is refused, full-price one-click is offered, and no partial discount applies |
+| AC-04 | Abuse drill: self-referral ring voids credits while preserving paid orders; velocity anomaly auto-pauses the campaign and opens a review case; no auto-bans | A self-referral ring and a velocity anomaly | Containment runs | Credits void while paid orders preserve, the campaign auto-pauses with a review case opened, and no auto-bans occur |
+| AC-05 | Accessibility drill: full keyboard + screen-reader redemption pass; math in figures + words | Keyboard + screen-reader redemption | The redemption flow runs | The full pass succeeds with math in figures + words |
 
 ## Out of scope
 

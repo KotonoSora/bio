@@ -8,9 +8,17 @@ Define the single order lifecycle every provider path shares: one canonical `sta
 
 ## Users
 
-- Provider grant/sweep/ops handlers: transition orders only along legal edges.
-- Buyer-facing pending page, history page, and receipts: render one consistent vocabulary.
-- Support/ops: reads any order and knows precisely what can still happen to it.
+| Role | Permissions | Notes |
+|---|---|---|
+| Provider grant/sweep/ops handlers | Transition orders only along legal edges | Every provider path shares one canonical lifecycle |
+| Buyer-facing pending page, history page, and receipts | Render one consistent vocabulary | Buyers see the same order lifecycle on every provider path |
+| Support/ops | Read any order and know what can still happen to it | Provider events drive transitions through one arbiter map |
+
+| Story ID | As a | I want to | So that | Priority |
+|---|---|---|---|---|
+| US-01 | Provider grant/sweep/ops handler | Transition orders only along legal edges | Every provider path shares one canonical lifecycle | Must |
+| US-02 | Buyer-facing pending page, history page, and receipts surface | Render one consistent vocabulary | Buyers see the same order lifecycle on every provider path | Must |
+| US-03 | Support/ops | Read any order and know precisely what can still happen to it | Provider events drive transitions through one arbiter map | Must |
 
 ## Functional requirements
 
@@ -29,11 +37,13 @@ Define the single order lifecycle every provider path shares: one canonical `sta
 
 ## Acceptance criteria
 
-- Cross-provider drill: one order per provider driven through success, cancel, expiry, and (where applicable) refund/dispute — all land on the specified canonical states with complete audit trails.
-- Illegal-edge drill (e.g. `expired → paid` direct, `failed → authorizing`): refused at the transition layer on every provider path; only the audited exception flows can move terminal rail orders.
-- Late-confirmation drill on `cancelled`/`expired` orders across all eight providers: zero grants, all logged.
-- Status-enum probe: no off-enum value writable via any endpoint (constraint + test).
-- Buyer-page drill: each canonical state renders the specified UX (pending/confirms/success/failure/expired/refunded/disputed) with no provider-native jargon.
+| AC ID | Scenario | Given | When | Then |
+|---|---|---|---|---|
+| AC-01 | Cross-provider drill: one order per provider driven through success, cancel, expiry, and (where applicable) refund/dispute; all land on the specified canonical states with complete audit trails | One order per provider | Each order is driven through success, cancel, expiry, and where applicable refund/dispute | All land on the specified canonical states with complete audit trails |
+| AC-02 | Illegal-edge drill (e.g. `expired → paid` direct, `failed → authorizing`): refused at the transition layer on every provider path; only the audited exception flows can move terminal rail orders | An illegal edge such as `expired → paid` direct or `failed → authorizing` | The transition is attempted on any provider path | It is refused at the transition layer and only the audited exception flows can move terminal rail orders |
+| AC-03 | Late-confirmation drill on `cancelled`/`expired` orders across all eight providers: zero grants, all logged | A late confirmation for a `cancelled`/`expired` order | The confirmation arrives | Zero grants occur and all are logged |
+| AC-04 | Status-enum probe: no off-enum value writable via any endpoint (constraint + test) | The canonical status enum constraint | An off-enum value is written via any endpoint | The write is refused |
+| AC-05 | Buyer-page drill: each canonical state renders the specified UX (pending/confirms/success/failure/expired/refunded/disputed) with no provider-native jargon | Each canonical state | The buyer page renders | It shows the specified UX with no provider-native jargon |
 
 ## Out of scope
 

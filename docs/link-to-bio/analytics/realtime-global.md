@@ -8,9 +8,9 @@ Show what is happening right now: live clicks, current visitors, their locations
 
 ## Users
 
-- Pro creator: watches launches, drops, and live events minute-by-minute (now-line, top active links, live location map, sales tick where available).
-- Free creator: sees the realtime panel as a gated teaser (locked state with upgrade path), retaining full historical analytics.
-- Visitor: unaffected — the live feed reads KV counters the beacon path already maintains; no extra visitor-side work.
+- Pro creator: *As a Pro creator, I want to watch launches, drops, and live events minute-by-minute so that I know whether a launch is working right now.* Watches launches, drops, and live events minute-by-minute (now-line, top active links, live location map, sales tick where available).
+- Free creator: *As a Free creator, I want the realtime panel as a gated teaser with an upgrade path so that I retain full historical analytics while seeing what live detail exists.* Sees the realtime panel as a gated teaser (locked state with upgrade path), retaining full historical analytics.
+- Visitor: *As a Visitor, I want the live feed to read counters the beacon path already maintains so that no extra visitor-side work slows my visit.* Unaffected — the live feed reads KV counters the beacon path already maintains; no extra visitor-side work.
 
 ## Functional requirements
 
@@ -29,11 +29,11 @@ Show what is happening right now: live clicks, current visitors, their locations
 
 ## Acceptance criteria
 
-- Liveness drill: scripted visits appear in the feed within two poll cycles; minute-buckets expire so a quiet profile reads zero, not stale highs.
-- Gating drill: free-plan direct API call returns 403; global-rollup endpoint refuses creator credentials.
-- Load drill: 10x poll burst throttled without KV error-rate movement; PG write count unchanged (zero) with realtime on vs off.
-- Sales-conditional drill: profile without order data shows no sales strip; profile with data shows ticks matching order rollups within stated pipeline lag.
-- Authority drill: Reds-vs-Blues fixture where live and aggregate briefly differ — panel footnote and support runbook both cite aggregates as truth.
+- Liveness drill: scripted visits appear in the feed within two poll cycles; minute-buckets expire so a quiet profile reads zero, not stale highs. *GWT: Given scripted visits and then a quiet profile; When the feed is polled; Then visits appear within two poll cycles and expired minute-buckets read zero, not stale highs.*
+- Gating drill: free-plan direct API call returns 403; global-rollup endpoint refuses creator credentials. *GWT: Given a free-plan direct API call and a creator credential on the global-rollup endpoint; When evaluated; Then the realtime call returns 403 and the global rollup refuses creator credentials.*
+- Load drill: 10x poll burst throttled without KV error-rate movement; PG write count unchanged (zero) with realtime on vs off. *GWT: Given a 10x poll burst with realtime on; When throttling, KV error rate, and PG writes are measured; Then the burst is throttled with no KV error-rate movement and PG writes stay zero.*
+- Sales-conditional drill: profile without order data shows no sales strip; profile with data shows ticks matching order rollups within stated pipeline lag. *GWT: Given a profile with and without order data; When the panel renders; Then the profile without data shows no sales strip and the profile with data shows ticks matching order rollups within stated pipeline lag.*
+- Authority drill: Reds-vs-Blues fixture where live and aggregate briefly differ — panel footnote and support runbook both cite aggregates as truth. *GWT: Given a Reds-vs-Blues fixture where live and aggregate briefly differ; When the panel footnote and support runbook are read; Then both cite aggregates as truth.*
 
 ## Out of scope
 

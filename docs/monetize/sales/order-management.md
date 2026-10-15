@@ -8,9 +8,9 @@ Give support and ops one place to find any order, see its complete money trail, 
 
 ## Users
 
-- Support agent: finds orders, explains states in plain language, triggers buyer-safe actions (resend receipt, re-drive verification, escalate).
-- Ops/finance operator: executes restricted actions (cancel, link exception, refund, subscription fix) with dual-control where defined.
-- Buyer (indirect): gets faster, consistent answers because every agent sees the same trail.
+- Support agent: *As a Support agent, I want to find orders, explain states in plain language, trigger buyer-safe actions (resend receipt, re-drive verification, escalate) so that support and ops have one place to find any order, see its complete money trail, and take every legal action as defined here.* finds orders, explains states in plain language, triggers buyer-safe actions (resend receipt, re-drive verification, escalate).
+- Ops/finance operator: *As an Ops/finance operator, I want to execute restricted actions (cancel, link exception, refund, subscription fix) with dual-control where defined so that support and ops have one place to find any order, see its complete money trail, and take every legal action as defined here.* executes restricted actions (cancel, link exception, refund, subscription fix) with dual-control where defined.
+- Buyer (indirect): *As a Buyer, I want to get faster, consistent answers because every agent sees the same trail so that support and ops have one place to find any order, see its complete money trail, and take every legal action as defined here.* gets faster, consistent answers because every agent sees the same trail.
 
 ## Functional requirements
 
@@ -30,11 +30,17 @@ Give support and ops one place to find any order, see its complete money trail, 
 ## Acceptance criteria
 
 - Lookup drill: same order found via all five identifier kinds with identical assembled trails; unknown identifiers return clean no-result (no cross-order leakage).
+  *GWT: Given Lookup drill context; When same order found via all five identifier kinds with identical assembled trails; Then unknown identifiers return clean no-result (no cross-order leakage).*
 - Action drill per role: support tier cannot reach ops-tier actions (403 with reason); ineligible-state actions refused with stated preconditions; stale-view execution fails closed.
+  *GWT: Given Action drill per role context; When support tier cannot reach ops-tier actions (403 with reason); Then stale-view execution fails closed.*
 - Dual-control drill: above-threshold refund requires a different approver; self-approval impossible; expired approvals cannot execute.
+  *GWT: Given Dual-control drill context; When above-threshold refund requires a different approver; Then expired approvals cannot execute.*
 - Case drill: exception → case → buyer-visible "under review" → resolution with full audit chain; internal notes never exposed.
+  *GWT: Given Case drill: exception; When the transition executes; Then case → buyer-visible "under review" → resolution with full audit chain; internal notes never exposed.*
 - Dry-run drill: every money-moving action previews exact effects; previewed-equals-executed verified on samples.
+  *GWT: Given Dry-run drill context; When every money-moving action previews exact effects; Then previewed-equals-executed verified on samples.*
 - Auth probe: buyers on ops endpoints → 403; support agents on finance-only actions → 403; RLS denies cross-scope rows.
+  *GWT: Given Auth probe: buyers on ops endpoints; When the transition executes; Then 403; support agents on finance-only actions → 403; RLS denies cross-scope rows.*
 
 ## Out of scope
 
