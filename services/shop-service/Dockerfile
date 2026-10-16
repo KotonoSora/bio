@@ -9,6 +9,8 @@ COPY --chown=gradle:gradle gradlew gradlew.bat settings.gradle.kts build.gradle.
 COPY --chown=gradle:gradle gradle/ gradle/
 COPY --chown=gradle:gradle gateway/ gateway/
 COPY --chown=gradle:gradle services/ services/
+# Shared BuildKit cache mount: GRADLE_USER_HOME must match the mount target.
+ENV GRADLE_USER_HOME=/home/gradle/.gradle
 RUN --mount=type=cache,target=/home/gradle/.gradle ./gradlew :services:shop-service:bootJar --no-daemon -x test -x integrationTest
 
 FROM eclipse-temurin:21-jre@sha256:ccbad9e7cb84c27092b12c40a4143e5733e050db9c3784d84f632dcf423fb2ef AS runtime

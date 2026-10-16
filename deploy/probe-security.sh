@@ -5,6 +5,7 @@
 # Upload integrity is owned by feature 09 (no avatar endpoint on this baseline).
 set -e
 cd "$(dirname "$0")/.."
+EDGE="${EDGE_URL:-http://localhost:${EDGE_HTTP_PORT:-80}}"
 need() { command -v "$1" >/dev/null 2>&1 || { echo "need $1"; exit 1; }; }
 need openssl; need python3; need curl; need docker
 python3 -c "import jwt" 2>/dev/null || pip install -q pyjwt[crypto]
@@ -17,10 +18,11 @@ awk 'NF {sub(/\r/, ""); printf "%s\\n", $0}' /tmp/prb-pub.pem > /tmp/prb-pub.env
 export INTERNAL_JWT_PRIVATE_KEY_PEM="$(cat /tmp/prb-priv.env)"
 export INTERNAL_JWT_PUBLIC_KEY_PEM="$(cat /tmp/prb-pub.env)"
 export INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM=""
-docker compose up -d --build gateway profile-service resume-service analytics-service billing-service >/dev/null
-for p in 8082 8086 8085 8088; do
+docker compose up -d --build gateway profile-service resume-service analytics-service billing-service public-site-service nginx >/dev/null
+for p in 8082 8084 8086 8085 8088; do
   for i in $(seq 1 40); do curl -sf "http://localhost:$p/health/liveness" >/dev/null && break || sleep 5; done
 done
+curl -sf "$EDGE/health/liveness" >/dev/null || { echo "FAIL edge unhealthy"; exit 1; }
 
 mint() { # mint <sub> <aud>
   python3 - "/tmp/prb-priv.pem" "$1" "$2" <<'EOF'
@@ -42,6 +44,22 @@ echo "ok IDOR reads scoped"
 curl -s -o /dev/null -w '%{http_code}' http://localhost:8082/api/v1/profiles/me -H "Authorization: Bearer $PA" | grep -q 200 \
   || { echo "FAIL owner read"; exit 1; }
 echo "ok owner read"
+
+echo "== edge security headers on public documents =="
+curl -sI "$EDGE/app/" | grep -qi '^content-security-policy: default-src' || { echo "FAIL edge CSP"; exit 1; }
+curl -sI "$EDGE/app/" | grep -qi '^x-content-type-options: nosniff' || { echo "FAIL edge nosniff"; exit 1; }
+echo "ok edge headers"
+
+echo "== edge never serves gated or internal paths =="
+for u in "/media/" "/media/profile/evidence/" "/internal/v1/accounts/me" "/internal-media/profile/evidence/x.png"; do
+  C="$(curl -s -o /dev/null -w '%{http_code}' "$EDGE$u")"
+  [ "$C" = "404" ] || { echo "FAIL $u -> $C at the edge"; exit 1; }
+done
+echo "ok edge gated paths 404"
+
+echo "== edge -> gateway -> public-site SSR (prod mode) =="
+curl -sf "$EDGE/smokeuser" | grep -q smokeuser || { echo "FAIL edge SSR"; exit 1; }
+echo "ok edge SSR"
 
 echo "== rate rules active (beacon burst -> 429 + Retry-After) =="
 HIT429=0
@@ -70,6 +88,17 @@ for svc in profile-service resume-service; do
   docker compose logs --tail=200 "$svc" 2>/dev/null | grep -iE "BEGIN (RSA )?PRIVATE KEY|sk_live_|AKIA[0-9A-Z]{16}|client_secret" && { echo "FAIL secret in $svc logs"; exit 1; } || true
 done
 echo "ok manifests/logs clean"
+
+echo "== no object-store tooling anywhere (storage amendment) =="
+PAT="min""io|boto""3|amaz""onaws|aws-""sdk|s3:/""/"
+if grep -rInEi --exclude-dir=.git --exclude-dir=bin --exclude-dir=build --exclude-dir=dist \
+   --exclude-dir=node_modules --exclude-dir=drill-log --exclude-dir=gate-log --exclude-dir=releases \
+   --exclude-dir=openapi-baseline "$PAT" \
+   docker-compose.yml docker-compose.scale.yml deploy services gateway web gradle .github \
+   build.gradle.kts settings.gradle.kts 2>/dev/null; then
+  echo "FAIL: object-store reference found (storage amendment)"; exit 1
+fi
+echo "ok storage policy clean"
 
 echo "== webhook no-oracle (garbage vs plausible both uniform) =="
 C1="$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8088/webhooks/stripe -H 'Content-Type: application/json' -d '{"garbage":1}')"

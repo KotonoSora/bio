@@ -2,6 +2,7 @@
 .gradle/
 */build/
 build/
+bin/
 node_modules/
 web/dist/
 web/node_modules/
@@ -9,5 +10,6 @@ web/node_modules/
 *.env
 !*.env.example
 deploy/openapi-baseline/
+data/
 .DS_Store
 .idea/

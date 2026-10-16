@@ -54,8 +54,10 @@ class SecurityConfig {
                     "/webhooks/**",
                     "/api/v1/social/*/callback",
                 ).permitAll()
-                // Public SSR reads served by services behind the gateway.
-                it.requestMatchers(HttpMethod.GET, "/go/**", "/", "/{username}").permitAll()
+                // Public reads: SSR profiles, redirects, resume reads, micro-script.
+                it.requestMatchers(HttpMethod.GET, "/go/**", "/", "/{username}", "/cv/**", "/s/ms.js").permitAll()
+                // SSO entry points redirect to the provider (no session required).
+                it.requestMatchers("/api/v1/auth/**").permitAll()
                 // Session API.
                 it.requestMatchers("/api/v1/**").authenticated()
                 it.anyRequest().authenticated()

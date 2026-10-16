@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 SEMVER="${1:-0.1.0}"
 SHA="$(git rev-parse --short HEAD)"
 TAG="$SEMVER-$SHA"
-SERVICES="gateway account-service profile-service link-service public-site-service analytics-service resume-service shop-service billing-service publish-service web"
+SERVICES="gateway account-service profile-service link-service public-site-service analytics-service resume-service shop-service billing-service publish-service web nginx"
 mkdir -p deploy/releases
 
 echo "== build all images =="
@@ -22,13 +22,16 @@ OUT="deploy/releases/local-$TAG.env"
   echo "# Web lockfile: web/package-lock.json @ $(git hash-object web/package-lock.json 2>/dev/null || echo missing)"
 } >> "$OUT"
 for svc in $SERVICES; do
+  # Compose service name -> image repo (the `nginx` row builds resume/edge).
+  IMG="resume/$svc"
+  [ "$svc" = "nginx" ] && IMG="resume/edge"
   SRC="$(docker compose images "$svc" --format json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)["ImageID"])' 2>/dev/null || true)"
   if [ -z "$SRC" ]; then
-    SRC="$(docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "resume/$svc" | head -1 | awk '{print $2}')"
+    SRC="$(docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "$IMG" | head -1 | awk '{print $2}')"
   fi
-  docker tag "$SRC" "resume/$svc:$TAG"
-  DIGEST="$(docker inspect --format '{{index .RepoDigests 0}}' "resume/$svc:$TAG" 2>/dev/null | sed 's/.*@//' || true)"
+  docker tag "$SRC" "$IMG:$TAG"
+  DIGEST="$(docker inspect --format '{{index .RepoDigests 0}}' "$IMG:$TAG" 2>/dev/null | sed 's/.*@//' || true)"
   echo "export ${svc}_DIGEST=${DIGEST:-unknown}" | tr -c 'A-Za-z0-9_=.\n' '_' >> "$OUT"
-  echo "tagged resume/$svc:$TAG digest=${DIGEST:-unknown}"
+  echo "tagged $IMG:$TAG digest=${DIGEST:-unknown}"
 done
 echo "record: $OUT"

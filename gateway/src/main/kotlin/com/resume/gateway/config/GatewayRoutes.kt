@@ -1,8 +1,9 @@
 package com.resume.gateway.config
 
 /**
- * Edge route table (01-architecture-and-service-topology.md). The gateway routes
- * the session API to the owning service, the internal mesh namespace stays
+ * Edge route table (01-architecture-and-service-topology.md). The forwarding
+ * table in `com.resume.gateway.proxy.RouteTable` routes the session API
+ * (`/api/v1/`) to the owning service, the internal mesh namespace stays
  * mesh-only (denied from the public edge in SecurityConfig), short links go
  * to link-service:8080, and public profiles go to public-site-service:8080
  * (SSR). Session state lives at the edge, never in services; W3C traceparent

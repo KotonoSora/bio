@@ -15,7 +15,9 @@ echo "17-21        resume-service        image=resume/resume-service        db=r
 echo "22-26        shop-service          image=resume/shop-service          db=shop_db"
 echo "32-40,46     billing-service       image=resume/billing-service       db=billing_db"
 echo "41-44        publish-service       image=resume/publish-service       db=publish_db"
-echo "edge         gateway               image=resume/gateway               db=(none)"
+echo "edge/01      gateway               image=resume/gateway               db=(none; sessions + JWT)"
+echo "web(dev)     web                   image=resume/web                   db=(none; dev-only SPA surface)"
+echo "storage/09   nginx                 image=resume/edge                  db=(none; SPA + /media + cache)"
 echo ""
 echo "== service -> flyway versions (forward-only) =="
 for d in services/*/ gateway/; do

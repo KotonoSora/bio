@@ -11,16 +11,25 @@ jobs:
         run: 'echo "$(cat deploy/wrapper-checksum.txt)" | shasum -a 256 -c -'
       - name: Secret grep gate (.env / overrides never committed)
         run: "! grep -rIl --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=build -E '(-----BEGIN (RSA )?PRIVATE KEY-----|sk_live_|AKIA[0-9A-Z]{16})' . || (echo 'secret hit' && exit 1)"
+      - name: Object-store gate (no object-store tooling anywhere)
+        run: |
+          PAT="min""io|boto""3|amaz""onaws|aws-""sdk|s3:/""/"
+          ! grep -rInEi --exclude-dir=.git --exclude-dir=bin --exclude-dir=build --exclude-dir=dist --exclude-dir=node_modules --exclude-dir=drill-log --exclude-dir=gate-log --exclude-dir=releases --exclude-dir=openapi-baseline "$PAT" docker-compose.yml docker-compose.scale.yml deploy services gateway web gradle .github build.gradle.kts settings.gradle.kts || (echo "object-store hit" && exit 1)
       - name: Scope gate (gated backlog 48-53 + assist 16 stay design-only; SSO-only)
         run: '! grep -rniE --exclude-dir=build "openai|anthropic|claude|ai.assist|affiliate|adserver" services/ gateway/ web/src/ || (echo "gated scope hit" && exit 1); ! grep -rnE --exclude-dir=build "PasswordEncoder|BCrypt" services/ gateway/ --include=*.kt || (echo "password flow hit (SSO-only)" && exit 1)'
       - name: No dynamic versions gate
-        run: '! grep -rn --include=*.gradle.kts --include=*.toml -E "(['\"])[0-9A-Za-z_.-]*\+(['\"])|latest\.(release|integration)" build.gradle.kts settings.gradle.kts gradle/ services/ gateway/ || (echo "dynamic version hit" && exit 1)'
-      - name: Version pins asserted (Boot 4.1.1 / Kotlin 2.4.21 / PG 18.6 / Redis 7.4)
+        run: |
+          ! grep -rn --include=*.gradle.kts --include=*.toml -E "(['\"])[0-9A-Za-z_.-]*\+(['\"])|latest\.(release|integration)" build.gradle.kts settings.gradle.kts gradle/ services/ gateway/ || (echo "dynamic version hit" && exit 1)
+      - name: Version pins asserted (Boot 4.1.1 / Kotlin 2.4.21 / PG 18.6 / Redis 7.4 / Nginx edge)
         run: |
           grep -q 'springBoot = "4.1.1"' gradle/libs.versions.toml
           grep -q 'kotlin = "2.4.21"' gradle/libs.versions.toml
           grep -q 'postgres:18.6@sha256:' docker-compose.yml
           grep -q 'redis:7.4@sha256:' docker-compose.yml
+          grep -q 'nginx:1.27-alpine@sha256:' deploy/edge/Dockerfile
+          grep -q '/srv/media:ro' docker-compose.yml
+      - name: Compose slice validates (single source)
+        run: docker compose config -q
       - name: Build
         run: ./gradlew build --no-daemon
       - name: Integration tests (PG 18.6 via Testcontainers)
@@ -33,7 +42,8 @@ jobs:
           name: sboms
           path: services/*/build/reports/bom.json
       - name: No test skips (G1 blocks on skip)
-        run: '[ "$(python3 -c '"'"'import glob, xml.etree.ElementTree as ET; print(sum(int(ET.parse(f).getroot().get("skipped", 0)) for f in glob.glob("services/*/build/test-results/*/TEST-*.xml") + glob.glob("gateway/build/test-results/*/TEST-*.xml")))'"'"')" = "0" ]'
+        run: |
+          [ "$(python3 -c 'import glob, xml.etree.ElementTree as ET; print(sum(int(ET.parse(f).getroot().get("skipped", 0)) for f in glob.glob("services/*/build/test-results/*/TEST-*.xml") + glob.glob("gateway/build/test-results/*/TEST-*.xml")))')" = "0" ]
       - name: SBOM scan (High/Critical block)
         run: sh deploy/sbom-scan.sh
       - name: SELECT version() asserted at boot (PG 18.6)
@@ -42,13 +52,18 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     needs: build
+    env:
+      # Runner memory bound: cap parallel image builds (Gradle compiles are heavy).
+      COMPOSE_PARALLEL_LIMIT: 3
     steps:
       - uses: actions/checkout@v4
+      - name: Prewarm shared Gradle cache (serial; parallel wrapper-lock race)
+        run: docker compose build gateway
       - name: Boot full stack (digest-pinned images)
-        run: docker compose up -d --build postgres redis gateway account-service profile-service link-service public-site-service analytics-service resume-service shop-service billing-service publish-service web
+        run: docker compose up -d --build postgres redis gateway account-service profile-service link-service public-site-service analytics-service resume-service shop-service billing-service publish-service web nginx
       - name: Wait for health
         run: |
-          for p in 8080 8081 8082 8083 8084 8085 8086 8087 8088 8089; do
+          for p in 80 8080 8081 8082 8083 8084 8085 8086 8087 8088 8089 8090; do
             for i in $(seq 1 60); do curl -sf "http://localhost:$p/health/liveness" && break || sleep 5; done
             curl -sf "http://localhost:$p/health/liveness" || (echo "unhealthy: $p" && exit 1)
           done

@@ -6,6 +6,7 @@ import org.springframework.http.ProblemDetail
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.resource.NoResourceFoundException
 import java.net.URI
 
 /**
@@ -48,6 +49,14 @@ class ProblemHandler {
     fun handleConflict(ex: IllegalStateException): ProblemDetail {
         val pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message ?: "Conflict")
         pd.setProperty("code", "conflict")
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return pd
+    }
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResource(ex: NoResourceFoundException): ProblemDetail {
+        val pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "No route")
+        pd.setProperty("code", "not_found")
         pd.setProperty("traceId", MDC.get("traceId") ?: "")
         return pd
     }

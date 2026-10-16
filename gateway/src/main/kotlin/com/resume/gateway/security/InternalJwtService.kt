@@ -22,6 +22,9 @@ class InternalJwtService(
     @Value("\${internal.jwt.kid:e0-dev-key}") val kid: String,
     @Value("\${internal.jwt.private-key-pem:}") private val privateKeyPem: String,
 ) {
+    /** True when a real signing key is configured (prod path); dev auto-generates. */
+    val configured: Boolean get() = privateKeyPem.isNotBlank()
+
     private val keyPair by lazy {
         if (privateKeyPem.isBlank()) {
             val gen = KeyPairGenerator.getInstance("RSA")
