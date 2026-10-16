@@ -1,6 +1,6 @@
 # Themes and Avatar - API Contracts and Payloads (feature 09)
 
-Phase 2 TL · Public catalog, dashboard, and internal REST contracts. Auth and rate rules: `05-security-logging-and-rate-limiting.md`. JSON only; problem bodies follow RFC 9457 (model of `docs/02-architecture-techlead/06-public-profile/03-api-contracts-and-payloads.md`).
+Phase 2 TL · Public catalog, dashboard, and internal REST contracts. Auth and rate rules: `06-security-logging-and-rate-limiting.md`. JSON only; problem bodies follow RFC 9457 (model of `docs/02-architecture-techlead/06-public-profile/03-api-contracts-and-payloads.md`).
 
 ## Endpoint map
 
@@ -31,10 +31,10 @@ data class ThemeCatalogResponse(val registryVersion: String, val themes: List<Th
 ## Semantics (normative)
 
 - **Theme save.** Registry lookup (`404 theme_not_found`) -> entitlement gate (`403 theme_forbidden` for `proOnly` without an explicit pro snapshot; fail closed) -> write `profiles.theme_id` -> audit -> publish `profile.published.v1`.
-- **Upload validation order (before any blob write).** Bounded read with 2 MB + 1 byte ceiling (over -> `avatar_too_large`) -> magic-byte sniff (JPEG `FF D8 FF`, PNG `89 50 4E 47`, WebP `RIFF....WEBP`, MP4 `ftyp`; else `avatar_bad_type`) -> if MP4: active theme must have `videoAvatar` (else `avatar_video_not_allowed`) and loop <= 10 s (else `avatar_video_too_long`) -> generate `avatars/{ulid}.{ext}` -> blob PUT -> row update -> delete previous key -> audit -> event. Extension and claimed MIME are never trusted; a rejected request leaves zero objects.
-- **Delete.** Clear `avatar_key` unconditionally -> audit -> event -> best-effort blob delete; `204` even when the object is already missing.
+- **Upload validation order (before any file write).** Bounded read with 2 MB + 1 byte ceiling (over -> `avatar_too_large`) -> magic-byte sniff (JPEG `FF D8 FF`, PNG `89 50 4E 47`, WebP `RIFF....WEBP`, MP4 `ftyp`; else `avatar_bad_type`) -> if MP4: active theme must have `videoAvatar` (else `avatar_video_not_allowed`) and loop <= 10 s (else `avatar_video_too_long`) -> generate `profile/avatars/{ulid}.{ext}` -> file write (temp + rename) -> row update -> delete previous file -> audit -> event. Extension and claimed MIME are never trusted; a rejected request leaves zero files.
+- **Delete.** Clear `avatar_key` unconditionally -> audit -> event -> best-effort file delete; `204` even when the file is already missing.
 - **Renderer contract.** `GET /internal/v1/themes` returns the whole catalog with `registryVersion`; consumers cache <= 300 s; an unknown `themeId` triggers one fresh fetch and then falls back to the default theme (page never breaks). `themeId`/`avatarKey` already ride the feature 06 resolve payload - no change there. Downgrade fallback (36): a page whose stored `theme_id` is `proOnly` renders the default theme while the owner's snapshot is not pro (fail-closed per render, cached snapshot); the stored `theme_id` is never rewritten - re-upgrade restores it byte-identical.
-- **Caching.** Avatar + thumbnail objects immutable, 1-year cache; catalog 300 s; theme switch never changes the avatar key (no re-fetch).
+- **Caching.** Avatar + thumbnail files immutable, 1-year cache; catalog 300 s; theme switch never changes the avatar file name (no re-fetch).
 
 ## Code catalog (in addition to previous feature catalogs)
 

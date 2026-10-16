@@ -1,6 +1,6 @@
 # Publish Composer - Non-Functional Requirements (feature 42)
 
-Phase 1 BA · Numbers with units; enforcement: `docs/02-architecture-techlead/42-publish-composer/05-security-logging-and-rate-limiting.md`.
+Phase 1 BA · Numbers with units; enforcement: `docs/02-architecture-techlead/42-publish-composer/06-security-logging-and-rate-limiting.md`.
 
 | ID | Requirement | Threshold |
 |---|---|---|
@@ -14,7 +14,7 @@ Phase 1 BA · Numbers with units; enforcement: `docs/02-architecture-techlead/42
 | NFR-08 | Lock precision | Freeze at exactly `run_at − 5 min` (±1 s); pre-lock cancel guaranteed no-dispatch (drill-verified) |
 | NFR-09 | Outage controls | Pause effect ≤ 5 s (fresh reads); resume replays in original order; poison quarantine ≤ 5 redeliveries |
 | NFR-10 | Audit retention | Post/target transitions, schedule/cancel/reschedule, pause/resume, quarantine/replay retained 24 months; payloads = ids + reasons |
-| NFR-11 | Privacy | No token material in messages/logs; media objects private (signed URLs ≤ 15 min for preview); public surfaces never expose drafts |
+| NFR-11 | Privacy | No token material in messages/logs; media files private (download grants ≤ 15 min for preview); public surfaces never expose drafts |
 | NFR-12 | Scoping | Owner RLS on posts/targets/events; ops reads aggregates + ids only; cross-user reads zero rows |
-| NFR-13 | Degrade | Provider API down → leg retries then honest failures, other legs unaffected; Redis down → dispatch halts loudly (no DB polling fallback fork); MinIO down → uploads fail honestly, existing posts unaffected; scheduler down → past-due delivers `late` on recovery |
+| NFR-13 | Degrade | Provider API down → leg retries then honest failures, other legs unaffected; Redis down → dispatch halts loudly (no DB polling fallback fork); storage volume down → uploads fail honestly, existing posts unaffected; scheduler down → past-due delivers `late` on recovery |
 | NFR-14 | Observability | Metrics: dispatch-to-publish p95 per network, failure classes, retry outcomes, queue depth/lag, quota refusals, late dispatches, quarantine count — zero token labels |

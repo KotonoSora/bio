@@ -14,7 +14,7 @@ Phase 1 BA · Feature 07 of 53 (link-to-bio) · Implemented by `docs/02-architec
 
 ## In scope
 
-- Verification application with evidence upload (blob keys only) and the 5-state badge machine `none|pending|verified|rejected|revoked`.
+- Verification application with evidence upload (storage file names only) and the 5-state badge machine `none|pending|verified|rejected|revoked`.
 - Ops review queue with audited approve/reject/revoke (mandatory reason).
 - Near-match advisory flagging of claims against verified usernames.
 - Follower totals: capped and versioned self-reported counts + keyless auto fetches refreshed on a 24 h schedule, last-good + stale on failure.

@@ -10,7 +10,7 @@ Phase 2 TL · Extension of `profile-service` (module `com.app.profile.trust`), s
 
 Rationale for staying in `profile-service`: badge transitions must share the profile transaction (a rename hides the badge atomically), the refresh job reads the same RLS baseline, and the public path reads cached totals from the profile row. Extracting trust would split badge state from profile state for an ops-low-volume path - no split pressure in v1. Same argument as `docs/02-architecture-techlead/06-public-profile/01-architecture-and-tech-stack.md`.
 
-Cross-service rules: no new database, no new container; SSR (feature 10) consumes the additive fields on the internal resolve payload; evidence blobs live in MinIO under random keys (platform object store); no cross-service table access.
+Cross-service rules: no new database, no new container; SSR (feature 10) consumes the additive fields on the internal resolve payload; evidence files live on the local storage volume under random names (`docs/02-architecture-techlead/00-platform-baseline/09-local-storage-and-nginx-spec.md`); no cross-service table access.
 
 ## Runtime delta (compose slice unchanged from feature 06)
 
@@ -18,19 +18,19 @@ Cross-service rules: no new database, no new container; SSR (feature 10) consume
   profile-service:                # same service; new env only
     environment:
       APP_FOLLOWERS_REFRESH_CRON: "0 0 */24 * * *"
-      APP_EVIDENCE_BUCKET: "profile-evidence"
+      APP_EVIDENCE_DIR: "/app/uploads/profile/evidence"
       APP_FETCH_BUDGET_PER_NETWORK: "1"
 ```
 
-No new containers. MinIO and Redis come from the platform compose; the evidence bucket is provisioned by the platform job. Postgres digest pinned in CI; Podman parity (`podman compose up`) is release acceptance.
+No new containers. Redis and the Nginx edge come from the platform compose; the evidence namespace lives on the uploads volume (`./data/uploads/profile/evidence`, conventions in `04-local-file-storage-and-nginx-spec.md`). Postgres digest pinned in CI; Podman parity (`podman compose up`) is release acceptance.
 
 ## build.gradle.kts delta (no new dependencies)
 
-The stack is unchanged versus `docs/02-architecture-techlead/06-public-profile/01-architecture-and-tech-stack.md`: Boot 4.1.1, Kotlin 2.4.21, Gradle 9.8.1 wrapper. `@Scheduled` (spring-context) and `RestClient` (spring-web) are built-in; blob access reuses the platform `BlobPort`. No OAuth, no scheduler library, no HTTP client library added - the grep gate in T-12 fails the build on vault-shaped dependencies.
+The stack is unchanged versus `docs/02-architecture-techlead/06-public-profile/01-architecture-and-tech-stack.md`: Boot 4.1.1, Kotlin 2.4.21, Gradle 9.8.1 wrapper. `@Scheduled` (spring-context) and `RestClient` (spring-web) are built-in; file access reuses the platform `FileStorePort`. No OAuth, no scheduler library, no HTTP client library added - the grep gate in T-12 fails the build on vault-shaped dependencies.
 
 ## React.js 19.3 integration topology
 
-Two routes in the platform SPA: `/app/trust` (creator cards; shares the `VerifiedBadge` SVG component with the SSR renderer) and `/app/ops/trust` (role-gated queue, invisible to creators; 403 body carries no queue data). Field rules in `docs/01-requirements-ba/07-verification-and-followers/04-ui-data-dictionary.md`; error map in `03-api-contracts-and-payloads.md`. No evidence bytes in client state (keys/URLs only, grep-gated).
+Two routes in the platform SPA: `/app/trust` (creator cards; shares the `VerifiedBadge` SVG component with the SSR renderer) and `/app/ops/trust` (role-gated queue, invisible to creators; 403 body carries no queue data). Field rules in `docs/01-requirements-ba/07-verification-and-followers/04-ui-data-dictionary.md`; error map in `03-api-contracts-and-payloads.md`. No evidence bytes in client state (file names/grants only, grep-gated).
 
 ## Key decisions
 

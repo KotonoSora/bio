@@ -16,10 +16,10 @@ Phase 1 BA · Every threshold numeric.
 | # | Requirement |
 |---|---|
 | NFR-05 | Deny-by-default; owner scope by server-set `user_id` + per-database RLS; zero cross-user paths; foreign ids → 403 and RLS denial. |
-| NFR-06 | Uploads: 2 MB cap + magic-byte sniff; random blob keys; no client-chosen paths; no executable serve path; no SVG. |
+| NFR-06 | Uploads: 2 MB cap + magic-byte sniff; random file names; no client-chosen paths; no executable serve path; no SVG. |
 | NFR-07 | Sanitization on write + escape on render; CSP at the edge; stored payloads never echoed raw. |
 | NFR-08 | Audit: create/transition/price/cover/delete rows append-only, 24-month retention; ids only, never content. |
-| NFR-09 | Purge participant: products + price history + cover objects, counts returned; no cross-user deletes. |
+| NFR-09 | Purge participant: products + price history + cover files, counts returned; no cross-user deletes. |
 | NFR-10 | Export deferral (BA 01 Q3) leaves no orphan: account deletion removes everything; no export endpoint exists in v1. |
 
 ## Scale and quotas

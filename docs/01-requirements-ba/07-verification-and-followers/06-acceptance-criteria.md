@@ -1,6 +1,6 @@
 # Verification Badge and Follower Display - Acceptance Criteria (feature 07)
 
-Phase 1 BA · BDD form. Every AC runs in the drill suite (task T-12 of `docs/02-architecture-techlead/07-verification-and-followers/04-step-by-step-implementation-plan.md`).
+Phase 1 BA · BDD form. Every AC runs in the drill suite (task T-12 of `docs/02-architecture-techlead/07-verification-and-followers/05-step-by-step-implementation-plan.md`).
 
 | AC ID | Scenario | Given | When | Then |
 |---|---|---|---|---|

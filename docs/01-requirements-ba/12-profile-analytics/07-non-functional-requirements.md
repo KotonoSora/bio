@@ -13,7 +13,7 @@ Phase 1 BA · Every threshold is quantified; owners in the TL files. This pipeli
 | Privacy | Visitor data ceiling | Country grain only; no raw IP at rest; visitor key HMAC with daily-rotated salt; no cross-profile stitching; raw logs never joined into dashboards |
 | Rate limits | Beacon abuse controls | Per-IP bucket 120 req/min (burst 240); tighten 50% when 429 ratio > 5% over 5 min; recover on 15-min decay; reads use standard gateway limits |
 | Availability | Degrade contract | Analytics outage never blocks the public page (fire-and-forget; even queue-down returns `202` + alert); reads degrade to stale banner, never to fabricated data |
-| Security | Access + oracle | Intake leaks nothing (uniform `202` on accepted paths); owner scoping by server-set `user_id` + RLS; raw bucket private, ops-only |
-| Quotas | Event hygiene | <= 1 queued message per accepted deduped event; <= 1 raw object per drain hour per shard |
+| Security | Access + oracle | Intake leaks nothing (uniform `202` on accepted paths); owner scoping by server-set `user_id` + RLS; raw archive private, ops-only |
+| Quotas | Event hygiene | <= 1 queued message per accepted deduped event; <= 1 raw file per drain hour per shard |
 | Localization | Copy and buckets | Dashboard copy VN default EN fallback; day buckets rendered in the viewer's timezone and labelled; server `day` is the contract |
 | Observability | Metrics + alerts | `consumer_lag_seconds`, `rollup.rows_written`, `beacon.rejected{reason}`, `beacon.abuse`, `analytics.query.latency`; alerts: lag > 90 min, abuse burst, rejection-rate spike |

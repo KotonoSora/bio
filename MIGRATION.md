@@ -9,6 +9,14 @@ Status tracker for the docs migration (rules: `AGENTS.md`). Batches run in order
 3. `00-platform-baseline` — **complete (8 files)**
 4. account (01–05) — **complete (5/5)** · 5. resume (17–21) — **complete (5/5)** · 6. shop (22–26) — **complete (5/5)** · 7. leads (27–28) — **complete (2/2)** · 8. url-shortener (30–31) — **complete (2/2)** · 9. monetize (32–40) — **complete (9/9)** · 10. publish/automate (41–44) — **complete (4/4)** · 11. agency (45–47) — **complete (3/3)** · 12. gated backlog (48–53) — **complete (6/6)**
 
+## Storage amendment (2026-10-16, in force)
+
+Owner directive: ZERO external services or third-party storage tools — no AWS, no S3, no MinIO. All files/media/logs live on VPS disk via Docker bind mounts/named volumes and are served by the Nginx edge (React 19.3 bundle + `/media/*`); gated bytes stream through service-validated short-TTL download grants. MinIO is retired everywhere; every feature directory with storage deltas carries `0X-local-file-storage-and-nginx-spec.md` (inserted after the API-contracts files; implementation plan/security renumber accordingly).
+
+Execution: A0 governance (`AGENTS.md`, this record) · A1 platform baseline (`02`, `03`, `04` rewritten; `01`, `07`, `08` touched; new `09-local-storage-and-nginx-spec.md`) · A2 feature sweep (02, 06–09, 12, 17, 19, 22–24, 28–31, 41–43; 15 storage-file additions with renumbering) · A3 BA wording touch-ups (same features) · A4 whole-tree gate.
+
+Status (A4, 2026-10-16): sweep complete. 15 storage specs land; plan/security files renumbered with every reference repointed; whole-tree gate green (word cap + ref resolution + retired-tool grep: negatives only).
+
 ## Service map (working; extends as features migrate)
 
 | Service | Features | Port | Database | Redis db | Notes |

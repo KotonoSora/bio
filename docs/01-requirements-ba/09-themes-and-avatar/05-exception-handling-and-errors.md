@@ -4,18 +4,18 @@ Phase 1 BA · Path types: Happy / Alternative / Exception. Error `code` values a
 
 | Scenario | Path Type | System Handling | Displayed Error Message |
 |---|---|---|---|
-| Valid PNG/JPEG/WebP upload | Happy | Validated -> key `avatars/{ulid}.{ext}` -> blob PUT -> row update -> old key deleted -> audit + event | avatar swaps everywhere |
+| Valid PNG/JPEG/WebP upload | Happy | Validated -> name `profile/avatars/{ulid}.{ext}` -> file write -> row update -> old file deleted -> audit + event | avatar swaps everywhere |
 | Valid loop MP4 on a `videoAvatar` theme | Happy | Same pipeline; loop cap asserted | avatar swaps everywhere |
-| Delete avatar (object already gone) | Happy | `204`; row key cleared unconditionally | default glyph returns |
+| Delete avatar (file already gone) | Happy | `204`; row key cleared unconditionally | default glyph returns |
 | Unknown `themeId` (registry changed) | Alternative | `404 theme_not_found`; gallery refreshed | "That theme is no longer available." |
 | Pro theme on a free plan (direct API) | Exception | `403 theme_forbidden`; UI rolls back to active theme | upgrade sheet opens |
 | Entitlement check unreachable | Alternative | Pro themes fail closed (`403 theme_forbidden`); standard themes unaffected | upgrade sheet (retry later) |
 | File over 2 MB | Exception | Client pre-check blocks before any byte; server re-checks while reading | "Images up to 2 MB." |
-| Renamed script / SVG / HTML content | Exception | `422 avatar_bad_type`; rejected by content sniffing, not extension; zero blob writes | "Images only (PNG, JPEG, WebP)." |
+| Renamed script / SVG / HTML content | Exception | `422 avatar_bad_type`; rejected by content sniffing, not extension; zero file writes | "Images only (PNG, JPEG, WebP)." |
 | MP4 on a theme without `videoAvatar` | Exception | `422 avatar_video_not_allowed`; nothing written | "Video avatars need an animated theme." |
 | MP4 longer than 10 s | Exception | `422 avatar_video_too_long`; nothing written | "Loops up to 10 s." |
 | MP4 without `ftyp` marker | Exception | `422 avatar_bad_type` (content sniff fails) | "Only MP4 loops are supported." |
-| Crash between blob PUT and row update | Alternative | One orphan object; request unaffected; sweep deletes it after 24 h | none |
+| Crash between file write and row update | Alternative | One orphan file; request unaffected; sweep deletes it after 24 h | none |
 | Theme switch while avatar upload pending | Alternative | Independent resources; independent rollbacks; both may complete | none |
 | Purge pending after theme/avatar save | Alternative | Purge chip shows `publishing...`; clears on fresh content or after 2 min | "publishing..." (chip) |
 | Unknown `themeId` at public render (stale catalog) | Alternative | Fresh catalog retry; still unknown -> default theme | none (page renders) |

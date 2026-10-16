@@ -10,7 +10,7 @@ Phase 2 TL · Service: `account-service` (feature 01 extension; no new service, 
 | D-2 | Deactivation propagates two ways: events for cancels/purges (schedulers, billing) and a 60 s-cached account-status read for read paths (profile resolve, sitemap). | Baseline rule: lost events self-heal via cache TTLs; public 404s never depend on event delivery alone. |
 | D-3 | Username retirement is a profile_db tombstone (`profile.retired_usernames`), written by profile-service's purge handler; resolve after purge is plain `missing`. | Feature 06 owns the namespace; permanent reservation is its decided policy; the tombstone extends the retired check to deleted names. |
 | D-4 | The runner is a daily in-service scheduler (03:30 UTC) with a Redis single-flight lock, bounded per-participant retries, and a 24 h stuck alert. | One code path, no new infra; idempotent by `runId` so retries are always safe. |
-| D-5 | Certificates are JSON objects in the private `purge-certificates` MinIO bucket (`{userId}/{runId}.json`), referenced from the deletion row. | Proof without a new store; retention rides the platform bucket policy. |
+| D-5 | Certificates are JSON files on the local storage volume (`account/purge-certificates/{userId}/{runId}.json`), referenced from the deletion row. | Proof without a new store; retention rides the platform storage policy (`docs/02-architecture-techlead/00-platform-baseline/09-local-storage-and-nginx-spec.md`). |
 | D-6 | Legal retention floors (year counts, hashed-email allow-list) load from configuration. | Counsel-owned values; Q-01 stays a launch blocker, not a spec invention. |
 
 ## Boundaries
@@ -25,10 +25,10 @@ Phase 2 TL · Service: `account-service` (feature 01 extension; no new service, 
 
 | Consumer | Mechanism | Effect |
 |---|---|---|
-| profile-service | `account.deletion_requested.v1`/`deletion_cancelled.v1` + 60 s `account-status` cache + purge handler | Resolve + sitemap parity (`missing`), event-driven cache purge, tombstone + row deletes + avatar objects at purge (`docs/02-architecture-techlead/06-public-profile/`) |
+| profile-service | `account.deletion_requested.v1`/`deletion_cancelled.v1` + 60 s `account-status` cache + purge handler | Resolve + sitemap parity (`missing`), event-driven cache purge, tombstone + row deletes + avatar files at purge (`docs/02-architecture-techlead/06-public-profile/`) |
 | public-site-service | Events (best-effort purge of `ssr:*` keys) + TTL bound | Stale SSR pages live at most one cache window (`docs/02-architecture-techlead/10-share-and-seo/`) |
-| link-service | Purge handler | Row + object deletes with counts (`docs/02-architecture-techlead/29-short-links/`) |
-| analytics-service | Purge handler | User-scoped bucket/clicks deletes (`docs/02-architecture-techlead/12-profile-analytics/`) |
+| link-service | Purge handler | Row + file deletes with counts (`docs/02-architecture-techlead/29-short-links/`) |
+| analytics-service | Purge handler | User-scoped storage/clicks deletes (`docs/02-architecture-techlead/12-profile-analytics/`) |
 | features 41-44 (forward) | `account.deletion_requested.v1` | Cancel queued posts/automations/campaigns; broadcasts exclude |
 | feature 36 (forward) | `account.deletion_requested.v1` | Stop billing at request; never auto-resume |
 | features 45-47 (forward) | `account.deletion_requested.v1` | Org-owner departure transfer/dissolution path |

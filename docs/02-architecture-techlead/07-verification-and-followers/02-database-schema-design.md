@@ -52,10 +52,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON profile.verification_requests, profile.f
 
 | Element | Rule | Why |
 |---|---|---|
-| `verification_requests.profile_id` | FK to `profile.profiles`, `ON DELETE CASCADE` | deleting a profile purges its verification history; evidence blobs follow via retention job |
+| `verification_requests.profile_id` | FK to `profile.profiles`, `ON DELETE CASCADE` | deleting a profile purges its verification history; evidence files follow via the retention sweep |
 | `status` alphabet | mirrored 5-state machine | the profile row's `verification_status` is the read cache for SSR; this table is how it got there |
 | Transition legality | service-enforced (`VerificationService`), DB enforces alphabet only | transitions need role + rename context the DB cannot see |
-| `evidence_ref` | blob key only (`verification/{ulid}.ext`) | evidence never inline, never in PG |
+| `evidence_ref` | storage-relative file name only (`verification/{ulid}.ext`) | evidence never inline, never in PG |
 | Ops decisions | execute via a dedicated audited service path; `reviewer` + audit row with actor + reason | ops accountability lives in the audit log, not in RLS |
 | `follower_count_history.reason` | `self_reported` / `auto_refresh` | versioning for count-integrity review (BR-06) |
 | Caps | `total >= 0` at DB; 100,000,000 cap enforced in service | DB guards sanity, service owns the business cap |
@@ -72,6 +72,6 @@ Indexes: `idx_verif_profile` serves history + ops queue; `idx_verif_user` serves
 
 1. Fresh apply: `flyway migrate` clean (V1 then V2) on an empty 18.6 container; `\d` shows FK, CHECKs, indexes, policies on both tables.
 2. Alphabet drill: a 6th `status` value violates `chk_verif_req`; negative total violates `chk_follower_total`.
-3. Cascade drill: delete a profile -> both tables' rows disappear; the retention job purges evidence blobs (asserted in its test).
+3. Cascade drill: delete a profile -> both tables' rows disappear; the retention sweep purges evidence files (asserted in its test).
 4. RLS drill: foreign `app.user_id` sees zero rows on both tables; owner sees only own history.
 5. No-duplication drill: `grep -rn "CREATE TABLE profile.verification_requests" docs/` and `... follower_count_history` return exactly this file.

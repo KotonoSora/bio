@@ -6,7 +6,7 @@ Phase 1 BA · Problems follow RFC 9457 (`code` field). Media gate failures cite 
 |---|---|---|---|
 | 3:01 video / 301 MB file / 2,201-char caption / disallowed codec | API (pre-queue) | 422 `media_invalid` / `caption_too_long` with the specific limit; nothing queues | "Video is 3:01 — the limit is 3:00." (limit-specific copy) |
 | Upload interrupted mid-multipart | Upload | Parts resumable; incomplete upload expires unpublishable | "Upload paused — resume when ready." |
-| Bad magic bytes / spoofed extension | API | 422 `media_invalid`; file never stored as a valid object | "This file type isn't supported." |
+| Bad magic bytes / spoofed extension | API | 422 `media_invalid`; file never stored as a valid upload | "This file type isn't supported." |
 | Dead connection selected | API | 409 `connection_dead` at schedule time (fail closed) | "Reconnect {network} before it can publish." |
 | Over quota (free 11th lifetime; pro velocity trip) | API | 403 `quota_exhausted` with reset/upgrade path | "Your free posts are used up. Upgrade or wait for reset." |
 | Edit/reschedule inside the 5-min lock | API | 409 `lock_window` | "Edits freeze 5 minutes before send." |

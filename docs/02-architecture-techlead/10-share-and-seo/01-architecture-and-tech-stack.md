@@ -23,7 +23,7 @@ Gateway route precedence (single segment matches only; reserved slugs are enforc
       APP_SWR_SECONDS: "600"
 ```
 
-Redis: platform instance, database 5 (final numbering pinned by the platform baseline). No Postgres. Production front: CDN honoring `s-maxage`/SWR; compose parity uses the platform edge cache container (pinned by the pending platform baseline). Replicas: stateless x3, autoscale on rps.
+Redis: platform instance, database 5 (final numbering pinned by the platform baseline). No Postgres. Production front: Nginx edge honoring `s-maxage`/SWR; compose parity uses the same edge container (`docs/02-architecture-techlead/00-platform-baseline/09-local-storage-and-nginx-spec.md`). Replicas: stateless x3, autoscale on rps.
 
 ## build.gradle.kts delta (one new container's build)
 

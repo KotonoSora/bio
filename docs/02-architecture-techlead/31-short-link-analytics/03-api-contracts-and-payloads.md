@@ -1,6 +1,6 @@
 # Short-Link Analytics - API Contracts and Payloads (feature 31)
 
-Phase 2 TL · Endpoints in `analytics-service` (gateway prefix `/api/v1/analytics/*` per feature 12's routing; ops routes `ROLE_OPS` re-verified per request per the links-module convention). Security: `docs/02-architecture-techlead/31-short-link-analytics/05-security-logging-and-rate-limiting.md`. Producer contract: `docs/02-architecture-techlead/29-short-links/` — never redefined here.
+Phase 2 TL · Endpoints in `analytics-service` (gateway prefix `/api/v1/analytics/*` per feature 12's routing; ops routes `ROLE_OPS` re-verified per request per the links-module convention). Security: `docs/02-architecture-techlead/31-short-link-analytics/06-security-logging-and-rate-limiting.md`. Producer contract: `docs/02-architecture-techlead/29-short-links/` — never redefined here.
 
 ## Endpoint map
 

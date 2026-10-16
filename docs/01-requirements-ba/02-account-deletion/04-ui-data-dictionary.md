@@ -15,5 +15,5 @@ Phase 1 BA · Fields the SPA renders for request, grace, and support screens. Co
 | Restore button | Button | Yes to restore | Login + confirm (no step-up); states billing does not auto-resume | Primary action on the restore screen |
 | Status chip (settings) | Chip | Auto | Values: none / in grace (countdown) / cancelled | Hidden when no request exists |
 | Reminder email | Transactional email | Auto | Day 23 only; exact purge date interpolated; no marketing content | One send; bounce flagged to support |
-| Purge certificate view (support) | Read-only rows | Auto | Counts per table + objects + run id + timestamps; no user content | Reached via audited route; every read logged |
+| Purge certificate view (support) | Read-only rows | Auto | Counts per table + files + run id + timestamps; no user content | Reached via audited route; every read logged |
 | Re-registration notice | Inline notice | Auto | Post-purge signup: email accepted, username retired, history reset | Appears at the username step of signup |

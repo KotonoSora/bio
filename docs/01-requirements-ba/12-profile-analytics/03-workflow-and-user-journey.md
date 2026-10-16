@@ -10,7 +10,7 @@ Phase 1 BA · Flows are normative; rules cite `02-user-stories-and-business-rule
 | 2 | Gateway -> analytics-service | Request arrives | Edge rate bucket passes; dedupe checks 10-min window; fresh hit enqueues; respond `202 {ok:true}` in one fast path | BR-01, BR-02 |
 | 3 | Visitor | Taps a block link | Beacon (kind=click, blockId) + navigation proceed in parallel; banner/escape events follow feature 11 | BR-14 |
 | 4 | System | Refresh / double-tap | Duplicate collapses in dedupe; no inflation | BR-02 |
-| 5 | Consumer | :05 each hour | Batch drains, raw NDJSON object written, aggregates upserted once per natural key | BR-03, BR-04 |
+| 5 | Consumer | :05 each hour | Batch drains, raw NDJSON file written, aggregates upserted once per natural key | BR-03, BR-04 |
 
 ## Journey 2 - Creator reads the overview (default path)
 

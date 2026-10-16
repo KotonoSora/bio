@@ -14,14 +14,14 @@ Phase 2 TL · Feature 24 of 53 — shop 3/5; extends `shop-service` (port 8087, 
 | D-6 | Certificate: minted exactly once at 100% completion (unique `cert_code`, tamper-evident 128-bit base32); the public page `/c/{code}` is SSR-rendered by public-site (feature 10 route + cache row land in this change) over `GET /internal/v1/certificates/{code}`; revocation → 404 ≤ 60 s via cache TTL. | The legacy "verifiable page, no PDF" maps cleanly; the reserved `c` slug already exists. |
 | D-7 | Publish precondition extends feature 22's kind-aware check: `course` needs ≥ 1 section, ≥ 1 lesson, every video lesson readable; failures name lessons. | One gate, one code (`publish_precondition_unmet`), no half-built courses live. |
 | D-8 | Refund lifecycle: consume `order.refunded.v1` (forward, 38) → enrollment + certificate revoked, progress retained (`courtesy_until = now + 90 d`); a sweep purges after the window; re-enrollment within it resumes progress because progress keys on `(product_id, buyer_user_id, lesson_id)`, not on the enrollment row. | Progress survives the enrollment lifecycle without duplication (legacy idempotency key mapped). |
-| D-9 | Purge: seller purge removes curriculum + materials + video objects + dependent enrollments with counts; buyer purge removes their enrollments/progress and revokes certificates. Redis overlay keys deleted on both paths. | Buyer PII-free but stateful; seller objects must not outlive the account. |
+| D-9 | Purge: seller purge removes curriculum + materials + video files + dependent enrollments with counts; buyer purge removes their enrollments/progress and revokes certificates. Redis overlay keys deleted on both paths. | Buyer PII-free but stateful; seller files must not outlive the account. |
 
 ## Component map
 
 | Piece | Home | Note |
 |---|---|---|
 | Curriculum CRUD + validation | `shop-service` | full-tree save; dense positions; limits enforced |
-| Video/material uploads | `shop-service` | MP4 parse in-service; digital allowlist for materials; keys under `shop-courses/` |
+| Video/material uploads | `shop-service` | MP4 parse in-service; digital allowlist for materials; names under `shop/courses/` |
 | Enrollment (free) | `shop-service` | idempotent one-click; paid path via grant consumer |
 | Progress pipeline | `shop-service` + Redis db 9 | coalesced flush ≤ 30 s |
 | Stream/material tickets | `shop-service` | TTL video tickets; single-use material links |

@@ -27,5 +27,5 @@ Phase 1 BA · Enforced by `docs/02-architecture-techlead/19-resume-format-sharin
 ## Constraints carried
 
 - Formats never carry user data by construction (no column exists to leak; the validator + weekly re-scan are defense in depth, not the guarantee).
-- Thumbnails: auto-generated placeholder renders only in v1 (Q-06); random blob keys; no user content in gallery assets.
+- Thumbnails: auto-generated placeholder renders only in v1 (Q-06); random file names; no user content in gallery assets.
 - No pricing, plan gating, or paid formats appear here; any future monetization is a monetize-batch amendment.

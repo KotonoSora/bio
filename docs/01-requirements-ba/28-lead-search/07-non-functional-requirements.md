@@ -16,7 +16,7 @@ Phase 1 BA · Every threshold numeric.
 | # | Requirement |
 |---|---|
 | NFR-05 | Note ≤ 2 000 chars; tag ≤ 40 chars; vocabulary cap 50 per account; query history 20 per account. |
-| NFR-06 | Export quota 20/day per account, 2 concurrent jobs; grant TTL 15 min; job + object retention 7 days then purge. |
+| NFR-06 | Export quota 20/day per account, 2 concurrent jobs; grant TTL 15 min; job + file retention 7 days then purge. |
 | NFR-07 | Re-invite 3/day per lead; token TTL 72 h, single-purpose. |
 | NFR-08 | Audit retention 24 months; append-only event tables. |
 
@@ -25,9 +25,9 @@ Phase 1 BA · Every threshold numeric.
 | # | Requirement |
 |---|---|
 | NFR-09 | Deny-by-default; `user_id` scoping + RLS on every read/write; cross-creator 403/404 with zero rows; no existence oracle on foreign ids. |
-| NFR-10 | Export grants are owner-bound, non-transferable, short-lived; export objects are private (service-mediated download, no bucket exposure); CSV columns fixed (no free-form additions). |
+| NFR-10 | Export grants are owner-bound, non-transferable, short-lived; export files are private (service-mediated download, no storage-path exposure); CSV columns fixed (no free-form additions). |
 | NFR-11 | Search requires ≥ 2 chars; no wildcard or platform-wide lookup exists; query history is per-account and invisible to others. |
-| NFR-12 | PII: export contents are consent-annotated; grants and objects purge with the account (feature 02 roster); logs carry ids, never raw emails. |
+| NFR-12 | PII: export contents are consent-annotated; grants and files purge with the account (feature 02 roster); logs carry ids, never raw emails. |
 
 ## Sessions, localization, accessibility
 

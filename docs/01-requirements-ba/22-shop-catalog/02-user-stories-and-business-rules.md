@@ -26,7 +26,7 @@ Phase 1 BA · Realized by `docs/02-architecture-techlead/22-shop-catalog/` (BR-0
 - BR-09 Shop page: `/{username}/shop` lists live products only, ordered by creator sort; honors `is_public` (private/missing/retired → 404 parity, no oracle); cache-first with purge ≤ 60 s after any catalog change.
 - BR-10 Link-out transparency: `Sold elsewhere — buy on partner site` with the destination domain named; clicks counted via the analytics beacon; zero order rows; no implicit affiliate fees (affiliation only through a tracked partnership, 32-40 scope).
 - BR-11 Product blocks: `product|course|tip` blocks carry `{productId}`; availability is resolved at render; a non-live or foreign target renders the unavailable state.
-- BR-12 Covers: ≤ 2 MB upload, magic-byte sniff (JPEG/PNG/WebP/AVIF), random blob keys; client-chosen paths impossible.
+- BR-12 Covers: ≤ 2 MB upload, magic-byte sniff (JPEG/PNG/WebP/AVIF), random file names; client-chosen paths impossible.
 - BR-13 Ownership: every product read/write scopes to the owning `user_id` + RLS; no cross-user path exists in any route; product data deletes with the account (purge participant).
 - BR-14 Click counting: shop-page link-out clicks carry `productId` on the existing beacon; bio block clicks keep carrying `blockId` (feature 12 contract extended additively).
 - BR-15 Audit: create, status transitions, price changes, cover changes, and hard-deletes write append-only audit rows (actor, action, target, timestamp; never content).

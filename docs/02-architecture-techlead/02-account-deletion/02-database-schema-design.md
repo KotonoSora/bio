@@ -36,7 +36,7 @@ RLS: enabled; owner predicate `user_id = current_setting('app.user_id', true)` f
 
 ## Participant contract data
 
-Each participant returns `{tables: Map<String, Long>, objects: Long}` from its purge handler; the certificate embeds these verbatim plus `userId`, `runId`, `startedAt`, `finishedAt` (schema in `docs/02-architecture-techlead/02-account-deletion/03-api-contracts-and-payloads.md`). Certificates are JSON in the private `purge-certificates` bucket, server-side only (no presigned URLs).
+Each participant returns `{tables: Map<String, Long>, files: Long}` from its purge handler; the certificate embeds these verbatim plus `userId`, `runId`, `startedAt`, `finishedAt` (schema in `docs/02-architecture-techlead/02-account-deletion/03-api-contracts-and-payloads.md`). Certificates are JSON files under `account/purge-certificates/` on the storage volume, server-side only (no download endpoints exist).
 
 ## Redis keys (db 7)
 

@@ -1,6 +1,6 @@
 # Automate Contacts - Non-Functional Requirements (feature 43)
 
-Phase 1 BA · Numbers with units; enforcement: `docs/02-architecture-techlead/43-automate-contacts/05-security-logging-and-rate-limiting.md`.
+Phase 1 BA · Numbers with units; enforcement: `docs/02-architecture-techlead/43-automate-contacts/06-security-logging-and-rate-limiting.md`.
 
 | ID | Requirement | Threshold |
 |---|---|---|

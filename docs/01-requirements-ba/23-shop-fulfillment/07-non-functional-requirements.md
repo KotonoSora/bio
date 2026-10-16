@@ -7,7 +7,7 @@ Phase 1 BA · Every threshold numeric.
 | # | Requirement |
 |---|---|
 | NFR-01 | Dispatch hook p95 ≤ 500 ms per order line after grant consumption; exactly-once under replay. |
-| NFR-02 | Access-link mint p95 ≤ 300 ms; signed-URL TTL ≤ 15 min; single-use enforced. |
+| NFR-02 | Access-link mint p95 ≤ 300 ms; download-grant TTL ≤ 15 min; single-use enforced. |
 | NFR-03 | Partner callback ack (`202`) p95 ≤ 300 ms; status applied ≤ 30 s after ack via the queue. |
 | NFR-04 | Locked-body fragment p95 ≤ 400 ms; never cached (`private, no-store`). |
 
@@ -24,7 +24,7 @@ Phase 1 BA · Every threshold numeric.
 
 | # | Requirement |
 |---|---|
-| NFR-09 | Signed URLs bound to order + file version + buyer; blob keys random and unguessable; no listing on any bucket path. |
+| NFR-09 | Download grants bound to order + file version + buyer; file names random and unguessable; no directory listing anywhere. |
 | NFR-10 | Entitlement checks server-side on every mint and every locked-body request; preview responses contain zero locked bytes (automated byte check). |
 | NFR-11 | Buyer-scoped PII: ship-to minimized, encrypted at rest; buyer account deletion scrubs job rows; partner receives fulfillment fields only. |
 | NFR-12 | Audit: dispatch, transitions, extensions, revocations append-only, 24-month retention; never content or codes. |

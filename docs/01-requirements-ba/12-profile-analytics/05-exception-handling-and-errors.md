@@ -9,7 +9,7 @@ Phase 1 BA · Beacon copy is invisible to visitors (fire-and-forget); dashboard 
 | Crawler UA detected | Intake | Rejected + counted `beacon.rejected{bot}`; never stored | (none) |
 | Tampered/unknown username or blockId | Intake | Dropped after `202`; counted `unknown_target`; no oracle, no write | (none) |
 | Queue unavailable (Redis down) | Intake | `202` still returned; counted `beacon.rejected{backend}`; alert fires; page unaffected | (none) |
-| Blob storage down | Rollup | Aggregates proceed from the queue; raw NDJSON flush retried next drain | (ops alert) |
+| Storage volume down | Rollup | Aggregates proceed from the queue; raw NDJSON flush retried next drain | (ops alert) |
 | Consumer partial batch failure | Rollup | The hour is retried; additive upsert math keeps retries correct | (ops alert) |
 | Consumer lag > 90 min | Dashboard | Stale banner + chip; numbers remain visible; never fabricated fresh | "Data delayed - last updated {time}" |
 | Replayed queue message | Rollup | Single increment via natural-key upsert (asserted, not hopeful) | (none) |

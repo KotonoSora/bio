@@ -40,4 +40,4 @@ Phase 1 BA · System calls cite owning features; forward contracts cite 32-40.
 | 2 | Student | re-enrolls within the window | progress resumes; a new enrollment row is created | BR-08 |
 | 3 | Purge runner | window expires | progress purged by the sweep | BR-08 |
 | 4 | Purge runner | buyer account deletion | enrollments + progress deleted; certificates revoked | BR-09 |
-| 5 | Purge runner | seller account deletion | curriculum, materials, video objects, dependent rows deleted with counts | BR-09 |
+| 5 | Purge runner | seller account deletion | curriculum, materials, video files, dependent rows deleted with counts | BR-09 |

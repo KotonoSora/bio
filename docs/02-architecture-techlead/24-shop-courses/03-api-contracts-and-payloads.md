@@ -1,6 +1,6 @@
 # Course Builder - API Contracts and Payloads (feature 24)
 
-Phase 2 TL · Endpoints in `shop-service`; forward money events from 32-40; security: `docs/02-architecture-techlead/24-shop-courses/05-security-logging-and-rate-limiting.md`.
+Phase 2 TL · Endpoints in `shop-service`; forward money events from 32-40; security: `docs/02-architecture-techlead/24-shop-courses/06-security-logging-and-rate-limiting.md`.
 
 ## Endpoint map
 

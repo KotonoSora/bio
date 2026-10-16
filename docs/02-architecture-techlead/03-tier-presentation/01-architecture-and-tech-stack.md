@@ -17,7 +17,7 @@ Phase 2 TL · Service: `account-service` hosts the account-screen plan read; the
 
 - No new containers, no schema work (see `docs/02-architecture-techlead/03-tier-presentation/02-database-schema-design.md`); no new dependencies beyond the Spring stack already present in `account-service`.
 - SPA: pricing page (public) + account plan panel. All values render from server payloads/config-driven registry; the SPA formats VND and never computes proration, discounts, or percentages itself.
-- Cache posture: `/api/v1/plans` public cache-first (edge/CDN, 300 s TTL, versioned payload); `/api/v1/plan` per-user, `private, max-age=0` (snapshot freshness bound 30 s applies inside the service).
+- Cache posture: `/api/v1/plans` public cache-first (Nginx edge cache, 300 s TTL, versioned payload); `/api/v1/plan` per-user, `private, max-age=0` (snapshot freshness bound 30 s applies inside the service).
 - Forward wiring: cancel/change/trial execution endpoints belong to features 36-39; this feature's dialogs call them and render their stated effects. No execution is reinvented here.
 
 ## Consumers

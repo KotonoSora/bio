@@ -36,7 +36,7 @@ CREATE TABLE shop.course_materials (
   lesson_id     TEXT NOT NULL,
   product_id    TEXT NOT NULL,
   user_id       TEXT NOT NULL,
-  object_key    TEXT NOT NULL,
+  file_path     TEXT NOT NULL,
   name          VARCHAR(120) NOT NULL,
   size_bytes    BIGINT NOT NULL CHECK (size_bytes > 0),
   mime_verified TEXT NOT NULL,
@@ -116,7 +116,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON shop.course_sections, shop.course_lesson
 - Progress PK `(product_id, buyer_user_id, lesson_id)` is the re-enrollment-safe idempotency key (D-8); the flusher upserts with `GREATEST(position_s, :incoming)` and sticky `completed`.
 - Redis overrides: `course:progress:{productId}:{buyerUserId}` hash → merged reads; deleted on purge and after flush confirms.
 - Ticket mint never writes PostgreSQL; material mint increments nothing (no counters here — anomaly flag set on the enrollment row is v2; v1 flags log + support).
-- Video objects live under `shop-courses/videos/`; materials under `shop-courses/materials/`; both random keys, purge-scoped.
+- Video files live under `shop/courses/videos/`; materials under `shop/courses/materials/`; both random names, purge-scoped.
 
 ## Verification drills
 

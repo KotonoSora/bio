@@ -42,7 +42,7 @@ Responses: `202 {ok:true}` on every accepted path (including dropped targets —
 
 - `day` is derived server-side; no raw IP, no raw UA, no full referrer URL in the message.
 - Enqueue to Redis stream `beacon:q` (consumer group `rollup`); at-least-once with idempotent upserts.
-- Raw archive: one NDJSON object per drain per shard — `raw/y=YYYY/m=MM/d=DD/h=HH/part-<n>.ndjson` in MinIO `analytics-raw`; lifecycle 90d; never read by any API.
+- Raw archive: one NDJSON file per drain per shard — `analytics/raw/y=YYYY/m=MM/d=DD/h=HH/part-<n>.ndjson` on the uploads volume; retention sweep 90d; never read by any API.
 
 ## Resolution cache
 

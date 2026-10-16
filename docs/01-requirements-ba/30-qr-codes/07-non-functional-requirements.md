@@ -6,7 +6,7 @@ Phase 1 BA · Every threshold numeric.
 
 | # | Requirement |
 |---|---|
-| NFR-01 | Single render p95 ≤ 2 s end-to-end (render → object store → log row); 100-code pack p95 ≤ 30 s; both include object persistence. |
+| NFR-01 | Single render p95 ≤ 2 s end-to-end (render → file store → log row); 100-code pack p95 ≤ 30 s; both include file persistence. |
 | NFR-02 | Downloads stream (no in-memory assembly of packs client-side); sheet builder paginates label rows at 25. |
 | NFR-03 | Scan resolution adds zero QR-specific latency: scans ride the short-URL redirect SLA from feature 29 (unchanged). |
 
@@ -23,7 +23,7 @@ Phase 1 BA · Every threshold numeric.
 | # | Requirement |
 |---|---|
 | NFR-07 | Pack size ≤ 100 codes; sheet ≤ 24 codes per page; labels required 1:1 with codes. |
-| NFR-08 | Render objects live 30 days (re-renderable cache), then sweep; render log rows live with the link's tombstone (purge cascade on exceptional delete); downloads via grants with 15-min TTL. |
+| NFR-08 | Render files live 30 days (re-renderable cache), then sweep; render log rows live with the link's tombstone (purge cascade on exceptional delete); downloads via grants with 15-min TTL. |
 | NFR-09 | Quotas: owner renders 60/h; ops packs 10/day; both 429 past cap with audit on ops. |
 
 ## Security and privacy

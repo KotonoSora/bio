@@ -1,6 +1,6 @@
 # Short Links - API Contracts and Payloads, Part 1 (feature 29)
 
-Phase 2 TL · Owner + public REST contracts. Part 2 (`04-api-contracts-and-payloads-part-2.md`): ops endpoints, internal events, error catalog. JSON only; problem bodies follow RFC 9457. Auth and rate rules: `06-security-logging-and-rate-limiting.md`.
+Phase 2 TL · Owner + public REST contracts. Part 2 (`04-api-contracts-and-payloads-part-2.md`): ops endpoints, internal events, error catalog. JSON only; problem bodies follow RFC 9457. Auth and rate rules: `07-security-logging-and-rate-limiting.md`.
 
 ## Endpoint map
 

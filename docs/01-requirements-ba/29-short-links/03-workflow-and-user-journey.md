@@ -23,7 +23,7 @@ Alternatives: vanity taken -> dialog offers 3 generated alternatives (network lo
 | Step # | Actor/System | Trigger Action | System Response | Rules |
 |---|---|---|---|---|
 | 1 | Visitor | Opens `/go/<code>` (or `/r/`, `/a/` alias) | Request enters gateway | BR-01 |
-| 2 | Gateway/CDN | Bot-class filter, per-IP rate limit | 429 page on flood | BR-09 |
+| 2 | Gateway/edge | Bot-class filter, per-IP rate limit | 429 page on flood | BR-09 |
 | 3 | Link service | Cache lookup (`links:code:<code>`) | Hit skips the database read | BR-10 |
 | 4 | Link service | Miss: PK read, blocklist re-check, state compute | Fixed state machine below | BR-05, BR-06 |
 | 5 | Link service | Enqueue hit event after the decision | Fire-and-forget; never blocks the response | BR-10 |

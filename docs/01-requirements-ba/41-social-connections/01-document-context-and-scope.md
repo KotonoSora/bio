@@ -38,7 +38,7 @@ Out of scope: composer/captions/calendar (42); fan-out and per-target status (42
 |---|---|---|
 | Q-01 | Stage networks by API stability (41 Q1)? | Ship all seven at once; per-network pause switches (42's outage control) cover instability without staging the roster |
 | Q-02 | Pro cap 10 per platform (41 Q2)? | Keep 10; caps live in `publish.quotas` config (ops-tunable, audited) — no invented ladder changes |
-| Q-03 | Upload protocol (publish-automate Q1) | MinIO multipart with server-issued parts (S3-compatible); no Tus dependency (lands in 42) |
+| Q-03 | Upload protocol (publish-automate Q1) | Chunked upload to the local storage volume with server-issued parts; no Tus dependency (lands in 42) |
 | Q-04 | First split: fan-out workers vs watcher (publish-automate Q2) | Superseded: microservices mandate fixes the service boundary now; in-service worker pools behind `DispatchPort`/`WatchPort`; any further split requires a spec amendment per baseline doctrine |
 | Q-05 | IG personal accounts | Refused pre-config with in-UI copy (API limitation); only Business/Creator accounts connect |
 

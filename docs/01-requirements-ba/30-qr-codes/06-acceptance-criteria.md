@@ -11,6 +11,6 @@ Phase 1 BA · BDD; legacy drills preserved by name.
 | AC-05 | Bulk drill | a 100-code event-pack request | generation completes | unique per-location links, correct labels, per-code stats separation (via feature 31), atomic all-or-nothing |
 | AC-06 | Reprint-staleness drill | a download rendered before a destination edit | the QR tab renders | the download is flagged `May be outdated`; re-render carries the new target from the live record |
 | AC-07 | Preview drill | a browser preview is produced | the preview is inspected; the codebase is grepped for encoder use | preview carries the `PREVIEW — not for print` watermark; no client-side official generation exists (encoder grep-gated) |
-| AC-08 | Grant drill | a render download | non-owner probe, expired grant, re-download | non-owner denied (404/403) with zero object access; expired 410; re-download works from the render row while it lives |
+| AC-08 | Grant drill | a render download | non-owner probe, expired grant, re-download | non-owner denied (404/403) with zero file access; expired 410; re-download works from the render row while it lives |
 | AC-09 | Ops-auth drill | a creator token against the pack route; a partial-failure simulation | requests run | creator → 403 `qr_pack_denied` + audit; partial failure creates nothing (`Pack failed, nothing created`) |
 | AC-10 | Container drill | the release image | docker run + podman run; native-dep grep | digest pair boots, compose green, rollback green; no native QR/image dependencies beyond the flagged pure-Java encoder |

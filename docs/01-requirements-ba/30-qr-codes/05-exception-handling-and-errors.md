@@ -14,7 +14,7 @@ Phase 1 BA · Codes are stable; UI copy localizes vi/en. Both layers (UI pre-sub
 | Partial pack failure | System | transaction rolls back; nothing created | "Pack failed, nothing created." |
 | Quota exceeded (renders/packs) | API | 429 `throttled` | "Too many renders — try later." |
 | Download grant expired | API | 410 `grant_expired`; re-download from the render row | "Download link expired — download again." |
-| Blob storage unavailable | System | 503 `render_unavailable`; no log row without stored bytes | "Rendering is briefly unavailable." |
+| Storage volume unavailable | System | 503 `render_unavailable`; no log row without stored bytes | "Rendering is briefly unavailable." |
 | Preview used for print | UI | watermark overlay `PREVIEW — not for print`; downloads always server-rendered | (visual) |
 | Scan of old print after destination edit | System | resolves the CURRENT target (encode-short guarantee) | - |
 | Scan of suspended link's old print | System | same suspension page as URL opens | - |

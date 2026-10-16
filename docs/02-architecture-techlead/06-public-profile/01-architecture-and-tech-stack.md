@@ -16,7 +16,7 @@ Cross-service rules: no other service touches `profile_db`; the public-site serv
 
 Gateway (platform): session termination, rate rules, internal identity JWT; routes `/api/v1/profile*` to profile-service. Public `/:username` is served by the public-site service (feature 10), which resolves usernames via `GET /internal/v1/profiles/{username}` (service-to-service JWT) behind its Redis cache. Replicas stateless x3. Redis (platform instance, database 4) carries gateway counters and purge signaling.
 
-## Compose slice (joins platform network `app`; Redis/MinIO come from the platform compose)
+## Compose slice (joins platform network `app`; Redis and the Nginx edge come from the platform compose)
 
 ```yaml
 services:

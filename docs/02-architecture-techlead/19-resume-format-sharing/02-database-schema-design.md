@@ -12,7 +12,7 @@ CREATE TABLE resume.formats (                       -- one row per format VERSIO
   name                    VARCHAR(120) NOT NULL DEFAULT 'Untitled format',
   version                 INT NOT NULL DEFAULT 1,
   layout_json             JSONB NOT NULL DEFAULT '{}',  -- closed layout-only schema; validated + re-scanned
-  thumbnail_key           TEXT,                     -- auto placeholder render only (random blob key)
+  thumbnail_key           TEXT,                     -- auto placeholder render only (random file name)
   status                  TEXT NOT NULL DEFAULT 'draft',
   author_username_cached  TEXT NOT NULL DEFAULT '', -- frozen attribution string
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -53,7 +53,7 @@ GRANT SELECT, INSERT, DELETE ON resume.format_clones TO app_role;
 - `layout_json` closed schema: `{sections [{key, visible, order, variant}], tokens{font, scale, accent, density}, a4{margins, pageBreakHints}}`; allowlist keys only; `<= 64 KB`; personal-data keys/styles/scripts/URLs rejected in service and re-scanned weekly.
 - No PII columns exist (no email, no real name): the privacy invariant is columnar, not promissory.
 - Clone copies the source `layout_json` into the reuser's own format row (created at clone time); `format_clones` records the source relationship for counts, `based-on` display, and RESTRICT protection. Author-side edits/unpublish/takedown touch only author rows.
-- Thumbnails: `thumbnail_key` random; auto placeholder renders only (Q-06); purge participant deletes objects.
+- Thumbnails: `thumbnail_key` random; auto placeholder renders only (Q-06); purge participant deletes files.
 - Takedown = status flip (`removed`) + audit; hard-delete is impossible while clones exist (`RESTRICT`).
 
 ## Verification drills

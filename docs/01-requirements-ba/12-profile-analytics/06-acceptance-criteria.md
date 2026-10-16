@@ -1,6 +1,6 @@
 # Profile Analytics - Acceptance Criteria (feature 12)
 
-Phase 1 BA · BDD. Drills run against `docs/02-architecture-techlead/12-profile-analytics/05-step-by-step-implementation-plan.md`; beacon/rollup drills use seeded traffic fixtures.
+Phase 1 BA · BDD. Drills run against `docs/02-architecture-techlead/12-profile-analytics/06-step-by-step-implementation-plan.md`; beacon/rollup drills use seeded traffic fixtures.
 
 | AC ID | Scenario | Given | When | Then |
 |---|---|---|---|---|

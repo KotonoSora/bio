@@ -1,6 +1,6 @@
 # Audience Insights - Security, Logging, and Rate Limiting (feature 13)
 
-Phase 2 TL · BA sources: `docs/01-requirements-ba/13-audience-insights/` (BR-01, BR-03, BR-07..BR-10). Baseline controls: `docs/02-architecture-techlead/00-platform-baseline/`; inherited intake controls: `docs/02-architecture-techlead/12-profile-analytics/06-security-logging-and-rate-limiting.md`.
+Phase 2 TL · BA sources: `docs/01-requirements-ba/13-audience-insights/` (BR-01, BR-03, BR-07..BR-10). Baseline controls: `docs/02-architecture-techlead/00-platform-baseline/`; inherited intake controls: `docs/02-architecture-techlead/12-profile-analytics/07-security-logging-and-rate-limiting.md`.
 
 ## Controls
 

@@ -13,7 +13,7 @@ Phase 1 BA · Codes are stable; UI copy localizes vi/en.
 | Concurrent edit loses the compare-and-set | API | 409 `transition_conflict`; client refetches | "Someone changed this product — refresh and retry." |
 | Delete a product with order history | API | 409 `product_has_orders`; UI offers Archive | "This product has sales — archive it instead." |
 | Order check unreachable on delete | API | 503 `orders_check_unavailable`; nothing deleted | "Deletion is temporarily unavailable — try again." |
-| Cover over 2 MB | API | 422 `cover_too_large`; no blob write | "Cover images must be 2 MB or smaller." |
+| Cover over 2 MB | API | 422 `cover_too_large`; no file write | "Cover images must be 2 MB or smaller." |
 | Cover fails magic-byte sniff | API | 422 `cover_bad_type` | "Upload a JPEG, PNG, WebP, or AVIF image." |
 | Foreign product id on CRUD | API | 403; RLS denies at DB | "You don't have access to this product." |
 | Block points at archived/deleted/foreign product | Render | unavailable state; page stays 200 | "This item is no longer available." |

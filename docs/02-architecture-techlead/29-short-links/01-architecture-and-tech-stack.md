@@ -14,9 +14,9 @@ Cross-service rules: no service reads another's tables; the profile service owns
 
 ## Runtime topology
 
-Gateway (platform, Spring Cloud Gateway): terminates dashboard sessions (SSO/OIDC), enforces WAF + rate rules, signs the internal identity JWT; routes `/api/v1/links*` to link-service; public `GET /go/*` (plus `/r/`, `/a/`) reaches link-service anonymously. CDN in front; `/go/*` responses are `no-store` by design (no edge caching of redirects). Replicas: stateless, 3 baseline, autoscale on rps. Redis (platform instance, database 3) + MinIO (platform) complete the runtime.
+Gateway (platform, Spring Cloud Gateway): terminates dashboard sessions (SSO/OIDC), enforces WAF + rate rules, signs the internal identity JWT; routes `/api/v1/links*` to link-service; public `GET /go/*` (plus `/r/`, `/a/`) reaches link-service anonymously. Nginx edge in front; `/go/*` responses are `no-store` by design (no edge caching of redirects). Replicas: stateless, 3 baseline, autoscale on rps. Redis (platform instance, database 3) + the uploads volume complete the runtime.
 
-## Compose slice (joins platform network `app`; Redis/MinIO come from the platform compose)
+## Compose slice (joins platform network `app`; Redis and the Nginx edge come from the platform compose)
 
 ```yaml
 services:

@@ -16,9 +16,9 @@ Table-first for all structured content. No vague terms — every threshold is a 
 
 ## Phase 2 — TL file set + mandated stack (no re-decisions)
 
-`01-architecture-and-tech-stack` (service boundaries, compose slice, `build.gradle.kts`, React integration) · `02-database-schema-design` (PostgreSQL DDL + Flyway + indexes + RLS; database-per-service) · api contracts file(s) (endpoints, Kotlin data-class DTOs, status codes, RFC 9457 error JSON; part-split as needed) · implementation plan (`Task ID | Subsystem (FE/BE/DevOps) | Step Description | Dependency | Acceptance Goal`) · security file last (`Spring Security OAuth2/OIDC + internal JWT`, tracing, gateway rate rules, degrade matrix). File numbers shift with part splits (example above).
+`01-architecture-and-tech-stack` (service boundaries, compose slice, `build.gradle.kts`, React integration) · `02-database-schema-design` (PostgreSQL DDL + Flyway + indexes + RLS; database-per-service) · api contracts file(s) (endpoints, Kotlin data-class DTOs, status codes, RFC 9457 error JSON; part-split as needed) · `0X-local-file-storage-and-nginx-spec` (only where the feature owns storage artifacts; see the storage amendment in `MIGRATION.md`) · implementation plan (`Task ID | Subsystem (FE/BE/DevOps) | Step Description | Dependency | Acceptance Goal`) · security file last (`Spring Security OAuth2/OIDC + internal JWT`, tracing, gateway rate rules, degrade matrix). File numbers shift with part splits (example above).
 
-Stack: microservices · Spring Boot `4.1.1` · Kotlin `2.4.21` · Gradle `9.8.1` (Kotlin DSL, wrapper-only) · PostgreSQL `18.6` per service (Flyway on boot, RLS on) · React.js `19.3` · Docker Compose (Podman parity kept as release acceptance) · Redis + MinIO for cache/queue/blob. Edge topology: gateway terminates sessions and signs internal identity; each service owns its database — no cross-service table access, only APIs/events.
+Stack: microservices · Spring Boot `4.1.1` · Kotlin `2.4.21` · Gradle `9.8.1` (Kotlin DSL, wrapper-only) · PostgreSQL `18.6` per service (Flyway on boot, RLS on) · React.js `19.3` · Docker Compose (Podman parity kept as release acceptance) · Redis for cache/queue · local-disk storage only: all files/media live on VPS disk via Docker bind mounts/named volumes and are served by Nginx (no AWS/S3/MinIO or any object-store tool). Edge topology: Nginx serves the SPA + media and fronts the gateway; gateway terminates sessions and signs internal identity; each service owns its database — no cross-service table access, only APIs/events.
 
 ## Feature register
 
@@ -29,6 +29,7 @@ Shared numbering (build order; names + sources + status in `MIGRATION.md`): 01�
 - Auth: SSO-only (Google, Apple, Facebook, LinkedIn + generic OIDC). No passwords, no reset flow. Deny-by-default + service-side scoping + per-DB RLS + audited ops actions.
 - Money: eight equal rails (`payos|sepay|vnpay|zalopay|napas|google-pay|apple-pay|stripe`), explicit `provider`, no default; VND integers; idempotent grants. Never invent finance-pending values (fee percentages, yearly discount).
 - Data: every business table has `user_id TEXT NOT NULL` + index + RLS; dashboard reads scope by server-set `user_id`, public reads by `username + is_public=1`. Reserved slugs (`app,api,admin,static,r,cv,shop,login,signup,pricing,blog,go,r,a`) rejected by the profile service.
+- Storage: no object-store tool exists (no AWS/S3/MinIO/CDN); files live under `./data/uploads/<service>/…` on Docker volumes and the Nginx edge serves them — canonical rules in `docs/02-architecture-techlead/00-platform-baseline/09-local-storage-and-nginx-spec.md`.
 - Content: blocks fixed superset; themes token-only; PDF = `window.print()` A4 only.
 - Gated until shipped: 48–53 backlog; AI design assist (feature 16). Never stub gated scope into earlier features.
 - Secrets via environment/vault only; never commit `.env` or compose overrides.

@@ -1,6 +1,6 @@
 # Automate Contacts - API Contracts and Payloads (feature 43)
 
-Phase 2 TL · Owner + removal-center + ops contracts. Auth/rate rules: `docs/02-architecture-techlead/43-automate-contacts/05-security-logging-and-rate-limiting.md`. Problems follow RFC 9457.
+Phase 2 TL · Owner + removal-center + ops contracts. Auth/rate rules: `docs/02-architecture-techlead/43-automate-contacts/06-security-logging-and-rate-limiting.md`. Problems follow RFC 9457.
 
 ## Endpoints
 
@@ -9,7 +9,7 @@ Phase 2 TL · Owner + removal-center + ops contracts. Auth/rate rules: `docs/02-
 | `GET /api/v1/contacts?automation=&keyword=&media=&status=&cursor=` | session | - | `200 ContactPage` (owner-scoped, filter-aware) | 401; 429 |
 | `POST /api/v1/contacts/{id}/suppress` | session + CSRF | `SuppressRequest` | `200 ContactView` (idempotent) | 404 `contact_not_found`; 429 |
 | `POST /api/v1/contacts/export` | session + CSRF | `ExportRequest` | `202 {exportId}` | 422 `validation_failed` (empty filter); 429 `export_throttled` |
-| `GET /api/v1/contacts/exports/{exportId}` | session | - | `200 {url, expiresAt}` (signed ≤ 24 h) | 404; 409 `export_not_ready`; 429 |
+| `GET /api/v1/contacts/exports/{exportId}` | session | - | `200 {url, expiresAt}` (grant ≤ 24 h) | 404; 409 `export_not_ready`; 429 |
 | `POST /api/v1/contacts/handoff` | session + CSRF | `ExportRequest` | `200 HandoffResult` | 422; 429 `export_throttled` |
 | `GET /api/v1/contacts/quota` | session | - | `200 {counted, limit, window}` (shared counting function) | 401 |
 | `GET /api/v1/contacts/removal/{token}` | anonymous (signed, expiring) | - | `200 {creatorLabel, state: valid\|expired\|invalid}` | 429 |
@@ -39,7 +39,7 @@ Post-commit, at-least-once, idempotent consumers (baseline 03).
 
 - Reads are owner-scoped (RLS); `networkRefMasked` is the only ref form in API responses; raw refs/emails never leave the service except through the audited CSV/handoff paths.
 - Suppress: one transition for owner action; idempotent repeats return 200; exclusion propagates ≤ 5 s to all send paths.
-- Export: filter-aware CSV to MinIO; audited with count + filter class; signed URL ≤ 24 h; empty filters refused; rate-limited.
+- Export: filter-aware CSV to the uploads volume; audited with count + filter class; download grant ≤ 24 h; empty filters refused; rate-limited.
 - Handoff: eligible rows only (`email NOT NULL AND status='active'`); `POST /internal/v1/leads` idempotent per row with `source="automation:{automationId}:{keyword?}"`, `sourceRef=contactId`, `marketingConsent=false`, consent copy version copied verbatim; skipped reasons counted; pacing ≤ 10 rows/s.
 - Removal center: signed expiring token (no login); invalid/expired states are neutral and enumeration-free; suppression via token lands `reason='removal_center'`.
 - Quota: the endpoint reads the shared counting function; no separate counter exists.

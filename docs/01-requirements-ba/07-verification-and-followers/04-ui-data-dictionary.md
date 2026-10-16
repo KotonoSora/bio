@@ -29,7 +29,7 @@ Phase 1 BA · React 19.3 components for `/app/trust` plus the ops-only review ro
 | Field Name | Component Type | Mandatory? | Constraints & Validations | Default/Behavior |
 |---|---|---|---|---|
 | QueueTable | table | - | rows: profile, status, age, evidence link, history excerpt; 403 shows no queue data | role-gated |
-| EvidenceLink | link + viewer | - | opens sandboxed viewer via short-lived presigned URL; never inline render | disabled without role |
+| EvidenceLink | link + viewer | - | opens sandboxed viewer via short-lived download grant; never inline render | disabled without role |
 | DecidePanel | form | - | approve / reject / revoke | - |
 | ReasonTextbox | textarea | Yes | mandatory client-side AND server-side; <= 500 chars | empty |
 | RevokeConfirm | text input | Yes for revoke | typed confirmation phrase required | empty |

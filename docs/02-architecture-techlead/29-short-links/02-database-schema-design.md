@@ -71,7 +71,7 @@ Idempotent resume-share mint (`POST /internal/v1/links/resume-share`) keys on th
 | `campaign_id` | no FK | campaigns (features 48-50) are gated; must never block this table |
 | `status` | closed 4-value alphabet | a 5th state cannot persist even if an API is bypassed |
 | `expires_at` NULL | never expires | BR-06 |
-| Deletes | none for users; account purge (feature 02) hard-deletes rows + objects by `user_id` via the participant contract | BR-08; history retained until purge |
+| Deletes | none for users; account purge (feature 02) hard-deletes rows + files by `user_id` via the participant contract | BR-08; history retained until purge |
 
 Indexes: the PK serves resolve and collision checks; `idx_links_user` serves owner lists. No further indexes until a query proves itself.
 
@@ -82,7 +82,7 @@ Indexes: the PK serves resolve and collision checks; `idx_links_user` serves own
 | Redis | `links:code:<code>` | 300 s | resolve cache; purged on suspend |
 | Redis | `links:quota:<userId>:<yyyymm>` | to period end | mint counter (v1 500; rebuilt from DB if lost) |
 | Redis | `links:blocklist:snapshot` | 300 s | blocklist snapshot for mint/resolve checks |
-| MinIO | `hits/links/<yyyy>/<mm>/<dd>/*.ndjson` (bucket `link-hits`) | 90 days | raw hit-event archive written at resolve by the ~60 s flush; repaired/replayed by feature 31 |
+| Uploads volume | `links/hit-raw/<yyyy>/<mm>/<dd>/*.ndjson` | 90 days | raw hit-event archive written at resolve by the ~60 s flush; repaired/replayed by feature 31 |
 
 ## Growth and operations
 

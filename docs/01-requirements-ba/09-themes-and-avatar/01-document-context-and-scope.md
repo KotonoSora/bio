@@ -7,7 +7,7 @@ Phase 1 BA · Feature 09 of 53 (link-to-bio) · Implemented by `docs/02-architec
 | # | Objective | Measure |
 |---|---|---|
 | BO-1 | Visual identity without user code: themes are platform-owned token sets; no custom CSS, font-URL, or head field exists anywhere. | Grep + ArchUnit find zero user-styling fields in UI/API/schema (AC-01). |
-| BO-2 | Abuse-proof uploads: hostile files are rejected before any blob write; stored keys are unguessable. | Upload matrix rejects renamed scripts, SVG/HTML, oversize files with zero blob writes (AC-02, AC-10). |
+| BO-2 | Abuse-proof uploads: hostile files are rejected before any file write; stored names are unguessable. | Upload matrix rejects renamed scripts, SVG/HTML, oversize files with zero file writes (AC-02, AC-10). |
 | BO-3 | Server-side plan gate: pro themes are gated by the server, not by hidden UI. | Free plan + direct pro-theme call -> `403 theme_forbidden` (AC-03). |
 | BO-4 | Fast, consistent render: avatars serve immutable by content key; token CSS is inlined by SSR. | Immutable headers verified; theme switch causes no avatar re-fetch (AC-07). |
 | BO-5 | Honest preview and publish: preview is clearly unsaved; public catches up within the purge SLA. | `Unsaved` pill until save; theme/avatar change public <= 2 min (AC-08). |
@@ -16,7 +16,7 @@ Phase 1 BA · Feature 09 of 53 (link-to-bio) · Implemented by `docs/02-architec
 
 - Theme gallery (code-shipped registry), instant token preview, plan-gated `theme_id` switching.
 - Avatar pipeline: image upload (JPEG/PNG/WebP, 2 MB cap, magic-byte verification) and short looping video where the theme allows; delete restores the default glyph.
-- Blob namespace discipline (`avatars/{ulid}.{ext}`), immutable cache headers, orphan-sweep hygiene.
+- File namespace discipline (`profile/avatars/{ulid}.{ext}`), immutable cache headers, orphan-sweep hygiene.
 - Preview/publish integration through the shared purge chip (feature 06 pattern) and the feature 10 preview mode.
 
 ## Out of scope
@@ -30,7 +30,7 @@ Phase 1 BA · Feature 09 of 53 (link-to-bio) · Implemented by `docs/02-architec
 |---|---|---|
 | Creator | Read themes; update own `theme_id`; create/delete own avatar | Picks a theme, previews instantly, uploads/removes an avatar. |
 | Visitor | Read rendered page only | Sees the chosen tokens and avatar; no authoring surface exists. |
-| Public-site service | Internal read: theme catalog + avatar blob by key | Renders tokens; resolves unknown theme ids to the default theme. |
+| Public-site service | Internal read: theme catalog + avatar file by name | Renders tokens; resolves unknown theme ids to the default theme. |
 
 ## Open questions (non-blocking; v1 defaults)
 
@@ -38,7 +38,7 @@ Phase 1 BA · Feature 09 of 53 (link-to-bio) · Implemented by `docs/02-architec
 |---|---|---|---|
 | Q-01 | Theme count and video-capable theme at launch | 8 themes, exactly 1 with `videoAvatar=true` | gallery requests more; video storage grows unexpectedly |
 | Q-02 | Avatar crop | upload-as-is + CSS crop (object-fit); no client cropper | creator complaints about wrong framing exceed support budget |
-| Q-03 | Video duration enforcement | <= 10 s loop cap checked at upload; same `avatars/` namespace | CDN cost or metadata needs favor a separate prefix |
-| Q-04 | Orphan sweep window | 24 h | storage cost vs CDN propagation proves 24 h wrong |
+| Q-03 | Video duration enforcement | <= 10 s loop cap checked at upload; same `profile/avatars/` namespace | storage cost or metadata needs favor a separate prefix |
+| Q-04 | Orphan sweep window | 24 h | storage cost vs edge-cache propagation proves 24 h wrong |
 
 Related specs: profile row columns `docs/02-architecture-techlead/06-public-profile/02-database-schema-design.md`; publish/purge semantics `docs/01-requirements-ba/06-public-profile/02-user-stories-and-business-rules.md` (BR-09); SSR consumption `docs/01-requirements-ba/10-share-and-seo/`.

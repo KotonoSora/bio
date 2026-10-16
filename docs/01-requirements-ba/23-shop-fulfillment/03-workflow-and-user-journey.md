@@ -19,7 +19,7 @@ Phase 1 BA · System calls cite owning features; forward contracts cite 32-40.
 |---|---|---|---|---|
 | 1 | Creator | uploads a file version; publishes it | live product now has a `current` version (publish precondition for live) | BR-07 |
 | 2 | Buyer | buys the product (checkout 32-40) | grant → entitlement row (30 d, 5 fetches) | BR-08/09 |
-| 3 | Buyer | taps Download | `access-link` mints a single-use signed URL (≤ 15 min), increments the counter | BR-08 |
+| 3 | Buyer | taps Download | `access-link` mints a single-use download grant (≤ 15 min), increments the counter | BR-08 |
 | 4 | Buyer | re-downloads while entitled | fresh URL per request; window checked each time | BR-09 |
 | 5 | Creator | extends access (courtesy) | audited extension restores the window exactly | BR-09 |
 | 6 | System | refund | entitlement revoked; pre-print job cancelled; repurchase = new order | BR-13 |
@@ -28,7 +28,7 @@ Phase 1 BA · System calls cite owning features; forward contracts cite 32-40.
 
 | Step # | Actor/System | Trigger Action | System Response | Rules |
 |---|---|---|---|---|
-| 1 | Creator | writes a preview + locked body (text/markdown, optional video) | locked body stored as a versioned object; preview stored on the product | BR-10 |
+| 1 | Creator | writes a preview + locked body (text/markdown, optional video) | locked body stored as a versioned payload; preview stored on the product | BR-10 |
 | 2 | Visitor | opens `/{username}/shop/{productId}` | SSR preview only; cacheable; zero locked bytes | BR-10 |
 | 3 | Buyer | paid → entitlement exists | the session fragment `/api/v1/digital/{productId}/body` renders the locked body | BR-08/10 |
 | 4 | Non-buyer | requests the body fragment | 403 `entitlement_required`; nothing cached | BR-10 |
