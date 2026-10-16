@@ -1,0 +1,10 @@
+{
+  "name": "Resume Builder",
+  "short_name": "Resume",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": []
+}

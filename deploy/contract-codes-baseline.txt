@@ -1,0 +1,7 @@
+act_as_denied
+conflict
+foreign_profile
+invalid_identity
+missing_identity
+not_found
+validation_failed

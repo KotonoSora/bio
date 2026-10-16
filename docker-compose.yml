@@ -1,0 +1,430 @@
+name: resume-builder-platform
+
+# E0 scaffold compose slice. Single source for local + drill runs.
+# Boots green under BOTH `docker compose` and `podman-compose`.
+# Baseline: docs/02-architecture-techlead/00-platform-baseline/04-containers-and-compose.md
+# Pins: Postgres 18.6 / Redis 7.4 / Temurin JRE 21 (service images).
+# Digest pins live in deploy/image-digests.env (promoted by digest only).
+
+services:
+  postgres:
+    image: postgres:18.6@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336
+    # Connection budget: 8 services x Hikari 10 + migrators + headroom, within max_connections.
+    command: ["postgres", "-c", "max_connections=200", "-c", "shared_buffers=256MB"]
+    # digest pinned at promotion time; record in deploy/image-digests.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-platform}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-platform_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-platform}
+      PUBLISH_DB_PASSWORD: ${PUBLISH_DB_PASSWORD:-publish_app_dev_only}
+      PUBLISH_MIGRATOR_PASSWORD: ${PUBLISH_MIGRATOR_PASSWORD:-publish_migrator_dev_only}
+      BILLING_DB_PASSWORD: ${BILLING_DB_PASSWORD:-billing_app_dev_only}
+      BILLING_MIGRATOR_PASSWORD: ${BILLING_MIGRATOR_PASSWORD:-billing_migrator_dev_only}
+      SHOP_DB_PASSWORD: ${SHOP_DB_PASSWORD:-shop_app_dev_only}
+      SHOP_MIGRATOR_PASSWORD: ${SHOP_MIGRATOR_PASSWORD:-shop_migrator_dev_only}
+      RESUME_DB_PASSWORD: ${RESUME_DB_PASSWORD:-resume_app_dev_only}
+      RESUME_MIGRATOR_PASSWORD: ${RESUME_MIGRATOR_PASSWORD:-resume_migrator_dev_only}
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:-analytics_app_dev_only}
+      ANALYTICS_MIGRATOR_PASSWORD: ${ANALYTICS_MIGRATOR_PASSWORD:-analytics_migrator_dev_only}
+      LINK_DB_PASSWORD: ${LINK_DB_PASSWORD:-link_app_dev_only}
+      LINK_MIGRATOR_PASSWORD: ${LINK_MIGRATOR_PASSWORD:-link_migrator_dev_only}
+      PROFILE_DB_PASSWORD: ${PROFILE_DB_PASSWORD:-profile_app_dev_only}
+      PROFILE_MIGRATOR_PASSWORD: ${PROFILE_MIGRATOR_PASSWORD:-profile_migrator_dev_only}
+      ACCOUNT_DB_PASSWORD: ${ACCOUNT_DB_PASSWORD:-account_app_dev_only}
+      ACCOUNT_MIGRATOR_PASSWORD: ${ACCOUNT_MIGRATOR_PASSWORD:-account_migrator_dev_only}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-platform} -d $${POSTGRES_DB:-platform}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [platform]
+
+  redis:
+    image: redis:7.4@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [platform]
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-10-15T17-29-55Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - miniodata:/data
+    # Scratch-based server image ships no probe binary; readiness is proven by
+    # minio-init exit 0 plus runtime S3 probes in the owning services.
+    healthcheck:
+      test: ["NONE"]
+    networks: [platform]
+
+  minio-init:
+    image: python:3.13-alpine@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a
+    command: ["sh", "-c", "pip install -q boto3 && python /init/minio-init.py"]
+    environment:
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    volumes:
+      - ./deploy:/init:ro
+    depends_on:
+      minio:
+        condition: service_started
+    restart: "no"
+    networks: [platform]
+
+  gateway:
+    build:
+      context: .
+      dockerfile: ./gateway/Containerfile
+    image: resume/gateway:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_DATABASE: 1
+      INTERNAL_JWT_PRIVATE_KEY_PEM: ${INTERNAL_JWT_PRIVATE_KEY_PEM:-}
+      INTERNAL_JWT_KID: ${INTERNAL_JWT_KID:-e0-dev-key}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  account-service:
+    build:
+      context: .
+      dockerfile: ./services/account-service/Containerfile
+    image: resume/account-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${ACCOUNT_PORT:-8081}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/account_db
+      SPRING_DATASOURCE_USERNAME: ${ACCOUNT_DB_USER:-account_app}
+      SPRING_DATASOURCE_PASSWORD: ${ACCOUNT_DB_PASSWORD:-account_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/account_db
+      SPRING_FLYWAY_USER: ${ACCOUNT_MIGRATOR_USER:-account_migrator}
+      SPRING_FLYWAY_PASSWORD: ${ACCOUNT_MIGRATOR_PASSWORD:-account_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 7
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  profile-service:
+    build:
+      context: .
+      dockerfile: ./services/profile-service/Containerfile
+    image: resume/profile-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${PROFILE_PORT:-8082}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/profile_db
+      SPRING_DATASOURCE_USERNAME: ${PROFILE_DB_USER:-profile_app}
+      SPRING_DATASOURCE_PASSWORD: ${PROFILE_DB_PASSWORD:-profile_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/profile_db
+      SPRING_FLYWAY_USER: ${PROFILE_MIGRATOR_USER:-profile_migrator}
+      SPRING_FLYWAY_PASSWORD: ${PROFILE_MIGRATOR_PASSWORD:-profile_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 4
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  link-service:
+    build:
+      context: .
+      dockerfile: ./services/link-service/Containerfile
+    image: resume/link-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${LINK_PORT:-8083}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/links_db
+      SPRING_DATASOURCE_USERNAME: ${LINK_DB_USER:-link_app}
+      SPRING_DATASOURCE_PASSWORD: ${LINK_DB_PASSWORD:-link_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/links_db
+      SPRING_FLYWAY_USER: ${LINK_MIGRATOR_USER:-link_migrator}
+      SPRING_FLYWAY_PASSWORD: ${LINK_MIGRATOR_PASSWORD:-link_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  public-site-service:
+    build:
+      context: .
+      dockerfile: ./services/public-site-service/Containerfile
+    image: resume/public-site-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${PUBLIC_SITE_PORT:-8084}:8080"
+    environment:
+      # Stateless: cache + purge only. No datasource — no DB connects here.
+      SERVER_PORT: 8080
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 5
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: ./services/analytics-service/Containerfile
+    image: resume/analytics-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${ANALYTICS_PORT:-8085}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/analytics_db
+      SPRING_DATASOURCE_USERNAME: ${ANALYTICS_DB_USER:-analytics_app}
+      SPRING_DATASOURCE_PASSWORD: ${ANALYTICS_DB_PASSWORD:-analytics_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/analytics_db
+      SPRING_FLYWAY_USER: ${ANALYTICS_MIGRATOR_USER:-analytics_migrator}
+      SPRING_FLYWAY_PASSWORD: ${ANALYTICS_MIGRATOR_PASSWORD:-analytics_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 6
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  resume-service:
+    build:
+      context: .
+      dockerfile: ./services/resume-service/Containerfile
+    image: resume/resume-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${RESUME_PORT:-8086}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/resume_db
+      SPRING_DATASOURCE_USERNAME: ${RESUME_DB_USER:-resume_app}
+      SPRING_DATASOURCE_PASSWORD: ${RESUME_DB_PASSWORD:-resume_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/resume_db
+      SPRING_FLYWAY_USER: ${RESUME_MIGRATOR_USER:-resume_migrator}
+      SPRING_FLYWAY_PASSWORD: ${RESUME_MIGRATOR_PASSWORD:-resume_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 8
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  shop-service:
+    build:
+      context: .
+      dockerfile: ./services/shop-service/Containerfile
+    image: resume/shop-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${SHOP_PORT:-8087}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shop_db
+      SPRING_DATASOURCE_USERNAME: ${SHOP_DB_USER:-shop_app}
+      SPRING_DATASOURCE_PASSWORD: ${SHOP_DB_PASSWORD:-shop_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/shop_db
+      SPRING_FLYWAY_USER: ${SHOP_MIGRATOR_USER:-shop_migrator}
+      SPRING_FLYWAY_PASSWORD: ${SHOP_MIGRATOR_PASSWORD:-shop_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 9
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  billing-service:
+    build:
+      context: .
+      dockerfile: ./services/billing-service/Containerfile
+    image: resume/billing-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${BILLING_PORT:-8088}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/billing_db
+      SPRING_DATASOURCE_USERNAME: ${BILLING_DB_USER:-billing_app}
+      SPRING_DATASOURCE_PASSWORD: ${BILLING_DB_PASSWORD:-billing_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/billing_db
+      SPRING_FLYWAY_USER: ${BILLING_MIGRATOR_USER:-billing_migrator}
+      SPRING_FLYWAY_PASSWORD: ${BILLING_MIGRATOR_PASSWORD:-billing_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  publish-service:
+    build:
+      context: .
+      dockerfile: ./services/publish-service/Containerfile
+    image: resume/publish-service:0.1.0-SNAPSHOT
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${PUBLISH_PORT:-8089}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/publish_db
+      SPRING_DATASOURCE_USERNAME: ${PUBLISH_DB_USER:-publish_app}
+      SPRING_DATASOURCE_PASSWORD: ${PUBLISH_DB_PASSWORD:-publish_app_dev_only}
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/publish_db
+      SPRING_FLYWAY_USER: ${PUBLISH_MIGRATOR_USER:-publish_migrator}
+      SPRING_FLYWAY_PASSWORD: ${PUBLISH_MIGRATOR_PASSWORD:-publish_migrator_dev_only}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_DATABASE: 11
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [platform]
+
+  web:
+    build:
+      context: .
+      dockerfile: ./web/Dockerfile
+    image: resume/web:0.1.0-SNAPSHOT
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health/liveness | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /run
+      - /tmp
+    ports:
+      - "${WEB_PORT:-8090}:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    networks: [platform]
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
+
+networks:
+  platform:
+    driver: bridge

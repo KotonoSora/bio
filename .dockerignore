@@ -1,0 +1,13 @@
+.git/
+.gradle/
+*/build/
+build/
+node_modules/
+web/dist/
+web/node_modules/
+.env
+*.env
+!*.env.example
+deploy/openapi-baseline/
+.DS_Store
+.idea/

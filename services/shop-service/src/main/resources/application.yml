@@ -1,0 +1,76 @@
+server:
+  port: ${SERVER_PORT:8080}
+  # SIGTERM graceful shutdown: drain in-flight requests, close queue consumers.
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  application:
+    name: shop-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shop_db}
+    username: ${SPRING_DATASOURCE_USERNAME:shop_app}
+    password: ${SPRING_DATASOURCE_PASSWORD:shop_dev_only}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 3000
+      pool-name: shop-pool
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: public
+      jakarta:
+        persistence:
+          query:
+            timeout: 5000
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    # Migrator role (DDL, migrations only). App DSN never carries migration rights.
+    user: ${SPRING_FLYWAY_USER:shop_migrator}
+    password: ${SPRING_FLYWAY_PASSWORD:shop_migrator_dev_only}
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: 9
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    db:
+      enabled: true
+    redis:
+      enabled: true
+  metrics:
+    tags:
+      service: shop-service
+  otlp:
+    metrics:
+      export:
+        url: ${OTEL_EXPORTER_OTLP_ENDPOINT:}
+
+internal:
+  jwt:
+    public-key-pem: ${INTERNAL_JWT_PUBLIC_KEY_PEM:}
+    previous-public-key-pem: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:}
+    audience: shop-service
+
+service:
+  ratelimit:
+    per-minute: ${SERVICE_RATELIMIT_PER_MINUTE:120}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} service=shop-service trace=%X{traceId:-} level=%-5level msg=%m%n"
