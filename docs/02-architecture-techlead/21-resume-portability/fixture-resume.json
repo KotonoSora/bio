@@ -1,0 +1,114 @@
+{
+  "blocks": [
+    {
+      "is_visible": true,
+      "payload_json": {
+        "documentId": "doc-1",
+        "showContact": true
+      },
+      "position": 3,
+      "type": "resume",
+      "visible_from": null,
+      "visible_until": null
+    }
+  ],
+  "documents": [
+    {
+      "is_public": false,
+      "published_version": null,
+      "snapshots": [
+        {
+          "created_at": "2026-09-01T08:00:00Z",
+          "snapshot_json": {
+            "basics": {
+              "email": "jane.doe@example.com",
+              "location": "Ho Chi Minh City, VN",
+              "name": "Jane Doe",
+              "summary": "Backend developer.fixture person only."
+            },
+            "captured_at": "2026-09-01T08:00:00Z",
+            "education": [
+              {
+                "degree": "B.Sc. Computer Science",
+                "school": "Example University",
+                "years": "2014-2018"
+              }
+            ],
+            "experience": [
+              {
+                "company": "Example Co",
+                "highlights": [
+                  "Shipped fixture feature."
+                ],
+                "role": "Backend Developer",
+                "years": "2020-present"
+              }
+            ],
+            "links": [
+              {
+                "label": "GitHub",
+                "url": "https://github.com/example-janedoe"
+              }
+            ],
+            "skills": [
+              "Kotlin",
+              "PostgreSQL"
+            ],
+            "source_profile_rev": "placeholder-rev-1",
+            "template_id": "classic"
+          },
+          "version": 1
+        },
+        {
+          "created_at": "2026-10-01T08:00:00Z",
+          "snapshot_json": {
+            "basics": {
+              "email": "jane.doe@example.com",
+              "location": "Ho Chi Minh City, VN",
+              "name": "Jane Doe",
+              "summary": "Senior backend developer. Fixture person only."
+            },
+            "captured_at": "2026-10-01T08:00:00Z",
+            "education": [
+              {
+                "degree": "B.Sc. Computer Science",
+                "school": "Example University",
+                "years": "2014-2018"
+              }
+            ],
+            "experience": [
+              {
+                "company": "Example Co",
+                "highlights": [
+                  "Shipped fixture feature.",
+                  "Led fixture migration."
+                ],
+                "role": "Senior Backend Developer",
+                "years": "2020-present"
+              }
+            ],
+            "links": [
+              {
+                "label": "GitHub",
+                "url": "https://github.com/example-janedoe"
+              }
+            ],
+            "skills": [
+              "Kotlin",
+              "PostgreSQL",
+              "Spring Boot"
+            ],
+            "source_profile_rev": "placeholder-rev-2",
+            "template_id": "classic"
+          },
+          "version": 2
+        }
+      ],
+      "template_id": "classic",
+      "title": "Backend resume",
+      "export_id": "doc-1"
+    }
+  ],
+  "exported_at": "2026-10-15T00:00:00Z",
+  "schema_version": "1"
+}
