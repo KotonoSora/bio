@@ -67,6 +67,20 @@ internal:
     previous-public-key-pem: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:}
     audience: profile-service
 
+# Outbound mesh credential for /internal/v1 calls (blank = dev, no header sent).
+mesh:
+  jwt:
+    private-key-pem: ${MESH_JWT_PRIVATE_KEY_PEM:}
+    kid: ${INTERNAL_JWT_KID:e0-dev-key}
+
+# Feature 02 participant: account-status parity read + events:account consumer.
+integration:
+  account:
+    base-url: ${ACCOUNT_SERVICE_URL:http://account-service:8080}
+    timeout-ms: ${ACCOUNT_STATUS_TIMEOUT_MS:2000}
+  account-events:
+    consumer: ${ACCOUNT_EVENTS_CONSUMER:profile-worker-1}
+
 service:
   ratelimit:
     per-minute: ${SERVICE_RATELIMIT_PER_MINUTE:120}

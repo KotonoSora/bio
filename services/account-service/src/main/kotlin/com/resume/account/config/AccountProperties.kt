@@ -14,6 +14,7 @@ class AccountProperties {
     var oauth = OAuthSettings()
     var services = ServiceEndpoints()
     var mail = MailSettings()
+    var deletion = DeletionSettings()
 
     class AuthSettings {
         /** Same-origin allowlist for callbackURL/returnTo (relative paths only; BR-04). */
@@ -49,6 +50,41 @@ class AccountProperties {
     class MailSettings {
         /** log = no transport configured (dev); notices are never auto-verified in code. */
         var mode: String = "log"
+    }
+
+    /**
+     * Feature 02 deletion settings (TL 01 D-4/D-6, TL 02). Grace/reminder day
+     * counts are the decided product numbers (NFR-02/NFR-03); legal retention
+     * floors and the buyer-email hashing policy are counsel-owned configuration
+     * (Q-01) - blank means "not configured", never an invented default.
+     */
+    class DeletionSettings {
+        /** Exactly 30 days from request to purge (NFR-02). */
+        var graceDays: Long = 30
+        /** Exactly one reminder at day 23 (NFR-03). */
+        var reminderAfterDays: Long = 23
+        var purgeCron: String = "0 30 3 * * *" // daily 03:30 UTC (Q-03)
+        var reminderCron: String = "0 45 3 * * *"
+        var probeCron: String = "0 0 4 * * 1" // weekly residual probe (BR-10)
+        /** Certificate namespace root; account-service mounts its own volume here. */
+        var storageRoot: String = "/srv/uploads"
+        /** Legal-hold flag recorded honestly on the certificate (BR-05); policy is legal-owned. */
+        var legalHold: Boolean = false
+        var stuckAfterHours: Long = 24
+        var participantRetries: Int = 3
+        /** Registered purge participants (roster discipline; account-service itself is implicit). */
+        var participants: List<Participant> = emptyList()
+        /** Counsel-owned retention floors; blank = launch blocker Q-01 not yet resolved. */
+        var retentionYears: String = ""
+        /** Counsel-owned hashed-email allow-list policy (Q-01). */
+        var hashBuyerEmail: Boolean = false
+        /** Strict roster check at boot: registered-but-unreachable participant fails startup. */
+        var strictParticipants: Boolean = false
+    }
+
+    class Participant {
+        var name: String = ""
+        var baseUrl: String = ""
     }
 
     class OAuthSettings {

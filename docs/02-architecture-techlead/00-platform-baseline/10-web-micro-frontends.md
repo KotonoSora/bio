@@ -22,7 +22,7 @@ Phase 2 TL · Cross-cutting baseline. Defines the micro frontend ("MFE") composi
 ## The contract (`packages/mfe-kit`)
 
 - `defineMfe(tag, mount)` registers the custom element; mount runs once connected AND `mfeContext` is assigned; dispose runs on disconnect.
-- `MfeContext` (additive-only): `locale: 'en' | 'vi'`, `navigate(to)` (shell-router relative, e.g. `/login?notice=expired`). Never repurpose or remove a field.
+- `MfeContext` (additive-only): `locale: 'en'`, `navigate(to)` (shell-router relative, e.g. `/login?notice=expired`). Never repurpose or remove a field. DEVIATION FLAGGED (owner decision, 2026-10-17): English-only shipping — the Vietnamese bundle and negotiation were removed, so the locale union is `'en'`; re-adding a language is additive.
 - Failure signal: `MFE_ERROR_EVENT` (`rb:mfe-error`) dispatched on the element; the shell swaps to its fallback.
 - Shared API core (build-time source, per-bundle copy): `ApiError`, `api()`, `csrfToken()`, `toApiError()`, `isUnauthenticated()`, `isRelayEmail()`.
 

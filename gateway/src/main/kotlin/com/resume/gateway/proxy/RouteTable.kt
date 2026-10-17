@@ -36,6 +36,7 @@ class RouteTable(private val serviceHosts: Map<String, String> = GatewayRoutes.S
             "/api/v1/auth/" to "account-service",
             "/api/v1/me/" to "account-service",
             "/api/v1/accounts/" to "account-service",
+            "/api/v1/account/" to "account-service",
             "/api/v1/profiles/" to "profile-service",
             "/api/t/leads/submit/" to "profile-service",
             "/api/t/" to "analytics-service",

@@ -22,12 +22,16 @@ import {
 import {
   accountApi,
   authApi,
+  deletionApi,
+  profileApi,
+  type DeleteStatusResponse,
   type MeResponse,
   type MyProviderView,
   type ProviderView,
   type SessionSummary,
 } from './api/account';
 import ConfirmDialog from './components/ConfirmDialog';
+import DeleteAccountDialog, { LITERAL_DELETE } from './components/DeleteAccountDialog';
 import StepUpDialog from './components/StepUpDialog';
 import { describeError, isUnauthenticated } from './lib/errors';
 import { lastActiveBucket } from './lib/format';
@@ -46,10 +50,21 @@ type DialogState =
   | { kind: 'confirm-unlink'; provider: MyProviderView }
   | { kind: 'confirm-revoke'; session: SessionSummary }
   | { kind: 'confirm-revoke-others' }
+  | { kind: 'confirm-restore' }
+  | { kind: 'delete' }
   | { kind: 'step-up'; action: PendingAction }
   | null;
 
 const MAX_CODE_ATTEMPTS = 5;
+const DAY_MS = 86_400_000;
+
+function purgeDate(iso: string): string {
+  return new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(iso));
+}
+
+function daysLeft(iso: string): number {
+  return Math.max(0, Math.ceil((Date.parse(iso) - Date.now()) / DAY_MS));
+}
 
 export default function AccountSettings() {
   const { navigate } = useMfeContext();
@@ -61,6 +76,15 @@ export default function AccountSettings() {
   const [notice, setNotice] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [conflictDismissed, setConflictDismissed] = useState(conflictBannerDismissed());
+
+  // Feature 02 deletion lifecycle: `deletion` mirrors GET delete-status;
+  // `signedOut` is set only when this tab committed a request (the session is
+  // already dead server-side, so the panel renders from the 200 response).
+  const [deletion, setDeletion] = useState<DeleteStatusResponse | null>(null);
+  const [signedOut, setSignedOut] = useState<DeleteStatusResponse | null>(null);
+  const [expected, setExpected] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const [email, setEmail] = useState('');
   const [emailSyntaxOk, setEmailSyntaxOk] = useState(true);
@@ -169,12 +193,82 @@ export default function AccountSettings() {
     [refreshProviders, toLogin],
   );
 
+  /**
+   * BR-01 typed gate: resolve the expected confirmation on open - the profile
+   * username exactly, else the literal `DELETE`. Lookup failure degrades to
+   * `DELETE` (the typed value is a UX guard; step-up + owner session are the
+   * security boundary). The list's first profile matches the mesh handoff read.
+   */
+  const openDeleteDialog = useCallback(() => {
+    setDeleteError(null);
+    setExpected(null);
+    setDialog({ kind: 'delete' });
+    profileApi
+      .mine()
+      .then((profiles) => setExpected(profiles[0]?.username ?? LITERAL_DELETE))
+      .catch(() => setExpected(LITERAL_DELETE));
+  }, []);
+
+  const runDelete = useCallback(
+    async (confirmation: string) => {
+      setDeleteBusy(true);
+      setDeleteError(null);
+      try {
+        const res = await deletionApi.request(confirmation);
+        setDeletion(res);
+        setSignedOut(res);
+        setDialog(null);
+      } catch (err) {
+        if (err instanceof ApiError && err.code === 'step_up_required') {
+          const action: PendingAction = { kind: 'delete', confirmation };
+          setPendingAction(action);
+          setDialog({ kind: 'step-up', action });
+          return;
+        }
+        if (isUnauthenticated(err)) {
+          toLogin();
+          return;
+        }
+        setDeleteError(describeError(err));
+      } finally {
+        setDeleteBusy(false);
+      }
+    },
+    [toLogin],
+  );
+
+  /** BR-03 restore: login + one click, no step-up; sessions survive the cancel. */
+  const restoreAccount = useCallback(async () => {
+    try {
+      const res = await deletionApi.cancel();
+      setDeletion(res);
+      setNotice(t('settings.deletion.cancelledNotice'));
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'delete_not_requested') {
+        setNotice(describeError(err));
+        const fresh = await deletionApi.status().catch(() => null);
+        setDeletion(fresh);
+        return;
+      }
+      refuse(err);
+    } finally {
+      setDialog(null);
+    }
+  }, [refuse, t]);
+
   const bootstrap = useCallback(async (): Promise<boolean> => {
     try {
       const [m, ps, ss] = await Promise.all([accountApi.me(), accountApi.providers(), accountApi.sessions()]);
       setMe(m);
       setProviders(ps.providers);
       setSessions(ss.sessions);
+      // Purge-completed rows answer 410; no session can exist post-purge, so a
+      // stale tab simply renders without a panel (BA 05).
+      const del = await deletionApi.status().catch((err) => {
+        if (err instanceof ApiError && err.code === 'purge_completed') return null;
+        throw err;
+      });
+      setDeletion(del);
       return true;
     } catch (err) {
       if (isUnauthenticated(err)) {
@@ -199,10 +293,11 @@ export default function AccountSettings() {
       if (!ready) return;
       const pending = takePendingAction();
       if (!pending) return;
-      if (pending.kind === 'unlink') await runUnlink(pending.provider, pending.label);
+      if (pending.kind === 'delete') await runDelete(pending.confirmation);
+      else if (pending.kind === 'unlink') await runUnlink(pending.provider, pending.label);
       else await startLink(pending.provider, pending.label);
     })();
-  }, [bootstrap, runUnlink, startLink]);
+  }, [bootstrap, runDelete, runUnlink, startLink]);
 
   const countdownActive = resendIn > 0;
   useEffect(() => {
@@ -313,7 +408,40 @@ export default function AccountSettings() {
   const promptAdd = !deliverable && (relayEmail || !me.email);
   const linked = providers.filter((p) => p.linked);
   const dialogActionLabel = (action: PendingAction) =>
-    t(action.kind === 'link' ? 'actions.link' : 'actions.unlink', { provider: action.label });
+    action.kind === 'delete'
+      ? t('actions.delete')
+      : t(action.kind === 'link' ? 'actions.link' : 'actions.unlink', { provider: action.label });
+  const daysLeftText = (iso: string) => {
+    const days = daysLeft(iso);
+    return days === 1 ? t('settings.deletion.dayLeft') : t('settings.deletion.daysLeft', { count: days });
+  };
+
+  // BR-02: the request commit revoked every session, this tab included - the
+  // panel renders from the 200 response and offers the sign-in path to restore.
+  if (signedOut?.purgeDueAt) {
+    return (
+      <main className="mx-auto w-full max-w-2xl space-y-6">
+        <h1 className="font-heading text-2xl font-semibold">{t('settings.title')}</h1>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.deletion.scheduledTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm">
+              {t('settings.deletion.scheduledFor', { date: purgeDate(signedOut.purgeDueAt) })}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {daysLeftText(signedOut.purgeDueAt)} {t('settings.deletion.signInAgain')}
+            </p>
+          </CardContent>
+        </Card>
+        <Notice tone="info">{t('settings.deletion.signedOut')}</Notice>
+        <Button type="button" variant="outline" onClick={() => navigate('/login')}>
+          {t('settings.deletion.signIn')}
+        </Button>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-2xl space-y-6">
@@ -516,6 +644,38 @@ export default function AccountSettings() {
         </CardContent>
       </Card>
 
+      {deletion?.status === 'grace' && deletion.purgeDueAt ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.deletion.scheduledTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm">{t('settings.deletion.scheduledFor', { date: purgeDate(deletion.purgeDueAt) })}</p>
+            <p className="text-sm text-muted-foreground">{daysLeftText(deletion.purgeDueAt)}</p>
+            <Button type="button" onClick={() => setDialog({ kind: 'confirm-restore' })}>
+              {t('settings.deletion.restore')}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.deletion.title')}</CardTitle>
+            <CardDescription>{t('settings.deletion.description')}</CardDescription>
+            {deletion?.status === 'cancelled' && (
+              <CardAction>
+                <Badge variant="outline">{t('settings.deletion.cancelledChip')}</Badge>
+              </CardAction>
+            )}
+          </CardHeader>
+          <CardContent className="flex justify-end">
+            <Button type="button" variant="destructive" onClick={openDeleteDialog}>
+              {t('settings.deletion.entry')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {dialog?.kind === 'confirm-unlink' && (
         <ConfirmDialog
           title={t('settings.unlinkTitle', { provider: dialog.provider.label })}
@@ -554,6 +714,24 @@ export default function AccountSettings() {
             setDialog(null);
             void revokeOthers();
           }}
+        />
+      )}
+      {dialog?.kind === 'confirm-restore' && (
+        <ConfirmDialog
+          title={t('settings.deletion.restoreTitle')}
+          body={t('settings.deletion.restoreBody')}
+          confirmLabel={t('settings.deletion.restore')}
+          onCancel={() => setDialog(null)}
+          onConfirm={() => void restoreAccount()}
+        />
+      )}
+      {dialog?.kind === 'delete' && (
+        <DeleteAccountDialog
+          expected={expected}
+          error={deleteError}
+          busy={deleteBusy}
+          onCancel={() => setDialog(null)}
+          onConfirm={(confirmation) => void runDelete(confirmation)}
         />
       )}
       {dialog?.kind === 'step-up' && (

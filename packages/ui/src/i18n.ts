@@ -2,12 +2,13 @@
 // dependency-free `{name}` template helper. Display copy is owned per surface
 // through react-i18next (shell in `web/`, each vertical in `mfe/<name>/` —
 // NFR-14); this module itself carries no i18n dependency.
-export type Locale = 'en' | 'vi';
+//
+// DEVIATION FLAGGED (owner decision, 2026-10-17): English-only shipping —
+// the Vietnamese bundle was removed and the contract narrowed to 'en'.
+export type Locale = 'en';
 
 export function detectLocale(): Locale {
-  if (typeof navigator === 'undefined') return 'en';
-  const tag = (navigator.languages?.[0] ?? navigator.language ?? '').toLowerCase();
-  return tag.startsWith('vi') ? 'vi' : 'en';
+  return 'en';
 }
 
 /** Fills `{name}` placeholders; unknown names stay verbatim (visible in tests). */

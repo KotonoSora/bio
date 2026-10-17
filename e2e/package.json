@@ -11,6 +11,8 @@
     "test:headed:full": "E2E_FULL_LOGIN=1 HEADED=1 SLOWMO=400 playwright test 01-account-and-access.spec.ts 01-account-and-access.full-login.spec.ts",
     "test:auth": "E2E_FULL_LOGIN=1 playwright test 01-account-and-access.authenticated.spec.ts",
     "test:headed:auth": "E2E_FULL_LOGIN=1 HEADED=1 SLOWMO=400 playwright test 01-account-and-access.authenticated.spec.ts",
+    "test:deletion": "E2E_FULL_LOGIN=1 playwright test 02-account-deletion.authenticated.spec.ts",
+    "test:headed:deletion": "E2E_FULL_LOGIN=1 HEADED=1 SLOWMO=400 playwright test 02-account-deletion.authenticated.spec.ts",
     "idp:on": "sh scripts/enable-full-login.sh",
     "idp:off": "sh scripts/disable-full-login.sh",
     "idp:serve": "node mock-idp/server.mjs",

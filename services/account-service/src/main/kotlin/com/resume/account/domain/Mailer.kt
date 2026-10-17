@@ -12,6 +12,13 @@ import org.springframework.stereotype.Component
  */
 interface Mailer {
     fun sendContactCode(email: String, code: String)
+
+    /**
+     * Day-23 deletion reminder (feature 02 Q-04): exactly one transactional
+     * email naming the purge date. Returns true when the transport accepted it
+     * (bounces are surfaced to support by the transport owner, BR-12/S-10).
+     */
+    fun sendDeletionReminder(email: String, purgeDueAt: java.time.Instant): Boolean
 }
 
 @Component
@@ -20,11 +27,20 @@ class LoggingMailer(private val props: AccountProperties) : Mailer {
 
     override fun sendContactCode(email: String, code: String) {
         if (props.mail.mode == "off") return
+        // No code, no full address: the log proves the event, nothing more.
+        log.info("contact_email_code_issued recipient={} transport=log", mask(email))
+    }
+
+    override fun sendDeletionReminder(email: String, purgeDueAt: java.time.Instant): Boolean {
+        if (props.mail.mode == "off") return false
+        log.info("deletion_reminder_issued recipient={} purgeDueAt={} transport=log", mask(email), purgeDueAt)
+        return true
+    }
+
+    private fun mask(email: String): String {
         val parts = email.split("@", limit = 2)
         val local = parts.firstOrNull() ?: ""
         val domain = parts.getOrNull(1) ?: ""
-        val masked = "${local.firstOrNull() ?: '*'}***@$domain"
-        // No code, no full address: the log proves the event, nothing more.
-        log.info("contact_email_code_issued recipient={} transport=log", masked)
+        return "${local.firstOrNull() ?: '*'}***@$domain"
     }
 }

@@ -1,6 +1,7 @@
 package com.resume.profile.api
 
 import com.resume.profile.domain.ProfileService
+import com.resume.profile.integration.AccountStatusClient
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import org.springframework.security.core.Authentication
@@ -18,7 +19,7 @@ class ProfileController(private val profiles: ProfileService) {
     @PostMapping
     fun create(auth: Authentication?, @RequestBody req: CreateProfileRequest): ProfileResponse {
         val userId = auth?.name ?: "dev-user"
-        val p = profiles.create(userId, req.username, req.displayName).getOrThrow()
+        val p = profiles.create(userId, req.username, req.displayName)
         return ProfileResponse(p.id, p.username, p.displayName, p.isPublic)
     }
 
@@ -30,12 +31,20 @@ class ProfileController(private val profiles: ProfileService) {
 }
 
 @RestController
-class PublicProfileController(private val profiles: ProfileService) {
-    // Public read: username + is_public=1 scoping happens here; dashboard reads scope by server-set user_id.
+class PublicProfileController(
+    private val profiles: ProfileService,
+    private val accountStatus: AccountStatusClient,
+) {
+    /**
+     * Public read: username + is_public=1 scoping happens here; dashboard reads
+     * scope by server-set user_id. Deactivated accounts (feature 02) resolve as
+     * `missing` within the 60 s `profile.acctstat` bound - identical shape to
+     * private/unknown (BR-04 parity; feature 06 TL).
+     */
     @GetMapping("/{username}")
     fun byUsername(@PathVariable username: String): ProfileResponse {
         val p = profiles.byUsername(username.lowercase()).getOrThrow()
-        if (!p.isPublic) throw NoSuchElementException("profile not found")
+        if (!p.isPublic || !accountStatus.isActive(p.userId)) throw NoSuchElementException("profile not found")
         return ProfileResponse(p.id, p.username, p.displayName, p.isPublic)
     }
 }

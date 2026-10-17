@@ -66,8 +66,28 @@ print('.env updated: dev internal-JWT keypair generated')
 PY
 fi
 
-docker compose up -d gateway account-service >/dev/null
-echo 'gateway + account-service recreated:'
+# Mesh credential (feature 02 S-5): with the internal keypair configured the
+# verifiers leave their dev branch and require service JWTs on /internal/v1/*,
+# so outbound mesh calls must be signed with the same dev key (MESH_* mirrors
+# the internal private key; prod swaps in the mesh key material).
+python3 - <<'PY'
+import pathlib
+env = pathlib.Path('.env')
+lines = env.read_text().splitlines()
+priv = next((l.split('=', 1)[1] for l in lines if l.startswith('INTERNAL_JWT_PRIVATE_KEY_PEM=')), '')
+value = f'MESH_JWT_PRIVATE_KEY_PEM={priv}' if priv and priv != '""' else 'MESH_JWT_PRIVATE_KEY_PEM='
+for i, line in enumerate(lines):
+    if line.startswith('MESH_JWT_PRIVATE_KEY_PEM='):
+        lines[i] = value
+        break
+else:
+    lines.append(value)
+env.write_text('\n'.join(lines) + '\n')
+print('.env updated: mesh signing key -> dev internal keypair')
+PY
+
+docker compose up -d gateway account-service profile-service >/dev/null
+echo 'gateway + account-service + profile-service recreated:'
 docker compose exec -T gateway printenv INTERNAL_JWT_PRIVATE_KEY_PEM | head -1
 docker compose exec -T account-service printenv INTERNAL_JWT_PUBLIC_KEY_PEM | head -1
 docker inspect "$(docker compose ps -q account-service)" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep '^GENERIC_OIDC_AUTHORIZE_URI=' || true

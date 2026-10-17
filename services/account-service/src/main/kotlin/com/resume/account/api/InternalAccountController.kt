@@ -1,6 +1,8 @@
 package com.resume.account.api
 
+import com.resume.account.domain.AccountPurgeHandler
 import com.resume.account.domain.ApiException
+import com.resume.account.domain.DeletionService
 import com.resume.account.domain.EntitlementService
 import com.resume.account.domain.IdentityService
 import com.resume.account.domain.RecoveryService
@@ -31,6 +33,8 @@ class InternalAccountController(
     private val identities: IdentityService,
     private val sessions: SessionService,
     private val recovery: RecoveryService,
+    private val deletions: DeletionService,
+    private val purgeHandler: AccountPurgeHandler,
 ) {
 
     @GetMapping("/entitlements/{userId}")
@@ -66,6 +70,30 @@ class InternalAccountController(
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(RecoveryLinkResponse(token, expiresAt))
     }
+
+    /** Mesh parity read (TL 03, S-5): `active | deactivated | purged` + the purge date. */
+    @GetMapping("/account/status/{userId}")
+    fun accountStatus(@PathVariable userId: String): AccountStatusResponse =
+        RlsContext.asService { deletions.accountStatus(userId) }
+
+    /** Audited support read (BR-08/S-8): ops scope, actor + target, no browser path. */
+    @GetMapping("/account/deletion-status/{userId}")
+    fun deletionStatus(@PathVariable userId: String, request: HttpServletRequest): DeletionStatusResponse =
+        RlsContext.asOps {
+            deletions.opsStatus(userId, actor = AuthClaims.subject() ?: "svc:unknown", ipClass = RequestFacts.ipClass(request))
+        }
+
+    /** Purge participant contract (TL 03): idempotent per `runId`; handler sets its own RLS scope. */
+    @PostMapping("/account/purge")
+    fun purge(@RequestBody body: PurgeRequest): PurgeResponse {
+        if (body.userId.isBlank() || body.runId.isBlank()) {
+            throw ApiException.validation("userId and runId are required.")
+        }
+        return purgeHandler.purge(body.userId, body.runId)
+    }
+
+    @GetMapping("/account/purge-probe/{userId}")
+    fun purgeProbe(@PathVariable userId: String): PurgeProbeResponse = purgeHandler.probe(userId)
 
     private fun requireGatewayCaller() {
         val subject = AuthClaims.subject() ?: return // dev-mode empty-boot path

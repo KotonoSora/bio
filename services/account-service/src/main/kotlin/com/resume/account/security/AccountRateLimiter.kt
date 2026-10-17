@@ -26,6 +26,12 @@ class AccountRateLimiter(
 
     fun ownerRead(userId: String) = check("me", userId, limit = 60, window = Duration.ofMinutes(1))
 
+    /** Feature 02: delete-request + delete-cancel share the 10/min/user envelope (TL 06). */
+    fun deletionAction(userId: String) = check("delact", userId, limit = 10, window = Duration.ofMinutes(1))
+
+    /** Feature 02: delete-status reads 60/min/user. */
+    fun deletionStatus(userId: String) = check("delstat", userId, limit = 60, window = Duration.ofMinutes(1))
+
     private fun check(bucket: String, key: String, limit: Long, window: Duration) {
         val windowKey = "acct:rl:$bucket:$key:${System.currentTimeMillis() / window.toMillis()}"
         val count = try {

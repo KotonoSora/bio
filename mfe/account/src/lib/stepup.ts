@@ -1,11 +1,12 @@
 // Step-up round-trip resume: the interrupted action is parked in
 // sessionStorage before the re-auth navigation and replayed when the callback
 // lands back on the settings page. Cancelling the dialog clears it (BR-07).
-export interface PendingAction {
-  kind: 'link' | 'unlink';
-  provider: string;
-  label: string;
-}
+// The delete variant (feature 02) carries the typed confirmation so the replay
+// re-sends the identical request body.
+export type PendingAction =
+  | { kind: 'link'; provider: string; label: string }
+  | { kind: 'unlink'; provider: string; label: string }
+  | { kind: 'delete'; confirmation: string };
 
 const KEY = 'acct.pendingAction';
 
@@ -18,7 +19,15 @@ export function takePendingAction(): PendingAction | null {
   if (!raw) return null;
   sessionStorage.removeItem(KEY);
   try {
-    const parsed = JSON.parse(raw) as PendingAction;
+    const parsed = JSON.parse(raw) as {
+      kind?: string;
+      provider?: string;
+      label?: string;
+      confirmation?: string;
+    };
+    if (parsed.kind === 'delete' && typeof parsed.confirmation === 'string') {
+      return { kind: 'delete', confirmation: parsed.confirmation };
+    }
     if ((parsed.kind === 'link' || parsed.kind === 'unlink') && typeof parsed.provider === 'string') {
       return { kind: parsed.kind, provider: parsed.provider, label: parsed.label ?? parsed.provider };
     }

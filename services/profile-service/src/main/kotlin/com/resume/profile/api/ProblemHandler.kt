@@ -1,5 +1,9 @@
 package com.resume.profile.api
 
+import com.resume.profile.domain.AccountPurgeInProgressException
+import com.resume.profile.domain.UsernameReservedException
+import com.resume.profile.domain.UsernameRetiredException
+import com.resume.profile.domain.UsernameTakenException
 import org.slf4j.MDC
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
@@ -40,6 +44,35 @@ class ProblemHandler {
     fun handleProfileAbsent(ex: ProfileAbsentException): ProblemDetail {
         val pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message ?: "Not found")
         pd.setProperty("code", "profile_absent")
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return pd
+    }
+
+    /** Feature 02 (BR-07) + feature 06 availability codes: 422 with stable codes. */
+    @ExceptionHandler(
+        UsernameTakenException::class,
+        UsernameRetiredException::class,
+        UsernameReservedException::class,
+        PurgeRequestValidationException::class,
+    )
+    fun handleUsername(ex: RuntimeException): ProblemDetail {
+        val code = when (ex) {
+            is UsernameTakenException -> "username_taken"
+            is UsernameRetiredException -> "username_retired"
+            is UsernameReservedException -> "username_reserved"
+            else -> "validation_failed"
+        }
+        val pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message ?: "Unprocessable")
+        pd.setProperty("code", code)
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return pd
+    }
+
+    /** Feature 02 (S-3): a different active run holds the account's purge guard. */
+    @ExceptionHandler(AccountPurgeInProgressException::class)
+    fun handlePurgeInProgress(ex: AccountPurgeInProgressException): ProblemDetail {
+        val pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message ?: "Conflict")
+        pd.setProperty("code", "purge_in_progress")
         pd.setProperty("traceId", MDC.get("traceId") ?: "")
         return pd
     }

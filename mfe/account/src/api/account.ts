@@ -47,6 +47,28 @@ export interface MyProviderListResponse {
   providers: MyProviderView[];
 }
 
+/** profile-service read (feature 01 handoff shape): feeds the typed confirmation (BR-01). */
+export interface ProfileLite {
+  id: string;
+  username: string;
+  displayName: string | null;
+  isPublic: boolean;
+}
+
+export type DeletionStatusValue = 'none' | 'grace' | 'cancelled';
+
+/** Feature 02 owner view (TL 03): `none` until a request exists; `purged` is not a client state (410). */
+export interface DeleteStatusResponse {
+  status: DeletionStatusValue;
+  requestedAt: string | null;
+  purgeDueAt: string | null;
+  certificateRef: string | null;
+}
+
+export const profileApi = {
+  mine: () => api<ProfileLite[]>('/api/v1/profiles/me'),
+};
+
 export const accountApi = {
   me: () => api<MeResponse>('/api/v1/me'),
   sessions: () => api<SessionListResponse>('/api/v1/me/sessions'),
@@ -65,4 +87,20 @@ export const authApi = {
   providers: () => api<ProviderListResponse>('/api/auth/providers'),
   unlink: (provider: string) =>
     api<void>(`/api/auth/unlink/${encodeURIComponent(provider)}`, { method: 'POST' }),
+};
+
+/**
+ * Feature 02 owner surface (TL 03): request needs a fresh step-up + the exact
+ * typed confirmation; cancel (restore) is login + one click. On request commit
+ * every session is revoked server-side, the caller's included - the 200
+ * response is the panel data, not a polling source.
+ */
+export const deletionApi = {
+  status: () => api<DeleteStatusResponse>('/api/v1/account/delete-status'),
+  request: (confirmation: string) =>
+    api<DeleteStatusResponse>('/api/v1/account/delete-request', {
+      method: 'POST',
+      body: JSON.stringify({ confirmation }),
+    }),
+  cancel: () => api<DeleteStatusResponse>('/api/v1/account/delete-cancel', { method: 'POST' }),
 };
