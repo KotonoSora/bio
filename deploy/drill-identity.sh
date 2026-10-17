@@ -11,11 +11,11 @@ python3 -c "import jwt" 2>/dev/null || pip install -q pyjwt[crypto]
 
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out /tmp/idt-priv.pem 2>/dev/null
 openssl pkey -in /tmp/idt-priv.pem -pubout -out /tmp/idt-pub.pem 2>/dev/null
-awk 'NF {sub(/\r/, ""); printf "%s\\n", $0}' /tmp/idt-priv.pem > /tmp/idt-priv.env
-awk 'NF {sub(/\r/, ""); printf "%s\\n", $0}' /tmp/idt-pub.pem > /tmp/idt-pub.env
 
-export INTERNAL_JWT_PRIVATE_KEY_PEM="$(cat /tmp/idt-priv.env)"
-export INTERNAL_JWT_PUBLIC_KEY_PEM="$(cat /tmp/idt-pub.env)"
+# Export with real newlines (compose passes shell env verbatim; the services
+# strip newlines before base64-decoding the PEM).
+export INTERNAL_JWT_PRIVATE_KEY_PEM="$(cat /tmp/idt-priv.pem)"
+export INTERNAL_JWT_PUBLIC_KEY_PEM="$(cat /tmp/idt-pub.pem)"
 export INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM=""
 docker compose up -d --build gateway account-service profile-service >/dev/null
 for p in 8081 8082; do

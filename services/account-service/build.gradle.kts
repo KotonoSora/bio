@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.cache)
+    implementation(libs.jackson.module.kotlin)
     implementation(libs.logstash.encoder)
     implementation(libs.micrometer.registry.otlp)
     implementation(libs.springdoc.openapi)
