@@ -5,6 +5,10 @@
 !*.env.example
 .gradle/
 build/
+# VS Code redhat.java + kotlin-server mirror each source set into Eclipse-style
+# output folders (bin/main, bin/test, ...). They are copies, not build output;
+# real artifacts live in build/. Never track them.
+bin/
 node_modules/
 dist/
 .DS_Store
@@ -12,3 +16,5 @@ dist/
 *.iml
 .kotlin
 /data/
+
+.vscode/

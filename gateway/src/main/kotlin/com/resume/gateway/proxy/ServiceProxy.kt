@@ -1,5 +1,7 @@
 package com.resume.gateway.proxy
 
+import com.resume.gateway.security.CachedBodyRequest
+import com.resume.gateway.security.EdgeIdentity
 import com.resume.gateway.security.InternalJwtService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -22,10 +24,12 @@ import java.time.Duration
 /**
  * Server-side forwarding to the owning service (01-architecture-and-service-topology.md):
  * the client session terminates at the gateway, which mints the internal identity JWT
- * (RS256, aud=<service>, 60 s TTL) per request. Raw client headers never cross the mesh -
- * cookies and client Authorization are stripped, X-Forwarded-* and traceparent are set.
- * Upstream responses stream back untouched, including X-Accel-Redirect, which the Nginx
- * edge turns into a gated byte read (09-local-storage-and-nginx-spec.md).
+ * (RS256, aud=<service>, 60 s TTL) per request - session callers carry `sid` +
+ * `auth_time` claims from the edge identity (feature 01 D-6); raw client headers
+ * never cross the mesh (cookies and client Authorization are stripped,
+ * X-Forwarded-* and traceparent are set). Upstream responses stream back
+ * untouched, including X-Accel-Redirect, which the Nginx edge turns into a gated
+ * byte read (09-local-storage-and-nginx-spec.md).
  */
 @Service
 class ServiceProxy(
@@ -91,18 +95,29 @@ class ServiceProxy(
         headers.set("X-Forwarded-Host", req.getHeader("Host") ?: "")
         headers.set("traceparent", req.getHeader("traceparent") ?: newTraceparent())
         if (jwt.configured) {
-            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.issue(userId = subject(), audience = target.service))
+            val identity = edgeIdentity()
+            val claims = if (identity != null) {
+                mapOf<String, Any>("sid" to identity.sid, "auth_time" to identity.authTimeEpochSeconds)
+            } else {
+                emptyMap()
+            }
+            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.issue(userId = subject(), audience = target.service, extraClaims = claims))
         }
         return headers
     }
 
+    private fun edgeIdentity(): EdgeIdentity? =
+        SecurityContextHolder.getContext().authentication?.details as? EdgeIdentity
+
     private fun subject(): String {
+        edgeIdentity()?.let { return it.userId }
         val auth = SecurityContextHolder.getContext().authentication
         return if (auth != null && auth.isAuthenticated && auth !is AnonymousAuthenticationToken) auth.name else "anonymous"
     }
 
     private fun requestBody(req: HttpServletRequest): ByteArray? {
         if (req.method == "GET" || req.method == "HEAD") return null
+        if (req is CachedBodyRequest) return req.body.takeIf { it.isNotEmpty() }
         return req.inputStream.readBytes().takeIf { it.isNotEmpty() }
     }
 
@@ -131,6 +146,7 @@ class ServiceProxy(
             "host", "cookie", "authorization", "content-length", "connection", "keep-alive",
             "transfer-encoding", "te", "trailer", "upgrade", "proxy-authorization", "expect",
             "x-forwarded-for", "x-forwarded-proto", "x-forwarded-host", "x-forwarded-port", "forwarded",
+            "x-csrf-token",
         )
         private val RESPONSE_DENY = setOf(
             "connection", "keep-alive", "transfer-encoding", "content-length", "te", "trailer",

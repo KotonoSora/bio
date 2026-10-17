@@ -17,14 +17,10 @@ import java.util.Base64
 
 /**
  * Verifies the gateway-signed internal identity JWT on every request:
- * RS256, aud=<service>, 60s TTL, dual-key rotation window. Identity classes
- * are issuer-keyed: `login` sessions vs `act-as` tokens (feature 45), never
- * confused; act-as principals pass only the per-endpoint allowlist, and
- * account-level classes are denied by default. Fail-closed on any failure;
- * every denial is counted (security.auth.denied) and RFC 9457-shaped.
- *
- * Ownership scoping is server-side downstream: handlers derive user_id from
- * the JWT claims, never from request bodies. Raw client headers are never trusted.
+ * RS256, aud=account-service, 60 s TTL, dual-key rotation window. `sub=anonymous`
+ * stays unauthenticated (public initiations/callbacks); identity classes are
+ * issuer-keyed (`login` vs `act-as`, feature 45) and never confused. Fail-closed
+ * on any failure; denials are counted and RFC 9457-shaped.
  */
 class InternalJwtAuthFilter(
     private val expectedAudience: String,
@@ -39,21 +35,14 @@ class InternalJwtAuthFilter(
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val p = request.requestURI
         return p.startsWith("/health") || p.startsWith("/actuator/health") ||
-            p.startsWith("/v3/api-docs") || p.startsWith("/swagger-ui") ||
-            p == "/.well-known/jwks.json"
+            p.startsWith("/v3/api-docs") || p.startsWith("/swagger-ui") || p == "/.well-known/jwks.json"
     }
 
-    override fun doFilterInternal(
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-        chain: FilterChain,
-    ) {
-        // Dev/E0 only: ephemeral dev-user identity so empty-boot compose smoke works
-        // end to end (RLS holder, server-side scoping, and controller fallbacks agree).
-        // Production configures the JWKS-backed key and this branch is unreachable.
+    override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
+        // Dev/E0 only: ephemeral dev-user identity so empty-boot compose smoke works end to
+        // end. Production configures the platform public key and this branch is unreachable.
         if (publicKeyPem.isBlank()) {
-            val dev = UsernamePasswordAuthenticationToken("dev-user", null, listOf(SimpleGrantedAuthority("ROLE_DEV")))
-            SecurityContextHolder.getContext().authentication = dev
+            authenticate("dev-user", listOf(SimpleGrantedAuthority("ROLE_DEV")), null)
             try {
                 chain.doFilter(request, response)
             } finally {
@@ -78,26 +67,41 @@ class InternalJwtAuthFilter(
                 continue // try the next key in the rotation window
             }
             val isActAs = claims.issuer == "act-as"
-            if (isActAs && claims["act_as"]?.toString() != "true") {
-                continue // malformed second class: keep trying keys, then deny
-            }
+            if (isActAs && claims["act_as"]?.toString() != "true") continue
             if (isActAs && !actAsPolicy.allowed(request.requestURI)) {
                 deny(response, 403, "act_as_denied", "act-as not allowed here")
                 return
             }
-            val userId = claims.subject ?: claims["user_id"]?.toString() ?: "unknown"
+            val subject = claims.subject
+            if (subject.isNullOrBlank() || subject == "anonymous") {
+                // Public initiations and callbacks: verified token, no identity.
+                try {
+                    chain.doFilter(request, response)
+                } finally {
+                    SecurityContextHolder.clearContext()
+                }
+                return
+            }
             val roles = if (isActAs) {
                 listOf(SimpleGrantedAuthority("ROLE_ACT_AS"))
             } else {
                 listOf(SimpleGrantedAuthority("ROLE_SERVICE"))
             }
-            val auth = UsernamePasswordAuthenticationToken(userId, null, roles)
-            auth.details = claims
-            SecurityContextHolder.getContext().authentication = auth
-            chain.doFilter(request, response)
+            authenticate(subject, roles, claims)
+            try {
+                chain.doFilter(request, response)
+            } finally {
+                SecurityContextHolder.clearContext()
+            }
             return
         }
         deny(response, 401, "invalid_identity", "invalid internal identity")
+    }
+
+    private fun authenticate(subject: String, roles: List<SimpleGrantedAuthority>, claims: Claims?) {
+        val auth = UsernamePasswordAuthenticationToken(subject, null, roles)
+        auth.details = claims
+        SecurityContextHolder.getContext().authentication = auth
     }
 
     private fun deny(response: HttpServletResponse, status: Int, code: String, detail: String) {

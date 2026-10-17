@@ -13,9 +13,12 @@ import java.util.Date
 import java.util.UUID
 
 /**
- * Signs the internal identity JWT: RS256, aud=<service>, 60s TTL.
- * Dev/E0 auto-generates an ephemeral key when no PEM is configured.
- * Rotation uses a dual-key window (old verifies until expiry, new signs).
+ * Signs the internal identity JWT: RS256, `iss=gateway`, aud=<service>, 60 s TTL
+ * (feature 01 D-6). Session-minted tokens add `auth_time` (last SSO
+ * authentication, epoch seconds) and `sid`; step-up freshness is checked by
+ * services from the claim only (S-4). Dev/E0 auto-generates an ephemeral key
+ * when no PEM is configured. Rotation uses a dual-key window (old verifies
+ * until expiry, new signs). Act-as tokens (feature 45) use a distinct issuer.
  */
 @Service
 class InternalJwtService(
@@ -42,9 +45,9 @@ class InternalJwtService(
     fun issue(
         userId: String,
         audience: String,
-        issuer: String = "login",
+        issuer: String = "gateway",
         ttlSeconds: Long = 60,
-        extraClaims: Map<String, String> = emptyMap(),
+        extraClaims: Map<String, Any> = emptyMap(),
     ): String {
         val now = Instant.now()
         val builder = Jwts.builder()

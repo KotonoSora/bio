@@ -6,7 +6,7 @@ springDependencyManagement = "1.1.7"
 cyclonedx = "2.3.1"
 logstashEncoder = "8.1"
 archunit = "1.4.1"
-testcontainers = "1.20.4"
+testcontainers = "2.0.5"
 springdoc = "2.8.9"
 jjwt = "0.12.6"
 micrometerOtel = "1.15.1"
@@ -38,8 +38,8 @@ jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
-testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
-testcontainers-postgres = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-junit5 = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgres = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

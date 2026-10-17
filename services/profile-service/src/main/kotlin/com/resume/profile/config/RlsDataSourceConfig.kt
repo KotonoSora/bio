@@ -11,9 +11,10 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 /**
- * Every borrowed connection is RESET then SET to the server-set request user, so
- * RLS policies (`app.user_id`) hold on pooled connections. Unset user = deny.
- * Pooled state can never leak across requests: reset runs before every set.
+ * Every borrowed connection is RESET then SET to the server-set request scope, so
+ * RLS policies (`app.user_id`, `app.context`) hold on pooled connections.
+ * Unset scope = deny-by-default. Pooled state can never leak across requests:
+ * reset runs before every set.
  */
 class RlsAwareDataSource(delegate: DataSource) : DelegatingDataSource(delegate) {
     override fun getConnection(): Connection = init(super.getConnection())
@@ -25,15 +26,23 @@ class RlsAwareDataSource(delegate: DataSource) : DelegatingDataSource(delegate) 
         try {
             c.createStatement().use { st ->
                 st.execute("RESET app.user_id")
-                RlsUserHolder.get()?.let { u ->
-                    st.execute("SELECT set_config('app.user_id', '${u.replace("'", "''")}', false)")
-                }
+                st.execute("RESET app.context")
             }
+            RlsUserHolder.get()?.let { setVar(c, "app.user_id", it) }
+            RlsUserHolder.context()?.let { setVar(c, "app.context", it) }
         } catch (ex: Exception) {
             c.close()
             throw ex
         }
         return c
+    }
+
+    private fun setVar(c: Connection, name: String, value: String) {
+        c.prepareStatement("SELECT set_config(?, ?, false)").use { ps ->
+            ps.setString(1, name)
+            ps.setString(2, value)
+            ps.execute()
+        }
     }
 }
 

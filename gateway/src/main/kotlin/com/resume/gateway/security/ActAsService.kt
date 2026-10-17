@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 
 /**
  * Act-as-user identity class (feature 45 mechanism). Act-as tokens carry a
- * DISTINCT issuer (act-as) from login sessions (login) plus
+ * DISTINCT issuer (act-as) from gateway login sessions (gateway) plus
  * {act_as:true, actor, org, profile} claims with a short TTL. The gateway
  * passes them as a second identity class; services enforce a per-endpoint
  * allowlist and deny account-level classes by default. Validators key on the
