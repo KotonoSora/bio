@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 import java.security.KeyFactory
 import java.security.PublicKey
@@ -28,9 +29,11 @@ class InternalJwtAuthFilter(
     private val previousPublicKeyPem: String,
     private val actAsPolicy: ActAsPolicy,
     meters: MeterRegistry,
+    private val publicPaths: Array<String> = emptyArray(),
 ) : OncePerRequestFilter() {
 
     private val denied = meters.counter("security.auth.denied", "service", "account-service")
+    private val publicMatcher = AntPathMatcher()
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val p = request.requestURI
@@ -50,7 +53,18 @@ class InternalJwtAuthFilter(
             }
             return
         }
-        val header = request.getHeader("Authorization") ?: run {
+        val header = request.getHeader("Authorization")
+        if (header == null) {
+            // Public SSO surfaces answer for themselves (fallback 404 auth_disabled,
+            // session self-checks); identity stays required everywhere else.
+            if (publicPaths.any { publicMatcher.match(it, request.requestURI) }) {
+                try {
+                    chain.doFilter(request, response)
+                } finally {
+                    SecurityContextHolder.clearContext()
+                }
+                return
+            }
             deny(response, 401, "missing_identity", "missing internal identity")
             return
         }

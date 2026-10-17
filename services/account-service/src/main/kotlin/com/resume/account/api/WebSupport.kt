@@ -4,9 +4,11 @@ import com.resume.account.config.AccountProperties
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Component
 import java.time.Duration
 
 /** `rb_session`: HttpOnly + Secure + SameSite=Lax; server-side bounds still govern (NFR-04). */
+@Component
 class SessionCookie(private val props: AccountProperties) {
 
     fun setHeader(sid: String): String =

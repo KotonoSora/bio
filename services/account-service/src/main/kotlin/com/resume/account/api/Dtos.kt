@@ -57,4 +57,9 @@ data class ProviderView(val id: String, val label: String)
 
 data class ProviderListResponse(val providers: List<ProviderView>)
 
+/** Owner view of the provider set with link state (settings providers list). */
+data class MyProviderView(val id: String, val label: String, val linked: Boolean)
+
+data class MyProviderListResponse(val providers: List<MyProviderView>)
+
 data class EmailView(val email: String?, val emailVerified: Boolean)

@@ -1,0 +1,35 @@
+{
+  "name": "@resume-builder/mfe-account",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "mfe": {
+    "tag": "rb-account-app"
+  },
+  "scripts": {
+    "dev": "vite --port 5174",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5174",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@resume-builder/mfe-kit": "*",
+    "@resume-builder/ui": "*",
+    "i18next": "26.4.7",
+    "input-otp": "1.5.0",
+    "lucide-react": "1.58.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-i18next": "17.0.20"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.7.3",
+    "vite": "8.3.4",
+    "vitest": "5.0.5"
+  }
+}

@@ -39,7 +39,7 @@ class SecurityConfig(
 
     @Bean
     fun internalJwtAuthFilter(): InternalJwtAuthFilter =
-        InternalJwtAuthFilter(audience, publicKeyPem, previousPublicKeyPem, actAsPolicy, meters)
+        InternalJwtAuthFilter(audience, publicKeyPem, previousPublicKeyPem, actAsPolicy, meters, publicPaths())
 
     @Bean
     fun rlsUserFilter(): RlsUserFilter = RlsUserFilter()
@@ -65,6 +65,7 @@ class SecurityConfig(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/.well-known/jwks.json",
+                    "/error", // sendError error-dispatch: render the status, never re-authorize
                 ).permitAll()
                 it.requestMatchers(*publicPaths()).permitAll()
                 it.anyRequest().authenticated()

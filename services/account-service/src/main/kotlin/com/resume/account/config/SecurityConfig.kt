@@ -40,7 +40,7 @@ class SecurityConfig(
 
     @Bean
     fun internalJwtAuthFilter(): InternalJwtAuthFilter =
-        InternalJwtAuthFilter(audience, publicKeyPem, previousPublicKeyPem, actAsPolicy, meters)
+        InternalJwtAuthFilter(audience, publicKeyPem, previousPublicKeyPem, actAsPolicy, meters, publicPaths())
 
     @Bean
     fun rlsUserFilter(): RlsUserFilter = RlsUserFilter()
@@ -86,10 +86,11 @@ class SecurityConfig(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/.well-known/jwks.json",
+                    "/error", // sendError error-dispatch: render the status, never re-authorize
                 ).permitAll()
                 // SSO entry points, callbacks, recovery landing, provider list, and the
                 // `auth_disabled` probe fallback. Session-bound endpoints self-check.
-                it.requestMatchers("/api/auth/**", "/api/v1/auth/**").permitAll()
+                it.requestMatchers(*publicPaths()).permitAll()
                 it.anyRequest().authenticated()
             }
             .addFilterBefore(internalJwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
@@ -98,4 +99,6 @@ class SecurityConfig(
             .addFilterAfter(serviceRateFilter, SessionTouchFilter::class.java)
         return http.build()
     }
+
+    fun publicPaths(): Array<String> = arrayOf("/api/auth/**", "/api/v1/auth/**")
 }

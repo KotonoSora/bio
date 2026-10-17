@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.http.client.ClientHttpResponse
 import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -60,18 +61,11 @@ class ServiceProxy(
 
         try {
             val spec = client.method(method).uri(uri).headers { it.addAll(outboundHeaders(req, target)) }
-            val response = if (payload != null && method != HttpMethod.GET && method != HttpMethod.HEAD) {
-                spec.body(payload).exchange { _, upstream -> upstream }
+            if (payload != null && method != HttpMethod.GET && method != HttpMethod.HEAD) {
+                spec.body(payload).exchange { _, upstream -> relay(upstream, res) }
             } else {
-                spec.exchange { _, upstream -> upstream }
+                spec.exchange { _, upstream -> relay(upstream, res) }
             }
-            res.status = response.statusCode.value()
-            response.headers.forEach { name, values ->
-                if (name.lowercase() !in RESPONSE_DENY) values.forEach { res.addHeader(name, it) }
-            }
-            val bytes = response.body.readBytes()
-            res.setContentLength(bytes.size)
-            if (bytes.isNotEmpty()) res.outputStream.write(bytes)
         } catch (ex: RestClientException) {
             log.warn("upstream unavailable: {} {} -> {} ({})", req.method, req.requestURI, target.service, ex.message)
             problem(res, 503, "upstream_unavailable", "owning service unavailable")
@@ -80,6 +74,20 @@ class ServiceProxy(
             log.warn("upstream transport error: {} {} -> {} ({})", req.method, req.requestURI, target.service, ex.message)
             problem(res, 503, "upstream_unavailable", "owning service unavailable")
         }
+    }
+
+    /**
+     * RestClient closes the exchange response as soon as the lambda returns -
+     * the relay must copy status, headers and body inside it, never after.
+     */
+    private fun relay(upstream: ClientHttpResponse, res: HttpServletResponse) {
+        res.status = upstream.statusCode.value()
+        upstream.headers.forEach { name, values ->
+            if (name.lowercase() !in RESPONSE_DENY) values.forEach { res.addHeader(name, it) }
+        }
+        val bytes = upstream.body.readBytes()
+        res.setContentLength(bytes.size)
+        if (bytes.isNotEmpty()) res.outputStream.write(bytes)
     }
 
     private fun outboundHeaders(req: HttpServletRequest, target: RouteTable.Target): HttpHeaders {

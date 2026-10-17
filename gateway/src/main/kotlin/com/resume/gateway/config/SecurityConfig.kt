@@ -55,6 +55,7 @@ class SecurityConfig(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/.well-known/jwks.json",
+                    "/error", // sendError error-dispatch: render the status, never re-authorize
                 ).permitAll()
                 // Mesh-only namespace: never served from the public edge.
                 it.requestMatchers("/internal/v1/**").denyAll()

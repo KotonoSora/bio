@@ -17,8 +17,10 @@ awk 'NF {sub(/\r/, ""); printf "%s\\n", $0}' /tmp/idt-pub.pem > /tmp/idt-pub.env
 export INTERNAL_JWT_PRIVATE_KEY_PEM="$(cat /tmp/idt-priv.env)"
 export INTERNAL_JWT_PUBLIC_KEY_PEM="$(cat /tmp/idt-pub.env)"
 export INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM=""
-docker compose up -d --build gateway profile-service >/dev/null
-for i in $(seq 1 40); do curl -sf http://localhost:8082/health/liveness >/dev/null && break || sleep 5; done
+docker compose up -d --build gateway account-service profile-service >/dev/null
+for p in 8081 8082; do
+  for i in $(seq 1 40); do curl -sf "http://localhost:$p/health/liveness" >/dev/null && break || sleep 5; done
+done
 
 echo "== JWKS published =="
 curl -sf http://localhost:8080/.well-known/jwks.json | grep -q '"kty"' || { echo "FAIL jwks"; exit 1; }
@@ -47,6 +49,21 @@ EOF
 CODE="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $WRONG" http://localhost:8082/internal/v1/profiles/by-username/nonexistent)"
 [ "$CODE" = "401" ] || { echo "FAIL audience mismatch not denied: got $CODE"; exit 1; }
 echo "ok wrong audience denied"
+
+echo "== account-service verifies the gateway audience + session claims =="
+SESSION="$(python3 - <<'EOF'
+import time, jwt
+priv = open('/tmp/idt-priv.pem').read()
+now = int(time.time())
+print(jwt.encode({"sub": "e0-user", "sid": "e0-sid", "aud": "account-service",
+                  "iat": now, "exp": now + 60, "auth_time": now}, priv, algorithm="RS256"))
+EOF
+)"
+CODE="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $SESSION" http://localhost:8081/api/v1/me/providers)"
+[ "$CODE" = "200" ] || { echo "FAIL account audience: got $CODE"; exit 1; }
+CODE="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $WRONG" http://localhost:8081/api/v1/me/providers)"
+[ "$CODE" = "401" ] || { echo "FAIL account audience mismatch not denied: got $CODE"; exit 1; }
+echo "ok account audience verified (200 -> 401 on wrong aud)"
 
 echo "== forged token denied =="
 CODE="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer forged.token.value" http://localhost:8082/internal/v1/profiles/by-username/nonexistent)"

@@ -128,6 +128,9 @@ class IdentityService(
     fun linkedProviders(userId: String): List<LinkedAccountEntity> = links.findByUserIdOrderByLinkedAtAsc(userId)
 
     @Transactional(readOnly = true)
+    fun linkedProviderIds(userId: String): List<String> = linkedProviders(userId).map { it.providerId }
+
+    @Transactional(readOnly = true)
     fun user(userId: String): UserEntity? = users.findById(userId).orElse(null)
 
     @Transactional(readOnly = true)

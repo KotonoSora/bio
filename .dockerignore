@@ -4,8 +4,11 @@
 build/
 bin/
 node_modules/
+mfe/*/dist/
 web/dist/
 web/node_modules/
+web/public/mfe/
+web/public/mfe.manifest.json
 .env
 *.env
 !*.env.example

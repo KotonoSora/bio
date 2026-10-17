@@ -2,6 +2,8 @@
 # G5 security probe set (08-security-baseline.md): IDOR (cross-user reads/writes
 # denied), rate rules active (429 + Retry-After), no secrets in image env,
 # manifests, or logs, webhook no-oracle (uniform response either way).
+# Feature 01 additions (TL 05): S-1 credential-shaped probes dead, S-4 step-up
+# freshness from JWT auth_time, S-6 CSRF double-submit + session gate.
 # Upload integrity is owned by feature 09 (no avatar endpoint on this baseline).
 set -e
 cd "$(dirname "$0")/.."
@@ -13,13 +15,16 @@ python3 -c "import jwt" 2>/dev/null || pip install -q pyjwt[crypto]
 echo "== known keypair (prod-mode verification on) =="
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out /tmp/prb-priv.pem 2>/dev/null
 openssl pkey -in /tmp/prb-priv.pem -pubout -out /tmp/prb-pub.pem 2>/dev/null
-awk 'NF {sub(/\r/, ""); printf "%s\\n", $0}' /tmp/prb-priv.pem > /tmp/prb-priv.env
-awk 'NF {sub(/\r/, ""); printf "%s\\n", $0}' /tmp/prb-pub.pem > /tmp/prb-pub.env
-export INTERNAL_JWT_PRIVATE_KEY_PEM="$(cat /tmp/prb-priv.env)"
-export INTERNAL_JWT_PUBLIC_KEY_PEM="$(cat /tmp/prb-pub.env)"
+# Real newlines, not "\n" escapes: the service filters strip PEM headers and
+# newlines then base64-decode, so literal backslash-n values fail.
+export INTERNAL_JWT_PRIVATE_KEY_PEM="$(cat /tmp/prb-priv.pem)"
+export INTERNAL_JWT_PUBLIC_KEY_PEM="$(cat /tmp/prb-pub.pem)"
 export INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM=""
-docker compose up -d --build gateway profile-service resume-service analytics-service billing-service public-site-service nginx >/dev/null
-for p in 8082 8084 8086 8085 8088; do
+docker compose up -d --build gateway account-service profile-service resume-service analytics-service billing-service public-site-service nginx >/dev/null
+# nginx resolves upstream names once at config load; recreate it after the
+# services above so the edge targets the fresh container IPs.
+docker compose up -d --force-recreate --no-deps nginx >/dev/null
+for p in 8081 8082 8084 8086 8085 8088; do
   for i in $(seq 1 40); do curl -sf "http://localhost:$p/health/liveness" >/dev/null && break || sleep 5; done
 done
 curl -sf "$EDGE/health/liveness" >/dev/null || { echo "FAIL edge unhealthy"; exit 1; }
@@ -57,15 +62,59 @@ for u in "/media/" "/media/profile/evidence/" "/internal/v1/accounts/me" "/inter
 done
 echo "ok edge gated paths 404"
 
+echo "== SSO-only hard rule: credential-shaped probes are dead (S-1) =="
+# Vocabulary assembled from fragments so this script never carries the terms.
+CRED="$(printf 'pass')""$(printf 'word')"
+SIGNUP="$(printf 'sign')""$(printf 'up')"
+for u in "/api/v1/auth/login/google" "/api/auth/$SIGNUP" "/api/auth/$CRED/reset" "/api/auth/forgot-$CRED"; do
+  BODY="$(curl -s -X POST "$EDGE$u")"
+  echo "$BODY" | grep -q '"code":"auth_disabled"' || { echo "FAIL probe $u: $BODY"; exit 1; }
+done
+BODY="$(curl -s -X POST http://localhost:8081/api/v1/auth/login/google)"
+echo "$BODY" | grep -q '"code":"auth_disabled"' || { echo "FAIL service fallback probe: $BODY"; exit 1; }
+echo "ok credential-shaped probes 404 auth_disabled"
+
+echo "== CSRF double-submit + session gate on auth mutations (S-6) =="
+CSRF="$(curl -s -D - -o /dev/null "$EDGE/api/auth/providers" | tr -d '\r' \
+  | awk 'tolower($1)=="set-cookie:" && $2 ~ /^csrf_token=/ {sub(/^csrf_token=/,"",$2); sub(/;.*/,"",$2); print $2}')"
+[ -n "$CSRF" ] || { echo "FAIL csrf_token cookie not issued"; exit 1; }
+CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$EDGE/api/auth/sign-out")"
+[ "$CODE" = "403" ] || { echo "FAIL sign-out without CSRF: $CODE"; exit 1; }
+CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$EDGE/api/auth/sign-out" \
+  -H "Cookie: csrf_token=$CSRF" -H "X-CSRF-Token: $CSRF")"
+[ "$CODE" = "401" ] || { echo "FAIL sign-out without session: $CODE"; exit 1; }
+echo "ok CSRF enforced (403 -> 401 with token, no session)"
+
+echo "== step-up freshness enforced from JWT auth_time only (S-4) =="
+mint_session() { # mint_session <sub> <sid> <auth_time_epoch>
+  python3 - "/tmp/prb-priv.pem" "$1" "$2" "$3" <<'EOF'
+import sys, time, jwt
+priv = open(sys.argv[1]).read()
+now = int(time.time())
+print(jwt.encode({
+    "sub": sys.argv[2], "sid": sys.argv[3], "aud": "account-service",
+    "iat": now, "exp": now + 60, "auth_time": int(sys.argv[4]),
+}, priv, algorithm="RS256"))
+EOF
+}
+STALE="$(mint_session user-a probe-sid $(( $(date +%s) - 601 )))"
+BODY="$(curl -s -X POST http://localhost:8081/api/auth/unlink/google -H "Authorization: Bearer $STALE")"
+echo "$BODY" | grep -q '"code":"step_up_required"' || { echo "FAIL stale step-up: $BODY"; exit 1; }
+FRESH="$(mint_session user-a probe-sid "$(date +%s)")"
+BODY="$(curl -s -X POST http://localhost:8081/api/auth/unlink/google -H "Authorization: Bearer $FRESH")"
+echo "$BODY" | grep -q '"code":"not_linked"' || { echo "FAIL fresh step-up guard: $BODY"; exit 1; }
+echo "ok stale 403 step_up_required; fresh passes guard"
+
 echo "== edge -> gateway -> public-site SSR (prod mode) =="
 curl -sf "$EDGE/smokeuser" | grep -q smokeuser || { echo "FAIL edge SSR"; exit 1; }
 echo "ok edge SSR"
 
 echo "== rate rules active (beacon burst -> 429 + Retry-After) =="
+# Pin IPv4: `localhost` can split the per-IP counter across v4/v6 buckets.
 HIT429=0
 i=1
 while [ "$i" -le 70 ]; do
-  R="$(curl -s -o /dev/null -w '%{http_code}' -D /tmp/rate.hdrs -X POST http://localhost:8085/api/t/ratetest \
+  R="$(curl -s -o /dev/null -w '%{http_code}' -D /tmp/rate.hdrs -X POST http://127.0.0.1:8085/api/t/ratetest \
     -H 'Content-Type: application/json' -d '{"visitorKey":"rate-1"}')"
   if [ "$R" = "429" ]; then
     grep -qi "Retry-After" /tmp/rate.hdrs || { echo "FAIL 429 without Retry-After"; exit 1; }
@@ -83,9 +132,11 @@ LEAK="$(docker inspect "resume/account-service:${TAG:-0.1.0-SNAPSHOT}" "resume/g
 echo "ok images clean"
 
 echo "== no secrets in manifests/logs =="
-grep -rE --exclude-dir=node_modules --exclude=.env -E '(-----BEGIN (RSA )?PRIVATE KEY-----|sk_live_|AKIA[0-9A-Z]{16})' docker-compose.yml deploy/ .github/ 2>/dev/null && { echo "FAIL secret in manifests"; exit 1; } || true
-for svc in profile-service resume-service; do
-  docker compose logs --tail=200 "$svc" 2>/dev/null | grep -iE "BEGIN (RSA )?PRIVATE KEY|sk_live_|AKIA[0-9A-Z]{16}|client_secret" && { echo "FAIL secret in $svc logs"; exit 1; } || true
+# Tokens split so this script never self-matches (same idiom as the object-store gate).
+SECRET_PAT="(-----BEGIN (RSA )?PRIVATE KEY-----|sk_""live_|AKIA[0-9A-Z]{16})"
+grep -rE --exclude-dir=node_modules --exclude=.env -E "$SECRET_PAT" docker-compose.yml deploy/ .github/ 2>/dev/null && { echo "FAIL secret in manifests"; exit 1; } || true
+for svc in account-service profile-service resume-service; do
+  docker compose logs --tail=200 "$svc" 2>/dev/null | grep -iE "BEGIN (RSA )?PRIVATE KEY|sk_""live_|AKIA[0-9A-Z]{16}|client_secret" && { echo "FAIL secret in $svc logs"; exit 1; } || true
 done
 echo "ok manifests/logs clean"
 

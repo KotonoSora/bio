@@ -7,7 +7,9 @@ Phase 2 TL · Cross-cutting baseline. Turns the numbered spec tree into one buil
 | Path | Contents |
 |---|---|
 | `services/<service>/` | One Gradle build per service (wrapper, catalog, Dockerfile, tests); no shared source tree between services - shared code is copied or becomes a versioned internal library |
-| `web/` | React 19.3 SPA workspace (lockfile committed); built to static assets |
+| `web/` | React 19.3 SPA shell (routing, session entry, composition seam; lockfile via root workspace); built to static assets |
+| `mfe/<name>/` | One npm workspace per dashboard vertical (first: `mfe/account/`); built to versioned `entry.js` + `style.css` bundles (`10-web-micro-frontends.md`) |
+| `packages/` | Shared build-time frontend sources (`ui` design system, `mfe-kit` contract); consumed as source by shell + verticals |
 | `gateway/` | Edge gateway config + JWKS + rate rules |
 | `deploy/` | Compose slice, manifests, runbooks, `.env.example`, drill scripts |
 | `docs/` | This spec tree (numbered two-phase); code never lands without an approved spec |

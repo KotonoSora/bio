@@ -6,6 +6,7 @@ import com.resume.account.domain.IdentityService
 import com.resume.account.domain.RequestFacts
 import com.resume.account.domain.SessionService
 import com.resume.account.domain.UserView
+import com.resume.account.oauth.ProviderCatalog
 import com.resume.account.security.AccountRateLimiter
 import com.resume.account.security.AuthClaims
 import jakarta.servlet.http.HttpServletRequest
@@ -32,6 +33,7 @@ class MeController(
     private val users: IdentityService,
     private val sessions: SessionService,
     private val contactEmail: ContactEmailService,
+    private val providers: ProviderCatalog,
     private val limiter: AccountRateLimiter,
 ) {
 
@@ -40,6 +42,26 @@ class MeController(
         val (userId, _) = AuthClaims.requireSession()
         limiter.ownerRead(userId)
         return view(users.view(userId) ?: throw ApiException.unauthenticated())
+    }
+
+    /**
+     * Settings providers list: enabled providers plus any linked provider the
+     * config no longer enables, each with its link state (BA 04). Owner-scoped:
+     * the link rows read under the owner RLS predicate only.
+     */
+    @GetMapping("/providers")
+    fun providerList(): MyProviderListResponse {
+        val (userId, _) = AuthClaims.requireSession()
+        limiter.ownerRead(userId)
+        val linked = users.linkedProviderIds(userId).toSet()
+        val configured = providers.enabled().map { it.id to it.label }
+        val extras = linked
+            .filter { id -> configured.none { it.first == id } }
+            .map { it to it.replaceFirstChar(Char::uppercase) }
+        return MyProviderListResponse(
+            configured.map { (id, label) -> MyProviderView(id, label, linked = id in linked) } +
+                extras.map { (id, label) -> MyProviderView(id, label, linked = true) },
+        )
     }
 
     @GetMapping("/sessions")

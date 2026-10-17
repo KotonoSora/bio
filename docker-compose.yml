@@ -86,6 +86,10 @@ services:
       SPRING_DATA_REDIS_DATABASE: 1
       INTERNAL_JWT_PRIVATE_KEY_PEM: ${INTERNAL_JWT_PRIVATE_KEY_PEM:-}
       INTERNAL_JWT_KID: ${INTERNAL_JWT_KID:-e0-dev-key}
+      # Edge session + CSRF cookie names must match account-service (feature 01).
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-rb_session}
+      CSRF_COOKIE_NAME: ${CSRF_COOKIE_NAME:-csrf_token}
+      ACCOUNT_SERVICE_URL: http://account-service:8080
     depends_on:
       redis:
         condition: service_healthy
@@ -118,6 +122,26 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 7
       STORAGE_ROOT: /srv/uploads
+      # Cookie contract with the gateway (feature 01) + SSO registration knobs.
+      # Dev defaults keep the G3 login smoke meaningful (placeholder IdP); real
+      # client secrets arrive from vault in staging/production.
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-rb_session}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      # Gateway-signed identity verification (+ outgoing mesh credential, recovery tokens).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
+      MESH_JWT_PRIVATE_KEY_PEM: ${MESH_JWT_PRIVATE_KEY_PEM:-}
+      RECOVERY_SIGNING_KEY: ${RECOVERY_SIGNING_KEY:-}
+      OAUTH_REDIRECT_BASE_URL: ${OAUTH_REDIRECT_BASE_URL:-http://localhost}
+      GENERIC_OIDC_ENABLED: ${GENERIC_OIDC_ENABLED:-true}
+      GENERIC_OIDC_LABEL: ${GENERIC_OIDC_LABEL:-Dev SSO}
+      GENERIC_OIDC_CLIENT_ID: ${GENERIC_OIDC_CLIENT_ID:-dev-smoke-client}
+      GENERIC_OIDC_CLIENT_SECRET: ${GENERIC_OIDC_CLIENT_SECRET:-}
+      GENERIC_OIDC_AUTHORIZE_URI: ${GENERIC_OIDC_AUTHORIZE_URI:-https://idp.invalid/authorize}
+      GENERIC_OIDC_TOKEN_URI: ${GENERIC_OIDC_TOKEN_URI:-https://idp.invalid/token}
+      GENERIC_OIDC_USERINFO_URI: ${GENERIC_OIDC_USERINFO_URI:-}
+      GENERIC_OIDC_JWK_SET_URI: ${GENERIC_OIDC_JWK_SET_URI:-}
+      GENERIC_OIDC_ISSUER: ${GENERIC_OIDC_ISSUER:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/account:/srv/uploads/account
     depends_on:
@@ -154,6 +178,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 4
       STORAGE_ROOT: /srv/uploads
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/profile:/srv/uploads/profile
     depends_on:
@@ -190,6 +217,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 3
       STORAGE_ROOT: /srv/uploads
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/links:/srv/uploads/links
     depends_on:
@@ -220,6 +250,9 @@ services:
       SERVER_PORT: 8080
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 5
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     depends_on:
       redis:
         condition: service_healthy
@@ -252,6 +285,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 6
       STORAGE_ROOT: /srv/uploads
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/analytics:/srv/uploads/analytics
       # links/hit-raw repair reads (link-service writes; 09 namespace table).
@@ -290,6 +326,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 8
       STORAGE_ROOT: /srv/uploads
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/resume:/srv/uploads/resume
     depends_on:
@@ -326,6 +365,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 9
       STORAGE_ROOT: /srv/uploads
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/shop:/srv/uploads/shop
     depends_on:
@@ -361,6 +403,9 @@ services:
       SPRING_FLYWAY_PASSWORD: ${BILLING_MIGRATOR_PASSWORD:-billing_migrator_dev_only}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 10
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -395,6 +440,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 11
       STORAGE_ROOT: /srv/uploads
+      # Gateway-signed identity verification (blank = dev-user branch).
+      INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
+      INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/publish:/srv/uploads/publish
     depends_on:
