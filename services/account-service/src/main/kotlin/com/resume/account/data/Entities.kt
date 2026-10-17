@@ -69,3 +69,25 @@ class AuditEntryEntity(
     @Column(name = "at") var at: Instant = Instant.now(),
     @Column(name = "ip_class") var ipClass: String? = null,
 )
+
+/**
+ * Deletion record (feature 02; Flyway V2__deletion_requests.sql). Outlives the
+ * account: no email/name/content columns exist here (NFR-10). `user_id` is
+ * UNIQUE - cancel then re-request reuses the same row.
+ */
+@Entity
+@Table(name = "deletion_requests")
+class DeletionRequestEntity(
+    @Id var id: String = "",
+    @Column(name = "user_id") var userId: String = "",
+    /** grace | purged | cancelled (CHECK constraint enforces the set). */
+    var status: String = "grace",
+    @Column(name = "requested_at") var requestedAt: Instant = Instant.now(),
+    @Column(name = "purge_due_at") var purgeDueAt: Instant = Instant.now(),
+    @Column(name = "purge_started_at") var purgeStartedAt: Instant? = null,
+    @Column(name = "purged_at") var purgedAt: Instant? = null,
+    @Column(name = "cancelled_at") var cancelledAt: Instant? = null,
+    @Column(name = "reminder_sent_at") var reminderSentAt: Instant? = null,
+    @Column(name = "certificate_ref") var certificateRef: String? = null,
+    @Column(name = "run_id") var runId: String? = null,
+)

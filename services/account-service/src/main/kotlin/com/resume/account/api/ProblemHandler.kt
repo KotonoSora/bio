@@ -85,8 +85,11 @@ class ProblemHandler {
         "unauthenticated" -> "Authentication required"
         "throttled" -> "Too many attempts"
         "validation_failed", "email_code_invalid" -> "Check the input"
+        "confirmation_mismatch" -> "Check the confirmation"
         "email_conflict", "already_linked", "last_link_forbidden" -> "Conflict"
-        "session_not_found", "not_linked", "user_absent" -> "Not found"
+        "delete_not_requested", "purge_in_progress" -> "Conflict"
+        "purge_completed" -> "Gone"
+        "session_not_found", "not_linked", "user_absent", "deletion_not_found" -> "Not found"
         else -> ex.status.reasonPhrase
     }
 

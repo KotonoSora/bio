@@ -42,7 +42,11 @@ npm run idp:off              # restore the placeholder IdP afterwards
 once with openssl; `idp:off` blanks it again). The gateway signs the internal
 identity with it and account-service verifies it. Without the keypair the
 gateway mints no identity JWT and account-service runs its `dev-user` fallback —
-no real session can authorize `/api/v1/**`.
+no real session can authorize `/api/v1/**`. With the keypair configured the mesh
+verifiers leave their dev branch, so `idp:on` also mirrors it into
+`MESH_JWT_PRIVATE_KEY_PEM`: account-service (and profile-service) sign
+service-to-service `/internal/v1/*` calls with the same dev key, and
+`idp:off` blanks that too.
 
 How it works: `idp:on` sets `GENERIC_OIDC_AUTHORIZE_URI=http://localhost:9099/authorize`
 (browser leg) and token/JWKS URLs via `host.docker.internal` (account-service leg).
@@ -77,6 +81,30 @@ sessions. Each run uses a fresh identity, so session lists, contact-email caps,
 and resend gates stay deterministic (the mock consent page is approved once per
 session — the browser visibly visits it in headed runs). Without `idp:on` the
 suite skips; without `E2E_FULL_LOGIN=1` (default runs) it never starts.
+
+## Account deletion suite (feature 02)
+
+`tests/02-account-deletion.spec.ts` runs in the default set (no IdP): anonymous
+owner guards (`401` before anything commits) and the no-shortcut probe (internal
+purge/status/probe routes stay `404` at the edge).
+
+`tests/02-account-deletion.authenticated.spec.ts` is opt-in and dances fresh
+identities per case — A: UI gates + consequences copy, B: API guards +
+grace/restore, C: full UI journey (request -> signed-out panel -> re-login ->
+restore), D: username confirmation + held name during grace:
+
+```sh
+cd e2e
+npm run idp:on               # once (mock IdP + dev JWT keypair)
+npm run test:deletion        # headless
+npm run test:headed:deletion # visible browser
+npm run idp:off              # restore the placeholder IdP afterwards
+```
+
+Budget: 6 dances = 12 auth ops. The suite is ordered and runs `workers=1`
+because cases share identity B/D state by design; run it as its own command, a
+minute apart from `test:full`/`test:auth`. Without `idp:on` the suite skips;
+without `E2E_FULL_LOGIN=1` (default runs) it never starts.
 
 ## Limits and troubleshooting
 

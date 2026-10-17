@@ -40,7 +40,8 @@ class ProfileHandoffClient(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val misses = meters.counter("profile_handoff_miss")
-    private val cache = ConcurrentHashMap<String, Pair<HandoffStatus, Instant>>()
+    private data class Cached(val status: HandoffStatus, val username: String?, val at: Instant)
+    private val cache = ConcurrentHashMap<String, Cached>()
     private val client: RestClient = RestClient.builder()
         .requestFactory(
             JdkClientHttpRequestFactory(
@@ -49,31 +50,45 @@ class ProfileHandoffClient(
         )
         .build()
 
-    fun lookup(userId: String): HandoffStatus {
+    fun lookup(userId: String): HandoffStatus = raw(userId).first
+
+    /**
+     * Typed-confirmation expectation (feature 02 BR-01): the profile username
+     * when one exists, else null (= the literal `DELETE`). `Unknown` degrades to
+     * null - the typed value is a UX guard, never the security boundary
+     * (step-up + owner session are).
+     */
+    fun usernameOrNull(userId: String): String? = raw(userId).second
+
+    private fun raw(userId: String): Pair<HandoffStatus, String?> {
         val now = Instant.now()
         cache[userId]?.let {
-            if (it.second.plusSeconds(props.services.handoffCacheSeconds).isAfter(now)) return it.first
+            if (it.at.plusSeconds(props.services.handoffCacheSeconds).isAfter(now)) return it.status to it.username
         }
-        val status = try {
+        val status: Pair<HandoffStatus, String?> = try {
             val spec = client.get()
                 .uri("${props.services.profileBaseUrl}/internal/v1/profiles/by-user/{userId}", userId)
             outbound.authorization("profile-service")?.let { spec.header(HttpHeaders.AUTHORIZATION, it) }
             val body = spec.retrieve().body(ProfileByUser::class.java)
-            if (body?.username.isNullOrBlank()) HandoffStatus.NoProfile else HandoffStatus.HasProfile
+            if (body?.username.isNullOrBlank()) {
+                HandoffStatus.NoProfile to null
+            } else {
+                HandoffStatus.HasProfile to body.username
+            }
         } catch (ex: RestClientResponseException) {
             if (ex.statusCode == HttpStatus.NOT_FOUND) {
-                HandoffStatus.NoProfile
+                HandoffStatus.NoProfile to null
             } else {
                 log.warn("profile handoff lookup failed: {}", ex.statusCode)
                 misses.increment()
-                HandoffStatus.Unknown
+                HandoffStatus.Unknown to null
             }
         } catch (ex: Exception) {
             log.warn("profile handoff lookup failed: {}", ex.message)
             misses.increment()
-            HandoffStatus.Unknown
+            HandoffStatus.Unknown to null
         }
-        cache[userId] = status to now
+        cache[userId] = Cached(status.first, status.second, now)
         return status
     }
 }

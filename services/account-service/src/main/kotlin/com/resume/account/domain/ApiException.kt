@@ -42,5 +42,24 @@ class ApiException(
             detail = "Too many attempts. Try again in ${retryAfterSeconds}s.",
             extras = mapOf("retryAfterSeconds" to retryAfterSeconds),
         )
+
+        /** Feature 02 (BR-01): typed confirmation does not match the expected value. */
+        fun confirmationMismatch(): ApiException = ApiException(
+            status = HttpStatus.UNPROCESSABLE_ENTITY,
+            code = "confirmation_mismatch",
+            detail = "Type your username exactly (or DELETE) to continue.",
+        )
+
+        /** Feature 02: cancel without an active grace request. */
+        fun deleteNotRequested(): ApiException =
+            ApiException(HttpStatus.CONFLICT, "delete_not_requested", "There's nothing to cancel.")
+
+        /** Feature 02: purge already completed; terminal. */
+        fun purgeCompleted(): ApiException =
+            ApiException(HttpStatus.GONE, "purge_completed", "This account has already been deleted.")
+
+        /** Feature 02 (S-3): a different active run holds the account row guard. */
+        fun purgeInProgress(): ApiException =
+            ApiException(HttpStatus.CONFLICT, "purge_in_progress", "A purge run is already in progress.")
     }
 }

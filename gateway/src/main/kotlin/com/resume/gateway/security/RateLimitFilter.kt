@@ -38,6 +38,10 @@ class RateLimitFilter(
 
     private fun ruleFor(path: String): Rule? = when {
         path.startsWith("/api/v1/me/contact-email") -> Rule("cemail", 5, Duration.ofHours(1), perUser = true)
+        path.startsWith("/api/v1/account/delete-request") || path.startsWith("/api/v1/account/delete-cancel") ->
+            Rule("delact", 10, Duration.ofMinutes(1), perUser = true) // feature 02 (TL 06)
+        path.startsWith("/api/v1/account/delete-status") ->
+            Rule("delstat", 60, Duration.ofMinutes(1), perUser = true)
         path.startsWith("/api/auth/sign-in") || path.startsWith("/api/auth/callback") ->
             Rule("authip", 20, Duration.ofMinutes(1), perUser = false)
         path.startsWith("/api/auth/step-up") || path.startsWith("/api/auth/link/") ||

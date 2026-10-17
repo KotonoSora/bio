@@ -22,6 +22,12 @@ export function describeError(err: unknown): string {
         return i18n.t('errors.lastLink');
       case 'session_not_found':
         return i18n.t('errors.sessionGone');
+      case 'confirmation_mismatch':
+        return i18n.t('errors.confirmationMismatch');
+      case 'delete_not_requested':
+        return i18n.t('errors.deleteNotRequested');
+      case 'purge_completed':
+        return i18n.t('errors.purgeCompleted');
       case 'unauthenticated':
         return i18n.t('errors.sessionEnded');
       case 'auth_failed':

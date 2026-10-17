@@ -145,6 +145,17 @@ class SessionService(
             .forEach { revokeInternal(it, "session_revoke", ipClass) }
     }
 
+    /**
+     * Deletion deactivation (BR-02): every active session everywhere dies at
+     * request commit - edge keys are deleted so the gateway stops validating
+     * within the 60 s JWT bound (NFR-01) and usually immediately.
+     */
+    @Transactional
+    fun revokeAllForDeletion(userId: String, ipClass: String?) {
+        repo.findByUserIdAndRevokedAtIsNullOrderByCreatedAtAsc(userId)
+            .forEach { revokeInternal(it, "session_revoke", ipClass) }
+    }
+
     @Transactional
     fun logout(sid: String, userId: String, ipClass: String?) {
         val session = repo.findById(sid).orElse(null) ?: return

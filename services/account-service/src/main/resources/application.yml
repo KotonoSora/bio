@@ -156,6 +156,31 @@ account:
   mail:
     # log = no transport configured (dev). Codes are never logged or auto-verified.
     mode: ${ACCOUNT_MAIL_MODE:log}
+  deletion:
+    # Feature 02 (TL 01 D-4/D-6): day-30 purge, day-23 reminder, daily 03:30 UTC run.
+    grace-days: 30
+    reminder-after-days: 23
+    purge-cron: ${ACCOUNT_PURGE_CRON:0 30 3 * * *}
+    reminder-cron: ${ACCOUNT_REMINDER_CRON:0 45 3 * * *}
+    probe-cron: ${ACCOUNT_PROBE_CRON:0 0 4 * * 1}
+    # Certificate volume: ./data/uploads/account mounted rw (never served by the edge).
+    storage-root: ${STORAGE_ROOT:/srv/uploads}
+    legal-hold: ${ACCOUNT_LEGAL_HOLD:false}
+    stuck-after-hours: 24
+    participant-retries: 3
+    # Roster discipline: registered participants; account-service itself is
+    # implicit (in-process handler). Dev boot warns + counts when unreachable;
+    # strict-participants=true fails startup (production posture).
+    strict-participants: ${ACCOUNT_STRICT_PARTICIPANTS:false}
+    retention-years: ${ACCOUNT_RETENTION_YEARS:}
+    hash-buyer-email: ${ACCOUNT_HASH_BUYER_EMAIL:false}
+    participants:
+      - name: profile-service
+        base-url: ${PROFILE_SERVICE_URL:http://profile-service:8080}
+      - name: link-service
+        base-url: ${LINK_SERVICE_URL:http://link-service:8080}
+      - name: analytics-service
+        base-url: ${ANALYTICS_SERVICE_URL:http://analytics-service:8080}
 
 logging:
   pattern:

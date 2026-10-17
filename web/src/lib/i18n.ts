@@ -1,8 +1,8 @@
 // react-i18next setup for the shell (NFR-14): npm packages only — dictionaries
-// are compiled in, no backend and no hosted localization service. English is
-// the only registered language for now; vi lands when scheduled (register
-// locales/vi.ts here plus a `supportedLngs` entry — it is already
-// type-checked against `en`). Ownership stays per surface: the shell owns the
+// are compiled in, no backend and no hosted localization service. English-only
+// shipping (DEVIATION FLAGGED, owner decision 2026-10-17): the vi bundle was
+// removed; a second language would re-register here plus a `supportedLngs`
+// entry. Ownership stays per surface: the shell owns the
 // surfaces it renders (nav, sign-in entry, recovery, welcome, MFE loader); the
 // account vertical owns its own dictionary (mfe/account/src/lib/i18n.ts).
 import i18n from 'i18next';

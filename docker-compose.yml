@@ -122,6 +122,10 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 7
       STORAGE_ROOT: /srv/uploads
+      # Feature 02: purge fan-out roster (account-service is the implicit self participant).
+      PROFILE_SERVICE_URL: http://profile-service:8080
+      LINK_SERVICE_URL: http://link-service:8080
+      ANALYTICS_SERVICE_URL: http://analytics-service:8080
       # Cookie contract with the gateway (feature 01) + SSO registration knobs.
       # Dev defaults keep the G3 login smoke meaningful (placeholder IdP); real
       # client secrets arrive from vault in staging/production.
@@ -181,6 +185,9 @@ services:
       # Gateway-signed identity verification (blank = dev-user branch).
       INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
       INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
+      # Feature 02 participant: account-status parity read + events:account consumer.
+      ACCOUNT_SERVICE_URL: http://account-service:8080
+      MESH_JWT_PRIVATE_KEY_PEM: ${MESH_JWT_PRIVATE_KEY_PEM:-}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/profile:/srv/uploads/profile
     depends_on:

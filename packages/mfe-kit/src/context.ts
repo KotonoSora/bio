@@ -5,8 +5,11 @@
  * field, never remove one.
  */
 export interface MfeContext {
-  /** Shell-resolved UI locale (NFR-14: copy ships in en + vi, no negotiation). */
-  locale: 'en' | 'vi';
+  /**
+   * Shell-resolved UI locale. DEVIATION FLAGGED (owner decision, 2026-10-17):
+   * English-only shipping — the `vi` bundle and negotiation were removed.
+   */
+  locale: 'en';
   /** Navigates the shell router; `to` is router-relative (`/login?notice=expired`). */
   navigate: (to: string) => void;
 }

@@ -1,9 +1,9 @@
 // react-i18next setup for the account vertical (NFR-14): npm packages only —
 // dictionaries are compiled in, no backend and no hosted localization service.
-// English is the only registered language for now; vi lands when scheduled
-// (register locales/vi.ts here plus a `supportedLngs` entry — it is already
-// type-checked against `en`). Ownership stays per surface: the vertical owns
-// its own dictionary; the shell owns its own (web/src/lib/i18n.ts).
+// English-only shipping (DEVIATION FLAGGED, owner decision 2026-10-17): the vi
+// bundle was removed; a second language would re-register here plus a
+// `supportedLngs` entry. Ownership stays per surface: the vertical owns its own
+// dictionary; the shell owns its own (web/src/lib/i18n.ts).
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en, { type AccountResources } from './locales/en';

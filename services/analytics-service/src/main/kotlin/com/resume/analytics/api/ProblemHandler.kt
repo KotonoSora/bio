@@ -1,5 +1,6 @@
 package com.resume.analytics.api
 
+import com.resume.analytics.domain.PurgeInProgressException
 import org.slf4j.MDC
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
@@ -40,6 +41,23 @@ class ProblemHandler {
     fun handleForbidden(ex: SecurityException): ProblemDetail {
         val pd = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.message ?: "Forbidden")
         pd.setProperty("code", "foreign_profile")
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return pd
+    }
+
+    /** Feature 02 (S-3): a different active run holds the account's purge guard. */
+    @ExceptionHandler(PurgeInProgressException::class)
+    fun handlePurgeInProgress(ex: PurgeInProgressException): ProblemDetail {
+        val pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.message ?: "Conflict")
+        pd.setProperty("code", "purge_in_progress")
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return pd
+    }
+
+    @ExceptionHandler(PurgeRequestValidationException::class)
+    fun handlePurgeValidation(ex: PurgeRequestValidationException): ProblemDetail {
+        val pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.message ?: "Unprocessable")
+        pd.setProperty("code", "validation_failed")
         pd.setProperty("traceId", MDC.get("traceId") ?: "")
         return pd
     }
