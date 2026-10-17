@@ -3,13 +3,6 @@ server:
   # SIGTERM graceful shutdown: drain in-flight requests, close queue consumers.
   shutdown: graceful
   forward-headers-strategy: framework
-  servlet:
-    session:
-      cookie:
-        name: ${SESSION_COOKIE_NAME:__Host-rb_session}
-        http-only: true
-        secure: true
-        same-site: lax
 
 spring:
   lifecycle:
@@ -21,35 +14,18 @@ spring:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
       database: 1
-  security:
-    oauth2:
-      client:
-        registration:
-          # SSO-only: Google, Apple, Facebook, LinkedIn + generic OIDC. No passwords exist.
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:}
-            client-secret: ${GOOGLE_CLIENT_SECRET:}
-            scope: [openid, profile, email]
-          apple:
-            client-id: ${APPLE_CLIENT_ID:}
-            client-secret: ${APPLE_CLIENT_SECRET:}
-            scope: [openid, name, email]
-          facebook:
-            client-id: ${FACEBOOK_CLIENT_ID:}
-            client-secret: ${FACEBOOK_CLIENT_SECRET:}
-            scope: [openid, public_profile, email]
-          linkedin:
-            client-id: ${LINKEDIN_CLIENT_ID:}
-            client-secret: ${LINKEDIN_CLIENT_SECRET:}
-            scope: [openid, profile, email]
-          generic-oidc:
-            provider: generic
-            client-id: ${GENERIC_OIDC_CLIENT_ID:}
-            client-secret: ${GENERIC_OIDC_CLIENT_SECRET:}
-            scope: [openid, profile, email]
-        provider:
-          generic:
-            issuer-uri: ${GENERIC_OIDC_ISSUER:}
+
+# Edge session + CSRF contract (feature 01 D-2/D-6); SSO itself runs behind
+# account-service (`/api/auth/**`), so no OAuth2 client registration exists here.
+edge:
+  session:
+    cookie-name: ${SESSION_COOKIE_NAME:rb_session}
+    idle-days: ${SESSION_IDLE_DAYS:7}
+  csrf:
+    cookie-name: ${CSRF_COOKIE_NAME:csrf_token}
+    cookie-secure: ${SESSION_COOKIE_SECURE:true}
+  # Introspect rebuild target (edge key miss / db 2 loss); mesh DNS in compose.
+  account-service-url: ${ACCOUNT_SERVICE_URL:http://account-service:8080}
 
 management:
   endpoints:

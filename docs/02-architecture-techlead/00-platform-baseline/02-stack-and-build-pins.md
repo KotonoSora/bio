@@ -13,10 +13,11 @@ Phase 2 TL · Cross-cutting baseline for all features. Supersedes the legacy sta
 | PostgreSQL | `18.6` | Digest-pinned image; `SELECT version()` asserted at boot and in CI; conventions in `03-data-layer-conventions.md` |
 | Redis | `7.4` (digest-pinned) | Platform instance; logical-db allocation in `01-architecture-and-service-topology.md` |
 | Nginx | pinned upstream image + platform config | SPA + media static serving, edge cache, proxy to the gateway; storage rules in `09-local-storage-and-nginx-spec.md` |
-| React.js | `19.3` | SPA under `/app/*`; committed lockfile in `web/` |
+| Node.js | `24` (LTS, digest-pinned) | Frontend build + CI runtime for the shell/MFE workspaces: `node:24-alpine` in `web/` and `deploy/edge/` images, `setup-node` on the same line in CI; the major line is fixed, never floats forward |
+| React.js | `19.3` | SPA shell + MFE verticals under `/app/*` (composition: `10-web-micro-frontends.md`); committed workspace lockfile at repo root |
 | Testcontainers | current line pinned in catalog | Integration tests run against PG `18.6` + Redis `7.4` images |
 
-Patch bumps of infrastructure images (PG/Redis/Nginx) are allowed within the pinned minor line; Boot/Kotlin/Gradle bumps require a baseline amendment.
+Patch bumps of infrastructure images (PG/Redis/Nginx/Node) are allowed within the pinned minor line; Boot/Kotlin/Gradle bumps require a baseline amendment.
 
 ## Service starter set (closed)
 
@@ -44,6 +45,7 @@ Every service uses these starters only: `web`, `validation`, `data-jpa`, `securi
 ## Frontend integration
 
 - SPA routes under `/app/*` (React 19.3), served statically by the Nginx edge; same-origin only - no CORS exists.
+- Dashboard verticals are independently built micro frontends loaded at runtime (`10-web-micro-frontends.md`); each bundles its own React (no shared runtime); versioned bundles under `/app/mfe/<name>/<version>/`.
 - Session cookie (HttpOnly, Secure, SameSite) at the edge + CSRF double-submit header on mutations; services trust only the internal JWT.
 - Public pages and the micro-script are server-rendered/cached by `public-site-service` (features 10-11), never by the SPA.
 - Turnstile-class challenge wiring at the gateway for abuse-prone routes; client never holds provider keys.

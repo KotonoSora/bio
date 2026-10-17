@@ -1,0 +1,22 @@
+{
+  "name": "resume-builder-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Playwright end-to-end suite for the compose stack, through the edge (same entry as deploy/smoke.sh).",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "HEADED=1 SLOWMO=400 playwright test",
+    "test:full": "E2E_FULL_LOGIN=1 playwright test 01-account-and-access.spec.ts 01-account-and-access.full-login.spec.ts",
+    "test:headed:full": "E2E_FULL_LOGIN=1 HEADED=1 SLOWMO=400 playwright test 01-account-and-access.spec.ts 01-account-and-access.full-login.spec.ts",
+    "test:auth": "E2E_FULL_LOGIN=1 playwright test 01-account-and-access.authenticated.spec.ts",
+    "test:headed:auth": "E2E_FULL_LOGIN=1 HEADED=1 SLOWMO=400 playwright test 01-account-and-access.authenticated.spec.ts",
+    "idp:on": "sh scripts/enable-full-login.sh",
+    "idp:off": "sh scripts/disable-full-login.sh",
+    "idp:serve": "node mock-idp/server.mjs",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

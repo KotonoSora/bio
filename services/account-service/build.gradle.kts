@@ -8,13 +8,16 @@ plugins {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.security)
+    implementation(libs.spring.boot.starter.oauth2.client)
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.cache)
+    implementation(libs.jackson.module.kotlin)
     implementation(libs.logstash.encoder)
     implementation(libs.micrometer.registry.otlp)
     implementation(libs.springdoc.openapi)

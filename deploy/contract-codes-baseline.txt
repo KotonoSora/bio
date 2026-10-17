@@ -1,7 +1,14 @@
 act_as_denied
+auth_disabled
+auth_unavailable
 conflict
+csrf_invalid
+forbidden
 foreign_profile
 invalid_identity
 missing_identity
 not_found
+profile_absent
+throttled
+unauthenticated
 validation_failed

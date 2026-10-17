@@ -24,6 +24,12 @@ class ProfileService(
         repo.findByUsername(username)?.let { Result.success(it) }
             ?: Result.failure(NoSuchElementException("profile not found"))
 
+    /** Mesh handoff read (feature 01 T-10): caller runs under the `svc` RLS scope. */
+    @Transactional(readOnly = true)
+    fun byUser(userId: String): Result<Profile> =
+        repo.findByUserIdOrderByCreatedAtAsc(userId).firstOrNull()?.let { Result.success(it) }
+            ?: Result.failure(NoSuchElementException("profile not found"))
+
     @Transactional
     fun create(userId: String, username: String, displayName: String?): Result<Profile> {
         val slug = username.lowercase()

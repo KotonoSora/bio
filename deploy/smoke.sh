@@ -1,13 +1,12 @@
 #!/bin/sh
-# Smoke suite: health, edge serving (SPA + media allowlist + SSR proxy), beacon
-# 202 through the edge, owner read, login redirect (G3).
+# Smoke suite: health, edge serving (SPA + MFE assets + media allowlist + SSR
+# proxy), beacon 202 through the edge, owner read, login redirect (G3).
 # Single source used by CI, Podman parity, and local runs. Exits nonzero on failure.
 # Usage: sh deploy/smoke.sh
-# Env overrides: EDGE_URL or EDGE_HTTP_PORT (edge), GATEWAY_URL, PROFILE_URL,
+# Env overrides: EDGE_URL or EDGE_HTTP_PORT (edge), PROFILE_URL,
 # ANALYTICS_URL, PUBLICSITE_URL.
 set -e
 EDGE="${EDGE_URL:-http://localhost:${EDGE_HTTP_PORT:-80}}"
-GATEWAY="${GATEWAY_URL:-http://localhost:8080}"
 PROFILE="${PROFILE_URL:-http://localhost:8082}"
 ANALYTICS="${ANALYTICS_URL:-http://localhost:8085}"
 PUBLICSITE="${PUBLICSITE_URL:-http://localhost:8084}"
@@ -22,6 +21,14 @@ echo "ok health"
 echo "== edge serves the SPA bundle =="
 curl -sf "$EDGE/app/" | grep -q 'id="root"' || { echo "FAIL edge SPA"; exit 1; }
 echo "ok edge SPA"
+
+echo "== edge serves the MFE manifest + account bundle =="
+MFE_MANIFEST="$(curl -sf "$EDGE/app/mfe.manifest.json")" || { echo "FAIL edge mfe manifest"; exit 1; }
+MFE_ENTRY="$(printf '%s' "$MFE_MANIFEST" | python3 -c 'import json,sys; print(json.load(sys.stdin)["account"]["entry"])')" || { echo "FAIL edge mfe manifest entry"; exit 1; }
+curl -sf "$EDGE/app/$MFE_ENTRY" | grep -q 'rb-account-app' || { echo "FAIL edge mfe entry"; exit 1; }
+MFE_CSS="$(printf '%s' "$MFE_MANIFEST" | python3 -c 'import json,sys; print(json.load(sys.stdin)["account"]["css"])')" || { echo "FAIL edge mfe manifest css"; exit 1; }
+curl -sf "$EDGE/app/$MFE_CSS" | grep -q -- '--background' || { echo "FAIL edge mfe css"; exit 1; }
+echo "ok edge mfe"
 
 echo "== edge proxies public SSR to the gateway =="
 curl -sf "$EDGE/smokeuser" | grep -q smokeuser || { echo "FAIL edge SSR"; exit 1; }
@@ -49,8 +56,14 @@ curl -sf "$PROFILE/api/v1/profiles/me" >/dev/null || { echo "FAIL owner read"; e
 echo "ok owner read"
 
 echo "== login redirect (SSO entry, no password flow exists) =="
-curl -sf "$GATEWAY/api/v1/auth/login/google" 2>/dev/null | grep -q google \
-  || curl -s -o /dev/null -w '%{http_code}' "http://localhost:8081/api/v1/auth/login/google" | grep -q 200 \
-  || { echo "FAIL login redirect"; exit 1; }
-echo "ok login redirect"
+PROVIDERS="$(curl -sf "$EDGE/api/auth/providers")" || { echo "FAIL providers list"; exit 1; }
+FIRST_ID="$(printf '%s' "$PROVIDERS" | awk -F'"id":"' 'NR==1 {split($2, a, "\""); print a[1]; exit}')"
+if [ -z "$FIRST_ID" ]; then
+  echo "skip login redirect (no provider configured in this environment)"
+else
+  CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$EDGE/api/auth/sign-in/social" \
+    -d "provider=$FIRST_ID&callbackURL=/app")"
+  [ "$CODE" = "302" ] || { echo "FAIL login redirect=$CODE"; exit 1; }
+  echo "ok login redirect ($FIRST_ID -> IdP)"
+fi
 echo "PASS smoke"

@@ -5,7 +5,6 @@ import com.resume.link.security.RlsUserHolder
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
 import org.springframework.jdbc.datasource.DelegatingDataSource
 import java.sql.Connection
 import javax.sql.DataSource
@@ -39,8 +38,8 @@ class RlsAwareDataSource(delegate: DataSource) : DelegatingDataSource(delegate) 
 
 @Configuration
 class RlsDataSourceConfig(private val props: DataSourceProperties) {
+    /** Base RLS-aware pool; `ReplicaRoutingConfig` wraps it as the `@Primary` DataSource. */
     @Bean
-    @Primary
     fun rlsDataSource(): DataSource {
         val hikari = props.initializeDataSourceBuilder().type(HikariDataSource::class.java).build()
         return RlsAwareDataSource(hikari)

@@ -1,5 +1,8 @@
 name: ci
-on: [push, pull_request]
+# Manual-only: no runs on push/PR (self-hosted on VPS).
+# Trigger from the Actions tab ("Run workflow") or `gh workflow run ci`.
+on:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,26 +13,39 @@ jobs:
       - name: Wrapper checksum verification (Gradle 9.8.1 wrapper-only)
         run: 'echo "$(cat deploy/wrapper-checksum.txt)" | shasum -a 256 -c -'
       - name: Secret grep gate (.env / overrides never committed)
-        run: "! grep -rIl --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=build -E '(-----BEGIN (RSA )?PRIVATE KEY-----|sk_live_|AKIA[0-9A-Z]{16})' . || (echo 'secret hit' && exit 1)"
+        run: |
+          # Tokens split so this file never self-matches; the PEM branch is
+          # end-anchored so PEM-header-strip code is not flagged.
+          PAT='(-----BEGIN (RSA )?PRIVATE KEY-----$|sk_'"live_|AKIA[0-9A-Z]{16})"
+          ! grep -rIl --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=build -E "$PAT" . || (echo 'secret hit' && exit 1)
       - name: Object-store gate (no object-store tooling anywhere)
         run: |
           PAT="min""io|boto""3|amaz""onaws|aws-""sdk|s3:/""/"
-          ! grep -rInEi --exclude-dir=.git --exclude-dir=bin --exclude-dir=build --exclude-dir=dist --exclude-dir=node_modules --exclude-dir=drill-log --exclude-dir=gate-log --exclude-dir=releases --exclude-dir=openapi-baseline "$PAT" docker-compose.yml docker-compose.scale.yml deploy services gateway web gradle .github build.gradle.kts settings.gradle.kts || (echo "object-store hit" && exit 1)
+          ! grep -rInEi --exclude-dir=.git --exclude-dir=bin --exclude-dir=build --exclude-dir=dist --exclude-dir=node_modules --exclude-dir=drill-log --exclude-dir=gate-log --exclude-dir=releases --exclude-dir=openapi-baseline "$PAT" docker-compose.yml docker-compose.scale.yml deploy services gateway web mfe packages scripts gradle .github build.gradle.kts settings.gradle.kts package-lock.json || (echo "object-store hit" && exit 1)
       - name: Scope gate (gated backlog 48-53 + assist 16 stay design-only; SSO-only)
-        run: '! grep -rniE --exclude-dir=build "openai|anthropic|claude|ai.assist|affiliate|adserver" services/ gateway/ web/src/ || (echo "gated scope hit" && exit 1); ! grep -rnE --exclude-dir=build "PasswordEncoder|BCrypt" services/ gateway/ --include=*.kt || (echo "password flow hit (SSO-only)" && exit 1)'
+        run: '! grep -rniE --exclude-dir=build "openai|anthropic|claude|ai.assist|affiliate|adserver" services/ gateway/ web/src/ mfe/ || (echo "gated scope hit" && exit 1); ! grep -rnE --exclude-dir=build "PasswordEncoder|BCrypt" services/ gateway/ --include=*.kt || (echo "password flow hit (SSO-only)" && exit 1)'
       - name: No dynamic versions gate
         run: |
           ! grep -rn --include=*.gradle.kts --include=*.toml -E "(['\"])[0-9A-Za-z_.-]*\+(['\"])|latest\.(release|integration)" build.gradle.kts settings.gradle.kts gradle/ services/ gateway/ || (echo "dynamic version hit" && exit 1)
-      - name: Version pins asserted (Boot 4.1.1 / Kotlin 2.4.21 / PG 18.6 / Redis 7.4 / Nginx edge)
+      - name: Version pins asserted (Boot 4.1.1 / Kotlin 2.4.21 / PG 18.6 / Redis 7.4 / Nginx edge / Node.js 24)
         run: |
           grep -q 'springBoot = "4.1.1"' gradle/libs.versions.toml
           grep -q 'kotlin = "2.4.21"' gradle/libs.versions.toml
           grep -q 'postgres:18.6@sha256:' docker-compose.yml
           grep -q 'redis:7.4@sha256:' docker-compose.yml
           grep -q 'nginx:1.27-alpine@sha256:' deploy/edge/Dockerfile
+          grep -q 'node:24-alpine@sha256:' web/Dockerfile
+          grep -q 'node:24-alpine@sha256:' deploy/edge/Dockerfile
           grep -q '/srv/media:ro' docker-compose.yml
       - name: Compose slice validates (single source)
         run: docker compose config -q
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - name: Frontend gate (shell + account MFE + shared packages via npm workspaces)
+        run: |
+          npm ci
+          npm run build:web
+          npm test --workspaces --if-present
       - name: Build
         run: ./gradlew build --no-daemon
       - name: Integration tests (PG 18.6 via Testcontainers)

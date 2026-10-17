@@ -1,6 +1,8 @@
 /* PWA shell service worker: same-numbers parity across surfaces (feature 11).
-   Offline rules: network-only for /api/* (never serve stale API data);
-   cache-first for the app shell with offline fallback to cached index. */
+   Offline rules: network-only for /api/* (never serve stale API data) and for
+   the MFE manifest (deploy-fresh discovery); cache-first for the app shell
+   (versioned MFE assets are immutable and safe to cache) with offline fallback
+   to cached index. */
 const SHELL = 'rb-shell-v1';
 const SHELL_URLS = ['/app/', '/app/index.html', '/app/manifest.webmanifest'];
 
@@ -20,6 +22,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (url.pathname.startsWith('/api/')) return; // network-only for /api/*
+  if (url.pathname.endsWith('/mfe.manifest.json')) return; // deploy-fresh MFE discovery; never cache-first
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
   event.respondWith(
     caches.match(request).then(

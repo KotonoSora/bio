@@ -1,0 +1,15 @@
+{
+  "name": "resume-builder-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "web",
+    "mfe/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:mfes": "node scripts/build-mfes.mjs",
+    "build:web": "npm run build:mfes && npm run build --workspace web && node scripts/check-bundle-budget.mjs",
+    "test": "npm test --workspaces --if-present"
+  }
+}

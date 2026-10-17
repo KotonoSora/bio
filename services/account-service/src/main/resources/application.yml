@@ -1,6 +1,6 @@
 server:
   port: ${SERVER_PORT:8080}
-  # SIGTERM graceful shutdown: drain in-flight requests, close queue consumers.
+  # SIGTERM graceful shutdown: drain in-flight requests, close the sweeper.
   shutdown: graceful
 
 spring:
@@ -20,11 +20,8 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        default_schema: public
-      jakarta:
-        persistence:
-          query:
-            timeout: 5000
+        jdbc:
+          time_zone: UTC
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -36,7 +33,9 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
+      # Own keys (db 7); the edge session namespace lives in platform db 2 (D-2).
       database: 7
+      edge-database: 2
 
 management:
   endpoints:
@@ -67,9 +66,96 @@ internal:
     previous-public-key-pem: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:}
     audience: account-service
 
+# Outbound mesh credential for /internal/v1 calls (blank = dev, no header sent).
+mesh:
+  jwt:
+    private-key-pem: ${MESH_JWT_PRIVATE_KEY_PEM:}
+    kid: ${INTERNAL_JWT_KID:e0-dev-key}
+
 service:
   ratelimit:
     per-minute: ${SERVICE_RATELIMIT_PER_MINUTE:120}
+
+account:
+  auth:
+    # Same-origin relative allowlist for callbackURL/returnTo (BR-04).
+    allowed-return-prefixes: /app,/welcome,/account
+    recovery-signing-key: ${RECOVERY_SIGNING_KEY:}
+    state-ttl-seconds: 600
+  session:
+    idle-days: 7
+    absolute-days: 90
+    quota: 50
+    step-up-seconds: 600
+    cookie-name: ${SESSION_COOKIE_NAME:rb_session}
+    cookie-secure: ${SESSION_COOKIE_SECURE:true}
+    sweep-interval-ms: ${SESSION_SWEEP_INTERVAL_MS:60000}
+  oauth:
+    redirect-base-url: ${OAUTH_REDIRECT_BASE_URL:http://localhost}
+    providers:
+      # Closed provider set (BR-01): config-only additions; secrets via env/vault (S-10).
+      google:
+        enabled: ${OAUTH_GOOGLE_ENABLED:true}
+        label: Google
+        client-id: ${GOOGLE_CLIENT_ID:}
+        client-secret: ${GOOGLE_CLIENT_SECRET:}
+        scopes: openid,profile,email
+        authorize-uri: https://accounts.google.com/o/oauth2/v2/auth
+        token-uri: https://oauth2.googleapis.com/token
+        jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+        issuer: https://accounts.google.com
+        client-auth: post
+      apple:
+        enabled: ${OAUTH_APPLE_ENABLED:true}
+        label: Apple
+        client-id: ${APPLE_CLIENT_ID:}
+        client-secret: ${APPLE_CLIENT_SECRET:}
+        scopes: openid,name,email
+        authorize-uri: https://appleid.apple.com/auth/authorize
+        token-uri: https://appleid.apple.com/auth/token
+        jwk-set-uri: https://appleid.apple.com/auth/keys
+        issuer: https://appleid.apple.com
+      facebook:
+        enabled: ${OAUTH_FACEBOOK_ENABLED:true}
+        label: Facebook
+        client-id: ${FACEBOOK_CLIENT_ID:}
+        client-secret: ${FACEBOOK_CLIENT_SECRET:}
+        scopes: public_profile,email
+        authorize-uri: https://www.facebook.com/v19.0/dialog/oauth
+        token-uri: https://graph.facebook.com/v19.0/oauth/access_token
+        userinfo-uri: https://graph.facebook.com/v19.0/me?fields=id,name,email
+        subject-claim: id
+        client-auth: post
+      linkedin:
+        enabled: ${OAUTH_LINKEDIN_ENABLED:true}
+        label: LinkedIn
+        client-id: ${LINKEDIN_CLIENT_ID:}
+        client-secret: ${LINKEDIN_CLIENT_SECRET:}
+        scopes: openid,profile,email
+        authorize-uri: https://www.linkedin.com/oauth/v2/authorization
+        token-uri: https://www.linkedin.com/oauth/v2/accessToken
+        userinfo-uri: https://api.linkedin.com/v2/userinfo
+        jwk-set-uri: https://www.linkedin.com/oauth/openid/jwks
+        issuer: https://www.linkedin.com/oauth
+      generic-oidc:
+        enabled: ${GENERIC_OIDC_ENABLED:false}
+        label: ${GENERIC_OIDC_LABEL:Company SSO}
+        client-id: ${GENERIC_OIDC_CLIENT_ID:}
+        client-secret: ${GENERIC_OIDC_CLIENT_SECRET:}
+        authorize-uri: ${GENERIC_OIDC_AUTHORIZE_URI:}
+        token-uri: ${GENERIC_OIDC_TOKEN_URI:}
+        userinfo-uri: ${GENERIC_OIDC_USERINFO_URI:}
+        jwk-set-uri: ${GENERIC_OIDC_JWK_SET_URI:}
+        issuer: ${GENERIC_OIDC_ISSUER:}
+  services:
+    profile-base-url: ${PROFILE_SERVICE_URL:http://profile-service:8080}
+    billing-base-url: ${BILLING_SERVICE_URL:http://billing-service:8080}
+    entitlement-cache-seconds: 30
+    handoff-cache-seconds: 60
+    timeout-ms: 2000
+  mail:
+    # log = no transport configured (dev). Codes are never logged or auto-verified.
+    mode: ${ACCOUNT_MAIL_MODE:log}
 
 logging:
   pattern:

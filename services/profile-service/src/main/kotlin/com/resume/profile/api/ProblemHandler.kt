@@ -36,6 +36,14 @@ class ProblemHandler {
         return pd
     }
 
+    @ExceptionHandler(ProfileAbsentException::class)
+    fun handleProfileAbsent(ex: ProfileAbsentException): ProblemDetail {
+        val pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.message ?: "Not found")
+        pd.setProperty("code", "profile_absent")
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return pd
+    }
+
     @ExceptionHandler(SecurityException::class)
     fun handleForbidden(ex: SecurityException): ProblemDetail {
         val pd = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.message ?: "Forbidden")

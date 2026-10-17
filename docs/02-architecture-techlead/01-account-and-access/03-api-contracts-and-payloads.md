@@ -6,6 +6,7 @@ Phase 2 TL · Browser + internal REST contracts. Auth/rate rules: `docs/02-archi
 
 | Method & path | Auth | Success | Errors (code) |
 |---|---|---|---|
+| `GET /api/auth/providers` | anonymous | 200 `ProviderListResponse` (enabled only, config-driven) | — |
 | `POST /api/auth/sign-in/social` | anonymous, throttled | 302 to IdP (`state`+`nonce`+PKCE) | 422 `validation_failed`; 429 `throttled` |
 | `GET /api/auth/callback/{provider}?code=&state=` | anonymous | 302 to `callbackURL`/`/app`; sets `rb_session` | 302 `/auth/error` (`auth_failed`) |
 | `POST /api/auth/step-up` | session + CSRF | 302 to IdP (mode `step_up`) | 401; 429 |
@@ -13,6 +14,7 @@ Phase 2 TL · Browser + internal REST contracts. Auth/rate rules: `docs/02-archi
 | `POST /api/auth/unlink/{provider}` | session + CSRF + step-up | 204 | 403 `step_up_required`; 409 `last_link_forbidden`; 404 `not_linked` |
 | `POST /api/auth/sign-out` | session + CSRF | 204, cookie cleared | 401 `unauthenticated` |
 | `GET /api/v1/me` | session | 200 `MeResponse` | 401 |
+| `GET /api/v1/me/providers` | session | 200 `MyProviderListResponse` (enabled ∪ linked, with `linked` state) | 401 |
 | `GET /api/v1/me/sessions` | session | 200 `SessionListResponse` | 401 |
 | `DELETE /api/v1/me/sessions/{sid}` | session + CSRF | 204 | 404 `session_not_found`; 401 |
 | `DELETE /api/v1/me/sessions` | session + CSRF | 204 (all others revoked) | 401 |
@@ -34,6 +36,8 @@ Phase 2 TL · Browser + internal REST contracts. Auth/rate rules: `docs/02-archi
 ## Kotlin DTOs (source of truth for the SPA type mirror)
 
 ```kotlin
+data class ProviderView(val id: String, val label: String)
+data class ProviderListResponse(val providers: List<ProviderView>)
 data class SocialSignInRequest(val provider: String, val callbackURL: String)
 data class StepUpRequest(val returnTo: String)
 data class MeResponse(val id: String, val name: String?, val email: String?, val emailVerified: Boolean,
@@ -42,6 +46,8 @@ data class MeResponse(val id: String, val name: String?, val email: String?, val
 data class SessionSummary(val sid: String, val current: Boolean, val deviceLabel: String?, val ipClass: String?,
     val createdAt: java.time.Instant, val lastActiveAt: java.time.Instant)
 data class SessionListResponse(val sessions: List<SessionSummary>)
+data class MyProviderView(val id: String, val label: String, val linked: Boolean) // additive (G4): settings link state
+data class MyProviderListResponse(val providers: List<MyProviderView>)
 data class ContactEmailRequest(@field:Email val email: String)
 data class ContactEmailVerifyRequest(@field:Pattern(regexp = "\\d{6}") val code: String)
 data class SessionIntrospectResponse(val userId: String, val authTime: java.time.Instant, val absoluteExpiresAt: java.time.Instant)

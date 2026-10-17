@@ -5,7 +5,7 @@ Phase 2 TL · Cross-cutting baseline. Every dev and official release ships as an
 ## Image contract
 
 - Multi-stage `Containerfile`: Gradle `9.8.1` build stage (wrapper) produces the boot jar; runtime stage is Eclipse Temurin JRE 21, non-root user, minimal layers, no build tools, no secrets, no `.env` baked.
-- One image per service, one image per web bundle (static assets), plus the gateway and Nginx edge images; the platform DB/Redis/Nginx images are pinned upstream images (see `02-stack-and-build-pins.md`).
+- One image per service, one image per web build (SPA shell + versioned MFE assets), plus the gateway and Nginx edge images; the platform DB/Redis/Nginx images are pinned upstream images (see `02-stack-and-build-pins.md`).
 - Tags: `:<semver>-<gitsha>`; promotion is by digest only; `latest` never appears in staging/prod manifests; a tag without a signed release note (see `06-release-gates.md`) cannot promote.
 - Runtime: config from environment only; secrets from env/vault; stdout JSON logs; `SIGTERM` graceful shutdown (drain in-flight requests, close queue consumers); read-only root filesystem where the service allows it.
 - Health: `/health/liveness` + `/health/readiness` wired as compose/manifest healthchecks; readiness fails closed on unreachable own DB (queue/caches degrade instead where specs say so).
@@ -21,10 +21,10 @@ Phase 2 TL · Cross-cutting baseline. Every dev and official release ships as an
 | public-site-service | platform build | 8084 | Stateless (cache + purge only) |
 | analytics-service | platform build | 8085 | Owns `analytics_db` (queue consumer + rollups) |
 | resume-service | platform build | 8086 | Owns `resume_db`; archive files under `resume/archives` on the uploads volume |
-| web | platform build | 8090 (dev only) | SPA build output baked into the Nginx edge image in prod |
+| web | platform build | 8090 (dev only) | Shell + MFE build output baked into the Nginx edge image in prod |
 | postgres | `postgres:18.6` (digest) | 5432 | One logical database per service on the shared cluster image in dev; separate instances in prod |
 | redis | `redis:7.4` (digest) | 6379 | Logical dbs per `01-architecture-and-service-topology.md` |
-| nginx | pinned upstream image + platform config | 80 / 443 | Serves the React SPA bundle + `/media/*` (read-only uploads subtrees); edge cache; proxies `/api/*`, `/go/*`, `/:username` to the gateway |
+| nginx | pinned upstream image + platform config | 80 / 443 | Serves the React SPA shell + MFE bundles + `/media/*` (read-only uploads subtrees); edge cache; proxies `/api/*`, `/go/*`, `/:username` to the gateway |
 
 - `cp .env.example .env` then one compose command boots the full stack green under **both** `docker compose` and `podman-compose`; a clean-checkout boot completes within 5 minutes on the developer baseline machine.
 - Startup ordering uses healthchecks (services wait for DB readiness); drill targets (k6, fixtures) run as one-shot compose profiles - never part of the serving stack.

@@ -75,7 +75,8 @@ internal:
 
 service:
   ratelimit:
-    per-minute: ${SERVICE_RATELIMIT_PER_MINUTE:120}
+    # Beacon/telemetry class envelope (08-security-baseline): 60/min tolerated burst.
+    per-minute: ${SERVICE_RATELIMIT_PER_MINUTE:60}
 
 logging:
   pattern:
