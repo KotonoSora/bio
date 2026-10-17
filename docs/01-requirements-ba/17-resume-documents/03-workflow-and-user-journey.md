@@ -18,7 +18,7 @@ Phase 1 BA · Flows executed by `docs/02-architecture-techlead/17-resume-documen
 |---|---|---|---|---|
 | 1 | Job seeker | Opens a version | Frozen read-only view (fields locked, source rev shown) | BR-01 |
 | 2 | Job seeker | Restore as draft | Version content copied into the draft; history untouched; saving later appends vN+1 | BR-01 |
-| 3 | Job seeker | Opens a version older than 30 days, not published | Read routed to the blob archive; `archived: true` + slower-load notice stated upfront | BR-05 |
+| 3 | Job seeker | Opens a version older than 30 days, not published | Read routed to the archive file; `archived: true` + slower-load notice stated upfront | BR-05 |
 
 ## Publish, unpublish
 
@@ -42,9 +42,9 @@ Phase 1 BA · Flows executed by `docs/02-architecture-techlead/17-resume-documen
 
 | Step # | Actor/System | Trigger Action | System Response | Rules |
 |---|---|---|---|---|
-| 1 | System (daily) | Snapshots `> 30 days` and not published | Append to `resume-archives/{document_id}.ndjson` (write verified), then delete moved rows from PG | BR-05 |
+| 1 | System (daily) | Snapshots `> 30 days` and not published | Append to `resume/archives/{document_id}.ndjson` (write verified), then delete moved rows from PG | BR-05 |
 | 2 | System | Archive write fails | Nothing is deleted; retry next run; metric alerts | BR-05 |
-| 3 | Job seeker | Retrieves an archived version | Served from the blob with `archived: true`; PG holds published + recent only | BR-05 |
+| 3 | Job seeker | Retrieves an archived version | Served from the archive file with `archived: true`; PG holds published + recent only | BR-05 |
 
 ## Security probes (operator-facing)
 

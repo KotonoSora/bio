@@ -1,6 +1,6 @@
 # Short Links - Acceptance Criteria (feature 29)
 
-Phase 1 BA · BDD form. Every AC runs in the drill suite (task T-16 of `docs/02-architecture-techlead/29-short-links/05-step-by-step-implementation-plan.md`).
+Phase 1 BA · BDD form. Every AC runs in the drill suite (task T-16 of `docs/02-architecture-techlead/29-short-links/06-step-by-step-implementation-plan.md`).
 
 | AC ID | Scenario | Given | When | Then |
 |---|---|---|---|---|

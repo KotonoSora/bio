@@ -1,6 +1,6 @@
 # Earnings Dashboard - Security, Logging, and Rate Limiting (feature 15)
 
-Phase 2 TL · BA sources: `docs/01-requirements-ba/15-earnings-dashboard/` (BR-01, BR-04..BR-10). Baseline controls: `docs/02-architecture-techlead/00-platform-baseline/`; inherited read controls: `docs/02-architecture-techlead/12-profile-analytics/06-security-logging-and-rate-limiting.md`; entitlement pattern: `docs/02-architecture-techlead/13-audience-insights/05-security-logging-and-rate-limiting.md` (S-4); live separation: `docs/02-architecture-techlead/14-realtime-global/05-security-logging-and-rate-limiting.md`.
+Phase 2 TL · BA sources: `docs/01-requirements-ba/15-earnings-dashboard/` (BR-01, BR-04..BR-10). Baseline controls: `docs/02-architecture-techlead/00-platform-baseline/`; inherited read controls: `docs/02-architecture-techlead/12-profile-analytics/07-security-logging-and-rate-limiting.md`; entitlement pattern: `docs/02-architecture-techlead/13-audience-insights/05-security-logging-and-rate-limiting.md` (S-4); live separation: `docs/02-architecture-techlead/14-realtime-global/05-security-logging-and-rate-limiting.md`.
 
 ## Controls
 

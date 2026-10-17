@@ -17,7 +17,7 @@ DEVIATION FLAGGED (first use): the legacy verdict "monolith with async in-proces
 ## In scope
 
 - Public beacon `POST /api/t/:username` (view / click / banner / prompt events): edge challenge + rate rules, 10-minute dedupe, crawler denylist, zero PG writes in the handler.
-- Queue + hourly rollup into `profile_views` and `link_clicks`; raw NDJSON archive (90-day TTL) in blob storage.
+- Queue + hourly rollup into `profile_views` and `link_clicks`; raw NDJSON archive (90-day TTL) on the local storage volume.
 - Owner reads: `GET /api/v1/analytics/overview|links?range=` with plan clamping, period deltas, daily series, per-link table, source/country groups.
 - Dashboard overview tab (`/app/analytics/overview`): widgets, range picker, lag honesty, empty/degraded/error states, locked realtime teaser.
 - Ops surfaces: lag, abuse, rejection metrics; k6 soak gate.
@@ -42,7 +42,7 @@ DEVIATION FLAGGED (first use): the legacy verdict "monolith with async in-proces
 |---|---|---|---|
 | Q-01 | Crawler filtering | denylist default-on, counted (`beacon.rejected{bot}`) not stored; no UI toggle | provenance demand from creators |
 | Q-02 | UTM depth | captured and forwarded to audience tables (feature 13); not stored in 12 | 13's UTM grain ships |
-| Q-03 | Raw archive write timing | batched at the hour drain (one object per drain) | forensic latency need < 1 h |
+| Q-03 | Raw archive write timing | batched at the hour drain (one file per drain) | forensic latency need < 1 h |
 | Q-04 | Geo grain | country only, from the edge header; the legacy "city" label read `cf-ipcountry`, a country header — grain now stated honestly as country | geo enrichment provider contracted |
 
 Related specs: beacon event types `docs/02-architecture-techlead/11-deep-links-and-pwa/03-api-contracts-and-payloads.md`; public envelope `docs/02-architecture-techlead/10-share-and-seo/01-architecture-and-tech-stack.md`; resolve + blocks internal reads `docs/02-architecture-techlead/06-public-profile/03-api-contracts-and-payloads.md`, `docs/02-architecture-techlead/08-link-blocks/03-api-contracts-and-payloads.md`; plan windows and prune job `docs/01-requirements-ba/13-audience-insights/`.

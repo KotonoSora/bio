@@ -15,8 +15,8 @@ Phase 1 BA · Enforced by `docs/02-architecture-techlead/42-publish-composer/`. 
 
 ## Business rules
 
-- **BR-01 Media gates (pre-queue, hard).** Video only v1: ≤ 3 min duration, ≤ 300 MB, closed codec/container allowlist (MP4/H.264 baseline); anything else rejected with the specific reason, never transcoded server-side. Magic-byte verification + MinIO server-generated random keys; poster-frame thumbnail default, optional custom upload under the same gates.
-- **BR-02 Upload.** MinIO multipart with server-issued parts (resumable for 300 MB mobile files); no client-chosen object paths; incomplete uploads expire unpublishable.
+- **BR-01 Media gates (pre-queue, hard).** Video only v1: ≤ 3 min duration, ≤ 300 MB, closed codec/container allowlist (MP4/H.264 baseline); anything else rejected with the specific reason, never transcoded server-side. Magic-byte verification + server-generated random file names; poster-frame thumbnail default, optional custom upload under the same gates.
+- **BR-02 Upload.** Chunked upload to the local storage volume with server-issued parts (resumable for 300 MB mobile files); no client-chosen file paths; incomplete uploads expire unpublishable.
 - **BR-03 Caption.** Single 2,200-char composer box; per-network trims/overrides stored in `caption_json`; X/Threads show explicit counters; hashtags/mentions are plain text v1 (no entity APIs).
 - **BR-04 Targets.** Network × account from healthy connections only; dead connections unselectable with one-click reconnect; default target set = all healthy connections ("Post to All").
 - **BR-05 Scheduling.** Send-now or `run_at` (timezone-explicit, Asia/Ho_Chi_Minh default); drafts; edit/reschedule until the 5-minute dispatch lock (stated in-UI); cancel anytime pre-lock. Past-due dispatch (outage) delivers late with a `late` flag + creator notice — never silent, never dropped.

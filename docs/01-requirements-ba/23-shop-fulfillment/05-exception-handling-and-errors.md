@@ -4,7 +4,7 @@ Phase 1 BA · Codes are stable; UI copy localizes vi/en.
 
 | Scenario | Path Type | System Handling | Displayed Error Message |
 |---|---|---|---|
-| Artwork over 20 MB | API | 422 `artwork_too_large`; no blob write | "Artwork must be 20 MB or smaller." |
+| Artwork over 20 MB | API | 422 `artwork_too_large`; no file write | "Artwork must be 20 MB or smaller." |
 | Artwork fails magic-byte (incl. SVG/HTML) | API | 422 `artwork_bad_type` | "Upload a PNG, JPEG, WebP, or PDF." |
 | File over 500 MB | API | 422 `file_too_large` | "Files must be 500 MB or smaller." |
 | Scriptable/fake-mime file | API | 422 `file_bad_type`; allowlist only | "This file type isn't allowed." |

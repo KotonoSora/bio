@@ -10,7 +10,7 @@ Phase 1 BA · Quantified thresholds enforced in `docs/02-architecture-techlead/1
 | NFR-04 | Re-scan job | Weekly (Sunday 04:40 UTC); `<= 10 min` for `<= 50k` published rows; hit -> flag + metric, no auto-action |
 | NFR-05 | Moderation SLA | Takedown hides gallery-wide `<= 60 s` end-to-end (event purge + edge TTL); reporter identity never surfaces |
 | NFR-06 | Layout bounds | `layout_json <= 64 KB`; sections `<= 20`; name `<= 120`; tokens from allowlists only |
-| NFR-07 | Thumbnails | Auto placeholder renders; `<= 100 KB` each; random blob keys; no user content (upload route absent by design) |
+| NFR-07 | Thumbnails | Auto placeholder renders; `<= 100 KB` each; random file names; no user content (upload route absent by design) |
 | NFR-08 | Print parity | Shared formats print through the feature 18 pipeline; Chrome/Safari/Firefox/Edge preview fixtures per release |
 | NFR-09 | Attribution freshness | Live link resolution `<= 30 s` stale bound (profile resolve cache); frozen string immutable forever once account is hidden/purged |
 | NFR-10 | Audit | Publish, unpublish, clone, report intake, ops removal: append-only, 24-month retention, actor + reason for ops |

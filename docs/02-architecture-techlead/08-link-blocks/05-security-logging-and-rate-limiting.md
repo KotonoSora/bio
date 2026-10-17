@@ -39,7 +39,7 @@ Phase 2 TL · Implements `BR-01`..`BR-05`, `BR-08`, `BR-12` and the security row
 | Event bus down | mutation commits; purge heals via 60 s TTL (<= 2 min freshness) |
 | Sanitizer/validator exception | write rejected (fail closed); no unsanitized row can persist |
 | Reorder contention | requests serialize per profile (row lock); timeout -> 409-style retry advice, positions untouched |
-| Blob store down | thumbnail upload blocked in feature 09 pipeline; block saves with existing/no `thumbnailKey` unaffected |
+| Storage volume down | thumbnail upload blocked in feature 09 pipeline; block saves with existing/no `thumbnailKey` unaffected |
 
 ## Threat checklist
 

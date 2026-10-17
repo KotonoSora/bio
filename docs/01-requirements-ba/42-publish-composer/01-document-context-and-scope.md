@@ -4,7 +4,7 @@ Phase 1 BA · Feature 42 of 53 — publish/automate 2/4. "Post everywhere" as on
 
 ## Context
 
-Publishing is the least reliable input in the product: seven foreign APIs with seven moods. This feature makes partial failure a first-class visible state — "5 of 7 published, here are the two legs and why" — never a spinner that lies, never a silent 6-of-7. The legacy worker/queue model (`SCHEDULER` + `POST_QUEUE`, R2) maps to the mandated stack: Redis Streams with consumer groups (baseline 03), MinIO multipart for media, in-service worker pools behind `DispatchPort`. The legacy monolith-vs-split debate is superseded: the service boundary is fixed; further extraction of fan-out workers requires a spec amendment per the baseline's doctrine.
+Publishing is the least reliable input in the product: seven foreign APIs with seven moods. This feature makes partial failure a first-class visible state — "5 of 7 published, here are the two legs and why" — never a spinner that lies, never a silent 6-of-7. The legacy worker/queue model (`SCHEDULER` + `POST_QUEUE`, R2) maps to the mandated stack: Redis Streams with consumer groups (baseline 03), resumable local media uploads to the storage volume, in-service worker pools behind `DispatchPort`. The legacy monolith-vs-split debate is superseded: the service boundary is fixed; further extraction of fan-out workers requires a spec amendment per the baseline's doctrine.
 
 ## Objectives
 
@@ -21,7 +21,7 @@ Publishing is the least reliable input in the product: seven foreign APIs with s
 
 ## Scope
 
-In scope (SC-01..SC-08): media intake gates + MinIO multipart; caption mapping + per-network trims; target selection; schedule/cancel/reschedule + lock; calendar reads; quota accounting; dispatch scheduler + fan-out consumers + status polling; per-target status + retry + confirm gate; outage pause/resume + poison quarantine; ops console; E4 gate audit.
+In scope (SC-01..SC-08): media intake gates + resumable uploads; caption mapping + per-network trims; target selection; schedule/cancel/reschedule + lock; calendar reads; quota accounting; dispatch scheduler + fan-out consumers + status polling; per-target status + retry + confirm gate; outage pause/resume + poison quarantine; ops console; E4 gate audit.
 
 Out of scope: connections vault (41); automations, contacts, DMs (43/44); image/carousel/text posts (v1 is video-only); server-side transcoding (named v2 candidate, never v1); broadcast campaigns (gated 48–53); agency publishing (45–47).
 
@@ -38,7 +38,7 @@ Out of scope: connections vault (41); automations, contacts, DMs (43/44); image/
 
 | # | Question (source) | Resolution |
 |---|---|---|
-| Q-01 | Upload protocol (42 Q1 / publish-automate Q1) | MinIO multipart with server-issued parts (S3-compatible); resumable client; no client-chosen object keys |
+| Q-01 | Upload protocol (42 Q1 / publish-automate Q1) | Chunked upload to the local storage volume with server-issued parts; resumable client; no client-chosen file paths |
 | Q-02 | First split (publish-automate Q2) | Superseded: service boundary fixed; workers in-service behind `DispatchPort`; extraction needs a spec amendment |
 | Q-03 | Server-side transcode in v2 (42 Q2) | Named as the v2 pipeline candidate; v1 rejects non-allowlisted media with the reason, never transcodes |
 | Q-04 | Ambiguous-timeout UX (fanout Q1) | Poll-then-ask: reconcile with the provider first; only if unverifiable does the `unknown — confirm before repost` gate appear |

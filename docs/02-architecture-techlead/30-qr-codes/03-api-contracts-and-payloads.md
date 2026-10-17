@@ -1,6 +1,6 @@
 # QR Codes - API Contracts and Payloads (feature 30)
 
-Phase 2 TL · Endpoints in `link-service`; ops routes follow feature 29's `ROLE_OPS` re-verified convention. Security: `docs/02-architecture-techlead/30-qr-codes/05-security-logging-and-rate-limiting.md`.
+Phase 2 TL · Endpoints in `link-service`; ops routes follow feature 29's `ROLE_OPS` re-verified convention. Security: `docs/02-architecture-techlead/30-qr-codes/06-security-logging-and-rate-limiting.md`.
 
 ## Endpoint map
 
@@ -56,7 +56,7 @@ data class QrPackResponse(val packRef: String, val renders: List<QrRenderView>, 
 | `MIGRATION.md` | service rows mirrored; rows 30/31 `done`; batch 8 complete |
 | `docs/02-architecture-techlead/12-profile-analytics/` | Redis row gains `links.hits`; V3 inventory note |
 | `docs/02-architecture-techlead/29-short-links/02-database-schema-design.md` | raw-archive row clarified (written at resolve; repaired by 31) |
-| `docs/02-architecture-techlead/02-account-deletion/` | link-service purge row gains QR rows + `qr-renders/` objects |
+| `docs/02-architecture-techlead/02-account-deletion/` | link-service purge row gains QR rows + `links/qr/` files |
 
 ## Governance
 

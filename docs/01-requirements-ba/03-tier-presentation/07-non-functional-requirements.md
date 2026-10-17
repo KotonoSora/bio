@@ -4,7 +4,7 @@ Phase 1 BA · Quantified thresholds enforced in `docs/02-architecture-techlead/0
 
 | NFR ID | Area | Requirement |
 |---|---|---|
-| NFR-01 | Pricing page latency | Public, cache-first: served p95 `<= 300 ms` TTFB from edge cache + CDN; origin fallback `<= 500 ms`; no per-request catalog call on cache hit |
+| NFR-01 | Pricing page latency | Public, cache-first: served p95 `<= 300 ms` TTFB from the Nginx edge cache; origin fallback `<= 500 ms`; no per-request catalog call on cache hit |
 | NFR-02 | Claim freshness | A config/catalog change is visible on the pricing page within `<= 5 min` (cache TTL); drift test runs in CI `<= 1 min` |
 | NFR-03 | Plan read latency | `GET /api/v1/plan` p95 `<= 100 ms` (snapshot + optional projection, cached) |
 | NFR-04 | Money exactness | All amounts VND integers end-to-end; yearly math exact to the VND; display never rounds away a dong |

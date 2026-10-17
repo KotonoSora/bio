@@ -22,7 +22,7 @@ Bulk minting is not an endpoint in v1: it runs as an audited ops job (task T-14)
 | Event | Queue `links` | Payload (JSON) | Consumer |
 |---|---|---|---|
 | `link.hit.v1` | `hits` (stream `links.hits`) | `code, ts, ipHash, ipHashSaltId, refererHost, userAgentClass, country, purposeHint?` | feature 31 (analytics) |
-| `link.suspended.v1` | `purge` | `code, at, reason` | cache purge (link-service self + CDN purge hook) |
+| `link.suspended.v1` | `purge` | `code, at, reason` | cache purge (link-service self + Nginx edge purge hook) |
 
 Rules: events are emitted after the response decision; `ipHash` = salted SHA-256 with 24 h window rotation; no full URLs, no raw IPs, no user identifiers on the hit stream (BR-10, NFR security row). `purposeHint` (feature 31 filter input) carries the prefetch/prerender hint when the request declared one.
 
@@ -41,7 +41,7 @@ Inbound (feature 20 extension): `username.renamed.v1` -> rewrite `destination` f
 | `throttled` | 429 | rate limit hit | BA 05 |
 | `generation_unavailable` | 503 | 5 collision retries exhausted | BA 05 |
 | `blocklist_unavailable` | 503 | safety dependency down; fail closed | BA 05 |
-| `unauthorized` / `forbidden` | 401 / 403 | session or role missing | `06-security-logging-and-rate-limiting.md` |
+| `unauthorized` / `forbidden` | 401 / 403 | session or role missing | `07-security-logging-and-rate-limiting.md` |
 
 ## Contract governance
 

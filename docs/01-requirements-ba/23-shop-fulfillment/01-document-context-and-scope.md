@@ -12,7 +12,7 @@ Two fulfillment lanes behind the uniform catalog: merch sells with zero inventor
 |---|---|
 | O-1 | Merch: creator uploads/versions artwork, pins a design version to a product, and every paid order dispatches exactly one print job to the partner. |
 | O-2 | Partner status flows back through verified, queue-mediated callbacks: `pending_print → printing → shipped → delivered | failed | cancelled`. |
-| O-3 | Digital: paid grant → entitlement → per-request single-use signed URLs; windows 30 days + 5 fetches, creator-extendable. |
+| O-3 | Digital: paid grant → entitlement → per-request single-use download grants; windows 30 days + 5 fetches, creator-extendable. |
 | O-4 | Paywall: SSR preview indexable; locked body unlocks only after the server-side entitlement check. |
 | O-5 | No-inventory invariant: zero stock counts, zero invented SLAs, every date labeled partner-provided. |
 
@@ -28,7 +28,7 @@ Two fulfillment lanes behind the uniform catalog: merch sells with zero inventor
 
 ## In scope
 
-Merch design uploads + versioning; template/variant matrix; print-job dispatch + status trail + reprint/cancel rules; partner adapter interface; digital file upload/version/publish; entitlements + signed-URL minting; paywall preview/locked rendering; courtesy extensions; anomaly flagging; purge + buyer-side ship-to scrub.
+Merch design uploads + versioning; template/variant matrix; print-job dispatch + status trail + reprint/cancel rules; partner adapter interface; digital file upload/version/publish; entitlements + download-grant minting; paywall preview/locked rendering; courtesy extensions; anomaly flagging; purge + buyer-side ship-to scrub.
 
 ## Out of scope
 

@@ -1,6 +1,6 @@
 # Shop Fulfillment - API Contracts and Payloads (feature 23)
 
-Phase 2 TL · Endpoints in `shop-service`; forward money events consumed from 32-40. RFC 9457 problem bodies; auth/rate rules: `docs/02-architecture-techlead/23-shop-fulfillment/05-security-logging-and-rate-limiting.md`.
+Phase 2 TL · Endpoints in `shop-service`; forward money events consumed from 32-40. RFC 9457 problem bodies; auth/rate rules: `docs/02-architecture-techlead/23-shop-fulfillment/06-security-logging-and-rate-limiting.md`.
 
 ## Endpoint map
 

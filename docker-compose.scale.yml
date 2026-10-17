@@ -1,0 +1,40 @@
+# Scale overlay (07-scale-out.md). Additive only: replicas for stateless and
+# cache-first paths, load-balanced for gate runs. The base slice stays the
+# serving contract; this overlay is for E5 load runs (numbers are targets until
+# the E3 100k-mixed gate passes).
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.scale.yml up -d --build --scale public-site-service=3 --scale link-service=3 --scale analytics-service=2
+#   SCALE=1 sh deploy/drill-load.sh   # k6 targets the LB entrypoints
+#
+# Host ports are stripped here (!reset needs compose v2.24+): the LB is the only
+# entry in scale mode. Direct-port smoke/drills run against the base slice.
+services:
+  public-site-service:
+    ports: !reset []
+  link-service:
+    ports: !reset []
+  analytics-service:
+    ports: !reset []
+
+  lb:
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    volumes:
+      - ./deploy/lb-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "${LB_PUBLIC_SITE_PORT:-8184}:8184"
+      - "${LB_LINK_PORT:-8183}:8183"
+      - "${LB_ANALYTICS_PORT:-8185}:8185"
+    depends_on:
+      public-site-service:
+        condition: service_healthy
+      link-service:
+        condition: service_healthy
+      analytics-service:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /run
+      - /tmp
+    networks: [platform]

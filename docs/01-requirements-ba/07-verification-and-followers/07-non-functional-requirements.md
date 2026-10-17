@@ -16,7 +16,7 @@ Phase 1 BA · Thresholds are v1 gates; changing one requires a spec revision wit
 ## Freshness and scheduling
 
 - Auto counts: 24 h scheduled refresh per profile, per-network budget `<= 1 req/s` sustained; on-demand refresh rate-limited to 6/h/user; failures keep last-good + `stale`.
-- Evidence: single file <= 10 MB; upload presign TTL 10 min; viewer URLs TTL <= 10 min, sandboxed origin.
+- Evidence: single file <= 10 MB; upload-grant TTL 10 min; viewer grants TTL <= 10 min, sandboxed origin.
 
 ## Scale and availability
 
@@ -26,7 +26,7 @@ Phase 1 BA · Thresholds are v1 gates; changing one requires a spec revision wit
 
 ## Security and masking
 
-- Evidence bytes never leave the ops path: random blob keys, presigned short-TTL URLs, sandboxed viewer; never rendered inline; never logged.
+- Evidence bytes never leave the ops path: server-random file names, short-TTL download grants, sandboxed viewer; never rendered inline; never logged.
 - Counts and badges are public by design; rejection reasons and reviewer identities are owner/ops-only.
 - Rate limits: `verify-request` 3/day/user + Turnstile; `followers/refresh` 6/h/user; `PUT socials` 30/h/user; ops decisions 120/h/reviewer.
 - Audit: every decide append-only with actor + reason, retained 24 months; near-match flags are advisory (no auto-block).

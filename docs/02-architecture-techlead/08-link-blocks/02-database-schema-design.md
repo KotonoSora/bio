@@ -48,7 +48,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON profile.profile_blocks TO app_role;
 | Window CHECK | `until > from` when both set | prevents never-visible rows that confuse creators and waste SSR reads |
 | `b_public` policy | `is_visible = TRUE` only | RLS cannot see per-row `now()` windows cheaply; the SSR/internal query adds the window predicate explicitly |
 | Logical refs | `payload_json.documentId` (resume) and product/course/tip ids (feature 22) | cross-module references by id only, never cross-schema FKs |
-| Thumbnails | `thumbnailKey` opaque blob key inside `payload_json` | asset pipeline owned by feature 09 |
+| Thumbnails | `thumbnailKey` opaque storage file name inside `payload_json` | asset pipeline owned by feature 09 |
 
 Indexes: `idx_blocks_profile_pos` serves the ordered public read (whole page, one scan) and dashboard lists; `idx_blocks_user` serves owner writes. No trigram/full-text in v1.
 

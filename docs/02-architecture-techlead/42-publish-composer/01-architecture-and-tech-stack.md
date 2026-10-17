@@ -23,7 +23,7 @@ Worker pools run in-service behind `DispatchPort` (extraction seam per baseline 
 | D-7 | Retry classes in the worker: transient (rate-limit/5xx) auto with backoff ≤ 5 attempts; permanent (auth/policy/media) terminal with fix guidance; manual retry eligibility checked server-side | Honest recovery (BR-12) |
 | D-8 | Outage: per-network pause flag in `publish.policy`-adjacent ops state (own `ops_config` document `publish.network_pause`); dispatch reads fresh (≤ 5 s); resume replays in `run_at` order | Ops control without redeploys |
 | D-9 | Quota: one SQL counting function backs gate, meter, and reconciliation; free 10 lifetime (`quota_counted_at` on first success; retried-once counts once); pro 30-day rolling from `quota_counted_at` history + velocity guardrails | One source of truth (BR-07) |
-| D-10 | Media: MinIO multipart, server-issued parts; magic-byte verification; object keys server-random; preview URLs signed ≤ 15 min; no transcode path exists in v1 | Gates before queue (BR-01/BR-02) |
+| D-10 | Media: resumable chunked upload to the uploads volume, server-issued parts; magic-byte verification; file names server-random; preview grants ≤ 15 min; no transcode path exists in v1 | Gates before queue (BR-01/BR-02) |
 | D-11 | Config: `publish.policy` {`lockMinutes` 5, `targetDeadlineMinutes` 15, `conflictWindowMinutes` 60} + `publish.quotas` {`freeLifetimePosts` 10, `freeConnectionCap` 1, `proConnectionCap` 10, …} in own `ops_config` | Audited 5 s flips |
 | D-12 | E4 gate: release-gate audit greps E0–E3 images for zero publish tables/jobs/endpoints | Legacy P4 gate mechanized |
 

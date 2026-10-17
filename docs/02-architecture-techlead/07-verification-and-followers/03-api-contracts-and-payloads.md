@@ -1,12 +1,12 @@
 # Verification Badge and Follower Display - API Contracts and Payloads (feature 07)
 
-Phase 2 TL · Dashboard, ops, and public payload changes. Auth and rate rules: `05-security-logging-and-rate-limiting.md`. JSON only; problem bodies follow RFC 9457 (model of `docs/02-architecture-techlead/06-public-profile/03-api-contracts-and-payloads.md`).
+Phase 2 TL · Dashboard, ops, and public payload changes. Auth and rate rules: `06-security-logging-and-rate-limiting.md`. JSON only; problem bodies follow RFC 9457 (model of `docs/02-architecture-techlead/06-public-profile/03-api-contracts-and-payloads.md`).
 
 ## Endpoint map
 
 | Method & path | Auth | Request | Success | Errors (code) |
 |---|---|---|---|---|
-| `POST /api/v1/profile/verify-evidence/presign` | session | file metadata (mime, size) | 200 `EvidencePresignResponse` | 422 `validation_failed` |
+| `POST /api/v1/profile/verify-evidence/upload-grant` | session | file metadata (mime, size) | 200 `EvidenceUploadGrant` | 422 `validation_failed` |
 | `POST /api/v1/profile/verify-request` | session + CSRF + Turnstile | `VerifyRequestRequest` | 201 `{status: pending}` | 409 `verify_already_pending`; 422 `validation_failed` |
 | `GET /api/v1/profile/verify-status` | session | - | 200 `TrustStatusResponse` | 401 |
 | `PUT /api/v1/profile/socials` | session + CSRF | `SocialsUpdateRequest` | 200 `SocialsResponse` | 422 `bad_social_url`, `bad_handle`, `follower_count_capped`, `validation_failed`; 429 |
@@ -20,7 +20,7 @@ Phase 2 TL · Dashboard, ops, and public payload changes. Auth and rate rules: `
 ```kotlin
 enum class VerificationStatus { NONE, PENDING, VERIFIED, REJECTED, REVOKED }
 
-data class EvidencePresignResponse(val key: String, val uploadUrl: String, val expiresAt: java.time.Instant)
+data class EvidenceUploadGrant(val fileName: String, val uploadUrl: String, val expiresAt: java.time.Instant)
 data class VerifyRequestRequest(@field:NotBlank val evidenceKey: String)
 data class TrustStatusResponse(
     val status: VerificationStatus, val decidedAt: java.time.Instant?,

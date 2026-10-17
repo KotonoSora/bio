@@ -1,6 +1,6 @@
 # Lead Search - API Contracts and Payloads (feature 28)
 
-Phase 2 TL · Endpoints in `profile-service`; forward seams to orders (32-40), bookings (25), automation (41-44), the monetize batch, and agency seats (45-47). Security: `docs/02-architecture-techlead/28-lead-search/05-security-logging-and-rate-limiting.md`.
+Phase 2 TL · Endpoints in `profile-service`; forward seams to orders (32-40), bookings (25), automation (41-44), the monetize batch, and agency seats (45-47). Security: `docs/02-architecture-techlead/28-lead-search/06-security-logging-and-rate-limiting.md`.
 
 ## Endpoint map
 
@@ -42,7 +42,7 @@ data class ExportJobView(val id: String, val status: String, val rowCount: Int?,
 
 - Count discipline (BR-04): `LeadSearchPage.count` and the export `rowCount` derive from the same predicate builder; `mode=ids` freezes the checked list.
 - CSV columns (fixed order, BR-11): `email, name, phone, source, source_ref, consent_class, consent_at, consent_copy_version, status, created_at, tags`; streamed; never localized (UI localizes, the file does not).
-- Grant: HMAC `jobId|userId|exp`, TTL 15 min, owner-bound; the download is service-mediated (no bucket URLs); re-grant available while the job lives (7 days).
+- Grant: HMAC `jobId|userId|exp`, TTL 15 min, owner-bound; the download is service-mediated (no direct storage URLs); re-grant available while the job lives (7 days).
 - Timeline: assembled per request; forward sections appear only when connected (checked via the owning seam) and are labeled otherwise; no placeholder rows.
 - Suppression: rank-guarded (409-equivalent handled as idempotent 200 + no duplicate event); reason required; propagates through the shared eligibility check (`GET /internal/v1/leads/check`, feature 27).
 - Re-invite: minted token (`leadId|profileId|exp|unsub`), 72 h; dispatch enqueued to the notification pipeline (transactional class, forward); suppressed leads refused; 3/day per lead.

@@ -55,7 +55,7 @@ data class InternalLeadWrite(val profileId: String, val email: String, val name:
 | `docs/02-architecture-techlead/06-public-profile/` | migration inventory precision (V2/V3/V4 numbered) |
 | `docs/02-architecture-techlead/07-verification-and-followers/`, `08-link-blocks/`, `09-themes-and-avatar/` | profile_db migration renumber to the canonical chain (V4/V5) |
 | `docs/02-architecture-techlead/00-platform-baseline/01-architecture-and-service-topology.md` | public-paths row (lead submits) + profile-service row (features 27-28) |
-| `docs/02-architecture-techlead/02-account-deletion/` | roster row extended (leads rows + objects) |
+| `docs/02-architecture-techlead/02-account-deletion/` | roster row extended (leads rows + files) |
 
 ## Governance
 

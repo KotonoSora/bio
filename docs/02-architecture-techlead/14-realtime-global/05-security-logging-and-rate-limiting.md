@@ -1,6 +1,6 @@
 # Realtime Global - Security, Logging, and Rate Limiting (feature 14)
 
-Phase 2 TL · BA sources: `docs/01-requirements-ba/14-realtime-global/` (BR-01, BR-04..BR-08, BR-12). Baseline controls: `docs/02-architecture-techlead/00-platform-baseline/`; inherited intake controls: `docs/02-architecture-techlead/12-profile-analytics/06-security-logging-and-rate-limiting.md`; entitlement pattern: `docs/02-architecture-techlead/13-audience-insights/05-security-logging-and-rate-limiting.md` (S-4).
+Phase 2 TL · BA sources: `docs/01-requirements-ba/14-realtime-global/` (BR-01, BR-04..BR-08, BR-12). Baseline controls: `docs/02-architecture-techlead/00-platform-baseline/`; inherited intake controls: `docs/02-architecture-techlead/12-profile-analytics/07-security-logging-and-rate-limiting.md`; entitlement pattern: `docs/02-architecture-techlead/13-audience-insights/05-security-logging-and-rate-limiting.md` (S-4).
 
 ## Controls
 

@@ -1,6 +1,6 @@
 # Resume Documents - API Contracts and Payloads (feature 17)
 
-Phase 2 TL · Owner + internal REST contracts. Auth/rate rules: `docs/02-architecture-techlead/17-resume-documents/05-security-logging-and-rate-limiting.md`. JSON only; problems follow RFC 9457.
+Phase 2 TL · Owner + internal REST contracts. Auth/rate rules: `docs/02-architecture-techlead/17-resume-documents/06-security-logging-and-rate-limiting.md`. JSON only; problems follow RFC 9457.
 
 ## Owner endpoints (`resume-service`, dashboard class)
 
@@ -13,7 +13,7 @@ Phase 2 TL · Owner + internal REST contracts. Auth/rate rules: `docs/02-archite
 | `DELETE /api/v1/documents/{id}?confirmed=` | session + CSRF | 204 (hide/unlink first, then delete) | 404; 422 `delete_needs_confirm`; 403 |
 | `POST /api/v1/documents/{id}/snapshot` | session + CSRF | 201 `SaveSnapshotResponse` | 404; 422 `snapshot_too_large`/`validation_failed`; 503 `capture_unavailable`; 429 |
 | `GET /api/v1/documents/{id}/versions` | session | 200 list of `VersionSummaryResponse` | 404; 403 |
-| `GET /api/v1/documents/{id}/versions/{v}` | session | 200 `VersionResponse` (`archived: true` when blob-served, `json` may be null until fetch completes) | 404 `version_not_found`; 403 |
+| `GET /api/v1/documents/{id}/versions/{v}` | session | 200 `VersionResponse` (`archived: true` when archive-served, `json` may be null until fetch completes) | 404 `version_not_found`; 403 |
 | `POST /api/v1/documents/{id}/duplicate` | session + CSRF | 201 `DocumentResponse` (`{title} copy`, latest snapshot as v1 or empty draft) | 404; 429 |
 | `POST /api/v1/documents/{id}/publish` | session + CSRF | 200 `DocumentResponse` (idempotent-safe; displaced document named by the client confirm) | 404; 422 `snapshot_required`/`version_not_found`; 429 |
 | `POST /api/v1/documents/{id}/unpublish` | session + CSRF | 200 `DocumentResponse` (both flags cleared) | 404 |
@@ -33,7 +33,7 @@ Phase 2 TL · Owner + internal REST contracts. Auth/rate rules: `docs/02-archite
 | Method & path | Auth | Success | Errors |
 |---|---|---|---|
 | `GET /internal/v1/resumes/{username}/published` | service JWT | 200 `PublicResumeResponse` (published version payload for `/cv` SSR - lands feature 10's reserved contract) | 404 `resume_absent` (missing/private/draft-only/retired - parity shape); 401 |
-| (participant) `POST /internal/v1/account/purge` | service JWT | 200 counts: `documents`, `snapshots`, `objects` (archive NDJSON) | 401 |
+| (participant) `POST /internal/v1/account/purge` | service JWT | 200 counts: `documents`, `snapshots`, `files` (archive NDJSON) | 401 |
 
 ## Kotlin DTOs (source of truth for the SPA type mirror)
 

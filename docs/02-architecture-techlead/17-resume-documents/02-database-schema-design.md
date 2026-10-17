@@ -54,7 +54,7 @@ GRANT SELECT, INSERT, DELETE ON resume.snapshots TO app_role;   -- no UPDATE = s
 ## Notes
 
 - `snapshot_json` schema (closed, in service): `{schema_version, basics, experience[], education[], skills[], links[], template_id, captured_at, source_profile_rev}`. Unknown keys rejected; every string sanitized before insert (stored-clean principle).
-- Archive object convention: `resume-archives/{document_id}.ndjson` (one JSON line per version), private bucket, `>= 90 days` retention; retrieval is server-side only.
+- Archive file convention: `resume/archives/{document_id}.ndjson` (one JSON line per version), private uploads volume, `>= 90 days` retention; retrieval is server-side only.
 - Public reads are two paths: the internal `published` read scopes by `username + is_public + published_version` through the profile join in service code (RLS `d_public`/`s_public` back it); the owner path scopes by `user_id`.
 - The archive job's DELETE is the only DELETE on `snapshots` besides cascade; guarded in service code (only rows that were verified-written to the archive).
 
@@ -63,7 +63,7 @@ GRANT SELECT, INSERT, DELETE ON resume.snapshots TO app_role;   -- no UPDATE = s
 1. Fresh apply: `V1` clean on 18.6; two tables, partial unique, three indexes, four policies, grants with no UPDATE on `snapshots`.
 2. Immutability drill: `UPDATE resume.snapshots` as `app_role` fails at the grant; a service save inserts N+1; version N bytes unchanged after profile edits.
 3. Single-public drill: second `is_public=true` on the same profile violates `uniq_public_doc`; the publish transaction clears the old one instead of failing.
-4. Archive drill: 31-day-old non-published version is appended to the NDJSON object (write verified) then deleted; published and recent versions stay; retrieval returns `archived: true`.
+4. Archive drill: 31-day-old non-published version is appended to the NDJSON file (write verified) then deleted; published and recent versions stay; retrieval returns `archived: true`.
 5. RLS drill: foreign `app.user_id` sees zero rows; anonymous sees only public documents + their snapshots; parity with service-level scoping.
 6. Delete drill: document with linked visible block -> confirm required; confirmed path hides/unlinks (profile-service) then deletes; crash between leaves hidden block + document (retry-safe).
 7. No-duplication drill: `CREATE TABLE resume.documents|resume.snapshots` appears only in this file.

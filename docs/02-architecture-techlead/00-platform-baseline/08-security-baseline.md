@@ -21,7 +21,7 @@ Phase 2 TL · Cross-cutting baseline. Features keep their own `S-n` control file
 
 - All input validated by Bean Validation + per-endpoint rules; TEXT ids; unknown fields rejected (fail-closed parsing).
 - XSS: React escaping + server-side text storage; no HTML from user input anywhere; CSP default-src self enforced at the edge for public pages.
-- Uploads (feature 09 avatars): content-type + magic-byte validation, size cap, image re-encode, no SVG; stored privately, served via signed URLs (<= 5 min).
+- Uploads (feature 09 avatars): content-type + magic-byte validation, size cap, image re-encode, no SVG; server-generated unguessable names with no listing; public derivatives served by the Nginx edge, gated bytes only via short-TTL download grants (<= 5 min).
 - Webhooks (money rails, features 32-40): signature verification per provider + idempotency keys; replay outside the timestamp window rejected; grants are idempotent by design.
 
 ## Abuse and rate control

@@ -10,11 +10,11 @@ Phase 2 TL · Extension of `profile-service` (module `com.app.profile.blocks`), 
 
 Boundary rationale: blocks belong to the bio-page authoring bounded context - block writes join profile ownership checks in one transaction, reorder is one batch update, and blocks scale 1:N with profiles (~20 avg, cap 250). No extraction trigger is present (independent scale, team ownership, or deploy independence); revisit if block writes ever exceed profile writes by >= 10x or per-block rendering moves to its own service. Extraction, when triggered, moves `profile_blocks` + validator + endpoints intact - the internal read API is the only consumer contract.
 
-Cross-service rules: no new database, no new container, no cross-service table access; SSR consumes the internal windowed read (below); thumbnails are blob keys (`thumbnailKey`) resolved by the feature 09 pipeline, stored here as opaque strings.
+Cross-service rules: no new database, no new container, no cross-service table access; SSR consumes the internal windowed read (below); thumbnails are storage file names (`thumbnailKey`) resolved by the feature 09 pipeline, stored here as opaque strings.
 
 ## Runtime delta (compose slice unchanged from feature 06)
 
-None: same container, same env, same Redis db 4 namespace pattern (`blocks:*` keys), MinIO reused for thumbnails. Nothing to add to `docker-compose.yml`; Podman parity remains release acceptance.
+None: same container, same env, same Redis db 4 namespace pattern (`blocks:*` keys), the local storage volume reused for thumbnails. Nothing to add to `docker-compose.yml`; Podman parity remains release acceptance.
 
 ## build.gradle.kts delta (no new dependencies)
 

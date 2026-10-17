@@ -6,21 +6,22 @@ Phase 2 TL · Cross-cutting baseline for all features. This file supersedes the 
 
 | Element | Responsibility |
 |---|---|
-| Gateway (edge) | Terminates SSO sessions (Google, Apple, Facebook, LinkedIn, generic OIDC); enforces route-class rate rules; issues the internal identity JWT (`RS256`, `aud=<service>`, 60 s TTL, JWKS at `/.well-known/jwks.json`); routes `/api/v1/*` (session), `/internal/v1/*` (service-to-service), `/go/*` and `/:username` (public SSR) |
+| Nginx edge | Serves the React SPA bundle + `/media/*` (read-only volumes); edge cache for public reads; security headers + `limit_req`; reverse-proxies `/api/*`, `/go/*`, `/:username` to the gateway (`09-local-storage-and-nginx-spec.md`) |
+| Gateway (API edge) | Terminates SSO sessions (Google, Apple, Facebook, LinkedIn, generic OIDC); enforces route-class rate rules; issues the internal identity JWT (`RS256`, `aud=<service>`, 60 s TTL, JWKS at `/.well-known/jwks.json`); routes `/api/v1/*` (session), `/internal/v1/*` (service-to-service), `/go/*` and `/:username` (public SSR) |
 | Services | Trust only the signed internal JWT - raw client headers are never trusted; deny-by-default Spring Security |
-| Public paths | `/:username`, `/go/*`, asset/edge cache paths are served by services behind the gateway; no direct database access from clients or beacons exists; anonymous write surfaces are the beacon endpoint (`POST /api/t/:username`, feature 12), lead-form submits (`POST /api/t/leads/submit/{blockId}`, Turnstile-class + throttled, queue-mediated, feature 27), partner callbacks (`POST /api/merch/partner-callback`, signature-verified, queue-mediated, feature 23), rail callbacks (`/webhooks/*`, signature/token-verified per rail, feature 40), publish OAuth callbacks (`GET /api/v1/social/{network}/callback`, single-use state + PKCE, feature 41), provider signals (`POST /webhooks/social/{network}`, signature-verified, features 41-42), and the IG comment webhook (`POST /webhooks/instagram`, signature-verified, queue-mediated, feature 44) |
+| Public paths | `/:username`, `/go/*` are served by services behind the gateway; static assets and `/media/*` are served by the Nginx edge; no direct database access from clients or beacons exists; anonymous write surfaces are the beacon endpoint (`POST /api/t/:username`, feature 12), lead-form submits (`POST /api/t/leads/submit/{blockId}`, Turnstile-class + throttled, queue-mediated, feature 27), partner callbacks (`POST /api/merch/partner-callback`, signature-verified, queue-mediated, feature 23), rail callbacks (`/webhooks/*`, signature/token-verified per rail, feature 40), publish OAuth callbacks (`GET /api/v1/social/{network}/callback`, single-use state + PKCE, feature 41), provider signals (`POST /webhooks/social/{network}`, signature-verified, features 41-42), and the IG comment webhook (`POST /webhooks/instagram`, signature-verified, queue-mediated, feature 44) |
 
 ## Service map (registered; extended additively as majors migrate)
 
 | Service | Features | Host port | Database | Redis db | Role |
 |---|---|---|---|---|---|
-| gateway | all (edge) | 8080 (internal; 443 edge) | - | 1 (counters) | Session termination, identity JWT, rate rules |
+| gateway | all (edge) | 8080 (internal; public edge is Nginx 443) | - | 1 (counters) | Session termination, identity JWT, rate rules |
 | account-service | 01-03, 05, 45 | 8081 | account_db | 7 | SSO login + linked accounts; sessions + step-up; entitlement snapshot; deletion orchestration; concierge data; agency roster + Act-as sessions (45); manages edge session keys (db 2) |
 | profile-service | 04, 06, 07, 08, 09, 27, 28 | 8082 | profile_db | 4 | Username namespace authority; blocks; themes/avatar; leads capture + contact workspace; internal read APIs |
 | link-service | 29-30 | 8083 | links_db | 3 | Single redirector; short links + QR renders; consumes profile-service namespace rules |
 | public-site-service | 10, 11 | 8084 | stateless | 5 | SSR public pages; escape banner + micro-script; PWA shell; cache + purge |
 | analytics-service | 12-15, 31, 47 | 8085 | analytics_db | 6 | Beacon + link-hit intake (queues), hourly rollup, realtime window, short-link stats, owner reads, agency reporting |
-| resume-service | 17-21 | 8086 | resume_db | 8 | Resume documents + immutable snapshot versions; blob archive; `/cv` public read; AI JD-tailor endpoint (35) (18-21 extend this service) |
+| resume-service | 17-21 | 8086 | resume_db | 8 | Resume documents + immutable snapshot versions; file archive (local disk); `/cv` public read; AI JD-tailor endpoint (35) (18-21 extend this service) |
 | shop-service | 22-26 | 8087 | shop_db | 9 | Uniform product catalog (7 kinds); storefront reads; fulfillment/courses/tips/fees extend this service |
 | billing-service | 32-40, 46 | 8088 | billing_db | 10 | Money kernel: orders + checkout front door; verified grants; plan ledger; lifecycle jobs; receipts; refunds; promos; eight PSP rails; notification pipeline (transactional); agency seat billing |
 | publish-service | 41-44 | 8089 | publish_db | 11 | Connections vault + OAuth; composer + calendar + dispatch fan-out; automations + contacts + DM delivery; in-service worker pools behind `DispatchPort`/`WatchPort` |

@@ -16,14 +16,14 @@ Phase 1 BA · Realized by `docs/02-architecture-techlead/24-shop-courses/` (BR-0
 ## Business rules
 
 - BR-01 Curriculum model: a `course` product owns ≤ 50 sections → ≤ 200 lessons; dense positions; titles ≤ 120 chars; lesson = video (optional), text body (≤ 50 000 chars sanitized), materials list; the course product payload stays `{completionRule}` with curriculum in its own tables.
-- BR-02 Uploads: lesson video MP4 ≤ 2 GB, container + duration validated (readable required); materials via the digital allowlist ≤ 500 MB each, ≤ 10 per lesson; random blob keys; no SVG/HTML.
+- BR-02 Uploads: lesson video MP4 ≤ 2 GB, container + duration validated (readable required); materials via the digital allowlist ≤ 500 MB each, ≤ 10 per lesson; random file names; no SVG/HTML.
 - BR-03 Previews: 0-10 `is_preview` lessons; preview lesson titles/metadata are SEO-visible on the product page; preview streams need no enrollment; every other lesson byte requires enrollment.
 - BR-04 Enrollment: free course (price 0) → logged-in one-click, idempotent; paid → only via grant-confirmed order (same forward seam as feature 23); unique `(product_id, buyer_user_id)`; price changes never alter existing enrollments.
 - BR-05 Progress: the player sends a heartbeat every 15-30 s and on pause/seek; server coalesces in Redis and flushes to PostgreSQL ≤ 30 s — never per-second DB writes; effective position = max(stored, coalesced); idempotent per `(product_id, buyer_user_id, lesson_id)`; position clamped to duration + 5 s.
 - BR-06 Completion: rule `auto90` (position ≥ 90%) or `explicit`; section/course percentages derive from completed lessons; 100% mints the certificate exactly once (`completed_at` set with the mint).
 - BR-07 Certificate: `/c/{code}` public page (display name, course title, completion date); tamper-evident random code; no PDF in v1; revoked (404) on refund; revocation visible ≤ 60 s.
 - BR-08 Refunds: enrollment `revoked`; certificate revoked; progress retained for a 90-day courtesy window, then purged; re-enrollment within the window resumes the retained progress.
-- BR-09 Deletion: seller purge deletes curriculum, materials, video objects, and dependent enrollments/progress with counts; buyer purge deletes their enrollments + progress and revokes their certificates.
+- BR-09 Deletion: seller purge deletes curriculum, materials, video files, and dependent enrollments/progress with counts; buyer purge deletes their enrollments + progress and revokes their certificates.
 - BR-10 Stream tickets: video tickets are TTL-bound (≤ 4 h) and multi-request (range requests must work); material links are single-use ≤ 15 min; tickets bound to enrollment + lesson; anomaly flagging mirrors feature 23.
 - BR-11 Download posture: no download button for video (offline out of v1); materials are download-intended; sharing risk bounded by ticket TTLs + anomaly flags, not DRM promises.
 - BR-12 Ownership: all reads/writes scope to owner `user_id` or buyer `buyer_user_id` + RLS; no cross-user path exists (IDOR drill).

@@ -16,7 +16,7 @@ Phase 1 BA · React 19.3 components for `/app/appearance` (owner-only). No styli
 | RevertButton | secondary button | - | resets `previewThemeId` to active; clears pill | hidden when no preview |
 | PurgeChip | shared status chip | - | reused from feature 06 (`publishing...` <= 2 min); not reimplemented here | hidden |
 | AvatarCard | card | - | shows `AvatarImage` when key present, else `DefaultGlyph` | - |
-| AvatarImage | image | - | immutable blob URL by key; `object-fit: cover`; alt = display name | glyph |
+| AvatarImage | image | - | immutable media URL by name; `object-fit: cover`; alt = display name | glyph |
 | DefaultGlyph | placeholder | - | platform asset; restored on delete | - |
 | UploadButton + FileInput | button + file input | - | `accept` JPEG/PNG/WebP (+ `video/mp4` only when active theme `videoAvatar=true`); <= 2 MB pre-check with exact cap text | disabled while pending |
 | SizeHintText | static text | - | `Images up to 2 MB (PNG, JPEG, WebP)`; video line adds `loops up to 10 s` when allowed | - |

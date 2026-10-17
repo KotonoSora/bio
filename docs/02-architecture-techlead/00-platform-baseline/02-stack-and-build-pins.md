@@ -12,11 +12,11 @@ Phase 2 TL · Cross-cutting baseline for all features. Supersedes the legacy sta
 | JVM toolchain | 21 (LTS) | Recorded resolution of the legacy 17-vs-21 open pin; container runtime = Eclipse Temurin JRE 21 |
 | PostgreSQL | `18.6` | Digest-pinned image; `SELECT version()` asserted at boot and in CI; conventions in `03-data-layer-conventions.md` |
 | Redis | `7.4` (digest-pinned) | Platform instance; logical-db allocation in `01-architecture-and-service-topology.md` |
-| MinIO | pinned RELEASE digest | Object storage; bucket rules in `03-data-layer-conventions.md` |
+| Nginx | pinned upstream image + platform config | SPA + media static serving, edge cache, proxy to the gateway; storage rules in `09-local-storage-and-nginx-spec.md` |
 | React.js | `19.3` | SPA under `/app/*`; committed lockfile in `web/` |
 | Testcontainers | current line pinned in catalog | Integration tests run against PG `18.6` + Redis `7.4` images |
 
-Patch bumps of infrastructure images (PG/Redis/MinIO) are allowed within the pinned minor line; Boot/Kotlin/Gradle bumps require a baseline amendment.
+Patch bumps of infrastructure images (PG/Redis/Nginx) are allowed within the pinned minor line; Boot/Kotlin/Gradle bumps require a baseline amendment.
 
 ## Service starter set (closed)
 
@@ -26,6 +26,7 @@ Every service uses these starters only: `web`, `validation`, `data-jpa`, `securi
 
 - Data classes for DTOs and requests; Jackson serializes ISO8601 (`Instant`) and omits nulls where contracts say "absent".
 - Bean Validation on all request DTOs; RFC 9457 `ProblemDetail` for every error, stable `code` strings (never renamed).
+- Service layer returns Kotlin `Result<T>` (or sealed domain errors mapped at the API boundary); exceptions never cross service/mesh boundaries - the API layer maps to `ProblemDetail` with `traceId` only, no stack traces.
 - JPA: Kotlin `no-arg`/`all-open` plugins; no lazy loading outside transactions; statement timeout 5 s default per service.
 - Layered packages (`api`, `domain`, `data`, `config`); ArchUnit test enforces layer boundaries per service so an extraction stays a move, not a rewrite.
 - Config is environment-only (12-factor): no profile-conditional behavior drift; secrets via env/vault only (`.env` never committed).
@@ -42,7 +43,7 @@ Every service uses these starters only: `web`, `validation`, `data-jpa`, `securi
 
 ## Frontend integration
 
-- SPA routes under `/app/*` (React 19.3), served statically behind the gateway; same-origin only - no CORS exists.
+- SPA routes under `/app/*` (React 19.3), served statically by the Nginx edge; same-origin only - no CORS exists.
 - Session cookie (HttpOnly, Secure, SameSite) at the edge + CSRF double-submit header on mutations; services trust only the internal JWT.
 - Public pages and the micro-script are server-rendered/cached by `public-site-service` (features 10-11), never by the SPA.
 - Turnstile-class challenge wiring at the gateway for abuse-prone routes; client never holds provider keys.

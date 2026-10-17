@@ -26,8 +26,8 @@ Phase 1 BA · Flows executed by `docs/02-architecture-techlead/02-account-deleti
 | Step # | Actor/System | Trigger Action | System Response | Rules |
 |---|---|---|---|---|
 | 1 | System (job) | Daily run finds due accounts | Sets `purge_started_at`; calls every registered participant `POST /internal/v1/account/purge` (idempotent by `runId`) | BR-04, BR-09 |
-| 2 | Participant services | Purge call arrives | Delete owner-scoped rows + objects; return per-table counts; no cross-user deletes | BR-05, BR-06 |
-| 3 | System | All participants succeed | Emits certificate (counts, objects, run id), status -> `purged`; audit row | BR-08, BR-12 |
+| 2 | Participant services | Purge call arrives | Delete owner-scoped rows + files; return per-table counts; no cross-user deletes | BR-05, BR-06 |
+| 3 | System | All participants succeed | Emits certificate (counts, files, run id), status -> `purged`; audit row | BR-08, BR-12 |
 | 4 | System | Any participant fails | Status stays `grace` with `purge_started_at`; bounded retry next run; 24 h stuck -> page ops; no user-visible "purged" until true | BR-09 |
 | 5 | System | Weekly | Residual probe per purged account; non-zero -> page ops with certificate diff | BR-10 |
 

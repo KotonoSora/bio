@@ -18,7 +18,7 @@ Phase 1 BA · Codes are stable; UI copy localizes vi/en.
 | Export quota (20/day, 2 concurrent) | API | 429 `export_quota` | "Export limit reached — try later." |
 | Download before job completes | API | 409 `export_not_ready` | "Export is still running." |
 | Grant expired | API | 410 `grant_expired`; job may be re-granted while it lives | "Download link expired — open the export again." |
-| Foreign export job / object | API | 404 `export_not_found`; no existence oracle | "Export not found." |
+| Foreign export job / file | API | 404 `export_not_found`; no existence oracle | "Export not found." |
 | Unsubscribe token expired/invalid | API | 422 `unsubscribe_expired` / `unsubscribe_invalid`; zero state change | branded error state |
 | Cross-creator search/read/action | API | 403 + RLS denies; zero rows | "You don't have access to this." |
 | Forward seam unavailable (orders/booking/automation) | UI | timeline section absent with a quiet reason label | "Not yet connected." |

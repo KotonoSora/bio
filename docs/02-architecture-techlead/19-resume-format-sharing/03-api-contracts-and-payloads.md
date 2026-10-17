@@ -1,6 +1,6 @@
 # Resume Format Sharing - API Contracts and Payloads (feature 19)
 
-Phase 2 TL · Author + public gallery + ops REST contracts. Auth/rate rules: `docs/02-architecture-techlead/19-resume-format-sharing/05-security-logging-and-rate-limiting.md`. JSON only; problems follow RFC 9457.
+Phase 2 TL · Author + public gallery + ops REST contracts. Auth/rate rules: `docs/02-architecture-techlead/19-resume-format-sharing/06-security-logging-and-rate-limiting.md`. JSON only; problems follow RFC 9457.
 
 ## Author endpoints (session, owner-scoped)
 
@@ -26,7 +26,7 @@ Phase 2 TL · Author + public gallery + ops REST contracts. Auth/rate rules: `do
 | Method & path | Auth | Success | Errors |
 |---|---|---|---|
 | `POST /internal/v1/resume-formats/{id}/remove` | service JWT, ops scope | 200 (status `removed`; reason mandatory; purge event) | 404; 422 (no reason); 401 |
-| (participant) `POST /internal/v1/account/purge` | service JWT | 200 counts incl. `formats`, `format_clones`, thumbnail objects | 401 |
+| (participant) `POST /internal/v1/account/purge` | service JWT | 200 counts incl. `formats`, `format_clones`, thumbnail files | 401 |
 
 ## Kotlin DTOs (source of truth for the SPA type mirror)
 

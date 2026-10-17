@@ -14,5 +14,5 @@ Phase 1 BA · BDD; drills run against `docs/02-architecture-techlead/42-publish-
 | AC-08 | Retry-class drill | Rate-limit failure vs revoked-token failure | Retry classifies | Rate-limit auto-retries to success; revoked lands `failed` with reconnect guidance and no futile retries |
 | AC-09 | Outage drill | A network pause; poison redeliveries | Pause/resume and quarantine run | Only that leg halts (`queued_behind_outage`); resume replays in order; poison quarantines with ops page after N redeliveries |
 | AC-10 | Load drill | A full 7-target fan-out; queue depth growth | Dispatch runs | p95 dispatch-to-first-status within budget; depth pages before creator-visible staleness |
-| AC-11 | Upload drill | A 300 MB upload interrupted mid-multipart | The client resumes | Upload completes from the last confirmed part; no client-chosen object keys exist; incomplete uploads expire unpublishable |
+| AC-11 | Upload drill | A 300 MB upload interrupted mid-multipart | The client resumes | Upload completes from the last confirmed part; no client-chosen file paths exist; incomplete uploads expire unpublishable |
 | AC-12 | Rollup drill | Concurrent mixed outcomes across targets | Status reads run at multiple points | N-of-7 and parent state are computed from children every read (no drift); never hand-incremented |

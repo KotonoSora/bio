@@ -19,7 +19,7 @@ Phase 2 TL · **Zero migrations, zero database**: the public-site service owns n
 | `sitemap:xml` | full sitemap document | 1 h | any `profile.published.v1` (visibility changes) |
 | `themes:catalog` | theme catalog from feature 09 | 300 s | TTL (registry is deploy-versioned) |
 
-L1: Caffeine per replica (<= 10 s TTL, 10k entries) absorbs micro-stampedes; purge deletes L2 only - L1 self-heals within 10 s, inside the 2 min promise. HTTP layer: `s-maxage=120` + SWR 600 handled by the CDN/edge, not by the service.
+L1: Caffeine per replica (<= 10 s TTL, 10k entries) absorbs micro-stampedes; purge deletes L2 only - L1 self-heals within 10 s, inside the 2 min promise. HTTP layer: `s-maxage=120` + SWR 600 handled by the Nginx edge, not by the service.
 
 ## Read path (internal APIs only; no cross-service reads)
 

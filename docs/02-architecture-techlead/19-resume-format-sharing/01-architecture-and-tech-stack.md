@@ -26,9 +26,9 @@ This feature owns: format rows, validator + scrub proof, publish/unpublish lifec
 | SPA render pipeline (feature 18) | Layout interpreter consumes `layout_json` for screen + print trees of cloned formats |
 | Public gallery (anonymous) | `GET /api/v1/gallery/formats` (+ detail), edge-cached, throttled |
 | Ops tooling | Report queue + `POST /internal/v1/resume-formats/{id}/remove` (audited) |
-| Feature 02 (purge) | Participant deletes `formats`, `format_clones` rows + thumbnail objects (roster row updated in this change) |
+| Feature 02 (purge) | Participant deletes `formats`, `format_clones` rows + thumbnail files (roster row updated in this change) |
 | Profile resolve (feature 06) | Attribution live-link resolution (rename 301, hidden -> frozen string) via the existing internal read |
 
 ## Stack notes
 
-Spring Boot `4.1.1` / Kotlin `2.4.21` unchanged; `@Scheduled` re-scan job (core Spring). New internals: `FormatValidator` (pure, table-tested), `PublishService` (tx + scrub proof), `CloneService`, `GalleryController`, `FormatRescanJob`. Thumbnails rendered by the fixture-only pipeline (typed placeholder inputs); blob keys random; no new Redis keys beyond short-lived gallery cache entries (`gallery:formats:{page}` 60 s, owned here).
+Spring Boot `4.1.1` / Kotlin `2.4.21` unchanged; `@Scheduled` re-scan job (core Spring). New internals: `FormatValidator` (pure, table-tested), `PublishService` (tx + scrub proof), `CloneService`, `GalleryController`, `FormatRescanJob`. Thumbnails rendered by the fixture-only pipeline (typed placeholder inputs); file names random; no new Redis keys beyond short-lived gallery cache entries (`gallery:formats:{page}` 60 s, owned here).

@@ -18,7 +18,7 @@ Phase 2 TL · Cross-cutting baseline. GATED: runs only after the E3 100k-mixed l
 
 ## Pre-render (public reads)
 
-- Pre-render top slugs (top 10k by traffic) at publish/purge time; CDN/edge TTL 300 s; publish purges by tag pattern; rename/retire purges all prior slugs.
+- Pre-render top slugs (top 10k by traffic) at publish/purge time; Nginx edge cache TTL 300 s; publish purges by tag pattern; rename/retire purges all prior slugs.
 - Cache correctness rule: TTLs bound staleness, purge events shorten it; a purge miss heals within 60 s (platform default).
 - Pre-render failure degrades to origin SSR - never to stale variants of a removed profile (410/404 parity preserved).
 

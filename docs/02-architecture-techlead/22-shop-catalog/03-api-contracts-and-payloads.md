@@ -1,6 +1,6 @@
 # Shop Catalog - API Contracts and Payloads (feature 22)
 
-Phase 2 TL · Owner endpoints in `shop-service`; public reads consumed by public-site (10) and blocks (08); forward seams to 32-40. RFC 9457 problem bodies; TEXT ids; auth/rate rules: `docs/02-architecture-techlead/22-shop-catalog/05-security-logging-and-rate-limiting.md`.
+Phase 2 TL · Owner endpoints in `shop-service`; public reads consumed by public-site (10) and blocks (08); forward seams to 32-40. RFC 9457 problem bodies; TEXT ids; auth/rate rules: `docs/02-architecture-techlead/22-shop-catalog/06-security-logging-and-rate-limiting.md`.
 
 ## Endpoint map
 

@@ -1,0 +1,79 @@
+server:
+  port: ${SERVER_PORT:8080}
+  # SIGTERM graceful shutdown: drain in-flight requests, close queue consumers.
+  shutdown: graceful
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        name: ${SESSION_COOKIE_NAME:__Host-rb_session}
+        http-only: true
+        secure: true
+        same-site: lax
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  application:
+    name: gateway
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: 1
+  security:
+    oauth2:
+      client:
+        registration:
+          # SSO-only: Google, Apple, Facebook, LinkedIn + generic OIDC. No passwords exist.
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: [openid, profile, email]
+          apple:
+            client-id: ${APPLE_CLIENT_ID:}
+            client-secret: ${APPLE_CLIENT_SECRET:}
+            scope: [openid, name, email]
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID:}
+            client-secret: ${FACEBOOK_CLIENT_SECRET:}
+            scope: [openid, public_profile, email]
+          linkedin:
+            client-id: ${LINKEDIN_CLIENT_ID:}
+            client-secret: ${LINKEDIN_CLIENT_SECRET:}
+            scope: [openid, profile, email]
+          generic-oidc:
+            provider: generic
+            client-id: ${GENERIC_OIDC_CLIENT_ID:}
+            client-secret: ${GENERIC_OIDC_CLIENT_SECRET:}
+            scope: [openid, profile, email]
+        provider:
+          generic:
+            issuer-uri: ${GENERIC_OIDC_ISSUER:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      service: gateway
+  otlp:
+    metrics:
+      export:
+        url: ${OTEL_EXPORTER_OTLP_ENDPOINT:}
+
+internal:
+  jwt:
+    private-key-pem: ${INTERNAL_JWT_PRIVATE_KEY_PEM:}
+    audience: gateway
+    kid: ${INTERNAL_JWT_KID:e0-dev-key}
+    ttl-seconds: 60
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} service=gateway trace=%X{traceId:-} level=%-5level msg=%m%n"

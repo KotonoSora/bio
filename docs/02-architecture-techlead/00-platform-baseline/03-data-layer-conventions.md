@@ -1,4 +1,4 @@
-# Platform Baseline - Data Layer Conventions (PostgreSQL, Redis, MinIO)
+# Platform Baseline - Data Layer Conventions (PostgreSQL, Redis, Local Disk)
 
 Phase 2 TL · Cross-cutting baseline. DEVIATION FLAGGED (in force since migration start): database-per-service - each service owns its schema, roles, migrations, and backups; the legacy single-PG/schema-per-module pattern is superseded. No cross-service joins, FKs, or shared tables; cross-service truth moves by API/event only (`01-architecture-and-service-topology.md`).
 
@@ -20,16 +20,11 @@ Phase 2 TL · Cross-cutting baseline. DEVIATION FLAGGED (in force since migratio
 - Queues use Redis Streams with consumer groups; consumers are idempotent (replay-safe), use `XAUTOCLAIM` for pending-entry reclaim, and enforce a max-delivery bound before parking to the dead-letter stream. Queue loss is degradable, never silent-data-loss: floor protections per service spec (e.g. analytics raw NDJSON flush).
 - Counters for throttling/quotas are Redis-backed with TTLs bounded by their window; no unbounded counter growth.
 
-## MinIO - object storage
+## Local disk - file storage (no object-store tools)
 
-- Private buckets by default; no public listing; access via short-lived signed URLs (TTL <= 5 min) or service-internal reads only. Server-side encryption at rest on.
-- Bucket rules (registered; extended additively by the owning feature):
-  - `analytics-raw`: raw beacon NDJSON, lifecycle 90 days (feature 12).
-  - Avatars: per-object keys, private, re-encoded derivatives only (feature 09); no user-provided content type trusted.
-  - `hits/links/<yyyy>/...`: redirect hit logs (feature 29), lifecycle recorded there.
-- Lifecycle rules are declared per bucket in the owning service spec; a bucket without a declared lifecycle cannot ship.
-- Object paths never contain PII (no emails, no visitor identifiers); feature specs list what each object may carry.
-- Deletion: owner-initiated deletion removes objects within the storage lifecycle SLA of the owning feature; erased profiles purge their buckets via the owning service job.
+- DEVIATION FLAGGED (storage amendment, 2026-10-16; owner directive): MinIO/S3/object-store tools are retired. Files live on the VPS disk via Docker bind mounts/named volumes; namespaces and serving rules in `09-local-storage-and-nginx-spec.md`.
+- Carried-over rules: private by default, no listing anywhere; names are server-generated and paths never contain PII; retention is declared per namespace in the owning feature spec; a namespace without a declared retention cannot ship.
+- Deletion: owner-initiated deletion removes files within the owning feature's SLA; erased profiles purge their namespaces via the owning service job (feature 02 participant).
 
 ## Cross-cutting rules
 

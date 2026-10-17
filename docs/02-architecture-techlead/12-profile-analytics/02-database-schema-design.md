@@ -59,8 +59,8 @@ Agency reporting (feature 47) adds `V4__agency_reporting.sql` (`report_views`, `
 - `profile_views`: one row per profile per day; `views` = deduped page views; `interactions` = click-bearing visits + banner/escape events (BR-14).
 - `link_clicks`: one row per profile per block per day; `block_id` deliberately not a FK — deleted blocks keep historical clicks (BR-09).
 - Consumer upsert: `INSERT ... ON CONFLICT (natural key) DO UPDATE SET views = views + EXCLUDED.views` (same for other counters). PKs are the idempotency keys; replays and double delivery collapse instead of duplicating.
-- Raw hits are never tables: NDJSON in MinIO `analytics-raw` (90-day lifecycle), written by the drain; any SQL joining raw data into reads is a layering violation.
-- Growth bound: rows = profiles x active-days x (1 + blocks). PG write volume is O(profiles x days), independent of traffic spikes — virality lands in blob storage and Redis, not here.
+- Raw hits are never tables: NDJSON files under `analytics/raw` on the uploads volume (90-day retention sweep), written by the drain; any SQL joining raw data into reads is a layering violation.
+- Growth bound: rows = profiles x active-days x (1 + blocks). PG write volume is O(profiles x days), independent of traffic spikes — virality lands in raw files and Redis, not here.
 - Retention: free 90d / pro 365d pruning owned by feature 13's prune job, which covers these tables plus feature 31's link-hit aggregates; no per-feature prune logic here.
 - Deletion: owner-scoped purge arrives via the feature 02 participant contract (`docs/02-architecture-techlead/02-account-deletion/03-api-contracts-and-payloads.md`): day buckets, click rows, rollups, and Redis markers deleted with counts — no DB-level cascade across services by design.
 
@@ -72,6 +72,6 @@ Agency reporting (feature 47) adds `V4__agency_reporting.sql` (`report_views`, `
 | Replay | Same hourly batch twice -> counters increment once per replay batch |
 | History | Block deleted -> `link_clicks` rows survive; profile purge -> handled by contract |
 | RLS | Foreign `app.user_id` reads zero rows on both tables |
-| Growth | 10x beacon replay changes blob bytes only; PG row count unchanged |
+| Growth | 10x beacon replay changes raw-file bytes only; PG row count unchanged |
 | No duplication | `grep -rn "CREATE TABLE profile_views" docs/` matches exactly one file (this one) |
 | Product clicks | V2 applies clean; product rows upsert via `uq_lc_product`; two-target and zero-target rows rejected by `chk_lc_target` |

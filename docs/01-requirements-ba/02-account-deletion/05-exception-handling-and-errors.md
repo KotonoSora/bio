@@ -1,6 +1,6 @@
 # Account Deletion - Exception Handling and Errors (feature 02)
 
-Phase 1 BA · Failure paths handled in `docs/02-architecture-techlead/02-account-deletion/05-security-logging-and-rate-limiting.md`. Codes are stable contract; problems follow RFC 9457.
+Phase 1 BA · Failure paths handled in `docs/02-architecture-techlead/02-account-deletion/06-security-logging-and-rate-limiting.md`. Codes are stable contract; problems follow RFC 9457.
 
 | Scenario | Path Type | System Handling | Displayed Error Message |
 |---|---|---|---|

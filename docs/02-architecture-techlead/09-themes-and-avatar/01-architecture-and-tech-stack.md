@@ -6,9 +6,9 @@ Phase 2 TL · Extension of `profile-service` (module `com.app.profile.appearance
 
 | Owns | Excludes (owner -> contract) |
 |---|---|
-| `ThemeRegistry` (code-shipped tokens), plan-gated theme switching, the avatar upload/delete pipeline, blob namespace `avatars/`, orphan-sweep hygiene, `GET /api/v1/themes` + internal catalog | Profile identity, publish flow, purge chip -> feature 06; blocks -> feature 08; SSR fragment, preview mode, cache purge -> feature 10; `verification/` evidence namespace -> feature 07; resume templates, shop/email/agency theming -> their majors |
+| `ThemeRegistry` (code-shipped tokens), plan-gated theme switching, the avatar upload/delete pipeline, storage namespace `profile/avatars/`, orphan-sweep hygiene, `GET /api/v1/themes` + internal catalog | Profile identity, publish flow, purge chip -> feature 06; blocks -> feature 08; SSR fragment, preview mode, cache purge -> feature 10; `verification/` evidence namespace -> feature 07; resume templates, shop/email/agency theming -> their majors |
 
-Boundary rationale: theme switch is one `profiles.theme_id` update on the existing RLS/audit/purge path, and avatar metadata rides the same transaction as the key record; a media service would split the publish transaction (row + blob + purge) for rare writes with no independent scale. Extraction trigger: upload processing volume or a CDN-side transformation pipeline that outgrows the service profile.
+Boundary rationale: theme switch is one `profiles.theme_id` update on the existing RLS/audit/purge path, and avatar metadata rides the same transaction as the key record; a media service would split the publish transaction (row + file + purge) for rare writes with no independent scale. Extraction trigger: upload processing volume or a media-transformation pipeline that outgrows the service profile.
 
 Cross-service rules: no new database, no new container, no cross-service table access; SSR (feature 10) gets `themeId`/`avatarKey` from the feature 06 resolve payload (no DTO change) and token definitions from the internal catalog below.
 
@@ -20,7 +20,7 @@ Cross-service rules: no new database, no new container, no cross-service table a
       APP_AVATAR_SWEEP_CRON: "0 30 3 * * *"    # daily orphan sweep (UTC)
 ```
 
-No new containers; MinIO (platform) hosts `avatars/`; gateway owns Turnstile. Podman parity remains release acceptance.
+No new containers; the platform uploads volume hosts `profile/avatars/` and the Nginx edge serves it; gateway owns Turnstile. Podman parity remains release acceptance.
 
 ## build.gradle.kts delta (no new dependencies)
 
@@ -39,8 +39,8 @@ Route `/app/appearance` (owner-only): gallery renders `GET /api/v1/themes` (zero
 | Decision | v1 | Trigger to revisit |
 |---|---|---|
 | Registry placement | code in this service; internal catalog endpoint for renderers | cross-service skew observed despite contract test |
-| Upload path | server-proxied multipart; validate before any blob write | upload volume makes proxy a bottleneck (presign + post-validate fallback) |
-| Write ordering | blob PUT -> row update -> old-key delete; orphans swept 24 h | sweep lag causes storage growth |
+| Upload path | server-proxied multipart; validate before any file write | upload volume makes proxy a bottleneck (upload-grant + post-validate fallback) |
+| Write ordering | file write -> row update -> old-file delete; orphans swept 24 h | sweep lag causes storage growth |
 | Theme thumbnails | platform assets fingerprinted by version, immutable cache | renderer needs runtime-generated previews |
 | Plan gate | fail closed for proOnly on entitlement failure | entitlement outage becomes frequent (cache TTL tuning) |
 | Purge signaling | reuse `profile.published.v1` (no new event) | appearance-only consumers need separation |

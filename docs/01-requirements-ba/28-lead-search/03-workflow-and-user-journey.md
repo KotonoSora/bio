@@ -11,7 +11,7 @@ Phase 1 BA · Forward references cite their owning batches; nothing forward is s
 | 3 | Creator | requests export of the filtered set or checked rows | 202 with job id + frozen row count; job runs async to a streamed CSV | BR-11 |
 | 4 | System | job completes | owner-scoped download grant (15 min TTL) surfaces in the UI | BR-11/14 |
 | 5 | Creator | downloads | CSV columns exactly the stable schema (consent timestamps + copy version included) | BR-04/11 |
-| 6 | System | 7 days later | job + object purge; account deletion purges immediately | BR-11/15 |
+| 6 | System | 7 days later | job + file purge; account deletion purges immediately | BR-11/15 |
 
 ## Creator: detail → act → propagate
 
@@ -38,4 +38,4 @@ Phase 1 BA · Forward references cite their owning batches; nothing forward is s
 | Step # | Actor/System | Trigger Action | System Response | Rules |
 |---|---|---|---|---|
 | 1 | Support seat (45-47 forward) | opens the creator-scoped view; acts | same view; every action attributed `support:{seatId}` | BR-16 |
-| 2 | Purge runner | account deletion | notes, tags, vocabulary, queries, export jobs + objects removed; counts in the certificate | BR-15 |
+| 2 | Purge runner | account deletion | notes, tags, vocabulary, queries, export jobs + files removed; counts in the certificate | BR-15 |

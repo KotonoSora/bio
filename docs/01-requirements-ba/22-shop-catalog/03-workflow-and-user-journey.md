@@ -34,7 +34,7 @@ Phase 1 BA · System calls cite owning features.
 | Step # | Actor/System | Trigger Action | System Response | Rules |
 |---|---|---|---|---|
 | 1 | Creator | Archive on a live product | status → `archived` (audited); pages purge; blocks flip to unavailable | BR-06/08 |
-| 2 | Creator | Delete a product with no orders | audited hard-delete; blocks flip to unavailable; cover object removed | BR-08 |
+| 2 | Creator | Delete a product with no orders | audited hard-delete; blocks flip to unavailable; cover file removed | BR-08 |
 | 3 | Creator | Delete a product with orders | refused 409 `product_has_orders`; UI offers Archive instead | BR-08 |
 | 4 | System | delete checks order history | forward seam `has-product-orders` (32-40); unreachable seam → 503, nothing deleted | TL 03 seam |
 
@@ -43,4 +43,4 @@ Phase 1 BA · System calls cite owning features.
 | Step # | Actor/System | Trigger Action | System Response | Rules |
 |---|---|---|---|---|
 | 1 | Ops | investigates a sale | reads audit rows + price history; no content edits possible | BR-15 |
-| 2 | Purge runner | account deletion | participant deletes products, price history, cover objects with counts | BR-13 |
+| 2 | Purge runner | account deletion | participant deletes products, price history, cover files with counts | BR-13 |

@@ -42,9 +42,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON links.qr_codes TO app_role;
 - Log-not-truth: no destination column (payload is derived at render from the live link) and no lifecycle columns (`status` here would be a dual-write bug farm — its absence is the lifecycle-inheritance guarantee, BA BR-04).
 - `pack_ref` is the only addition beyond the legacy sketch: the pack's session id (ULID), written on all N rows of one ops pack so sheets and per-location stats assemble from the log; null for single renders. Pack atomicity = one transaction over the N link mints + N rows.
 - Cascade: `short_links` rows are tombstoned, not hard-deleted; the FK cascade fires only for the exceptional purge (hygiene, not a lifecycle path). Tombstoned links keep their render history.
-- Objects: MinIO `qr-renders/{userId}/{renderId}.png|.svg`, 30-day lifecycle; bytes are a re-renderable cache. Success = object stored then row inserted in the same request; object failure → 503 `render_unavailable`, no row.
+- Files: `links/qr/{userId}/{renderId}.png|.svg` on the uploads volume, 30-day retention sweep; bytes are a re-renderable cache. Success = file stored then row inserted in the same request; file failure → 503 `render_unavailable`, no row.
 - Quotas (Redis db 3): `links:qr:{userId}:{yyyymmdd}` render counter (cap 60/day cadence enforced hourly as 60/h bucket), `links:qrpacks:{userId}:{yyyymmdd}` (cap 10/day); both rebuilt from the log if lost (DB count fallback).
-- Purge (feature 02 participant, `link-service` row extended): delete rows by `user_id` + objects under `qr-renders/{userId}/`; counts in the certificate.
+- Purge (feature 02 participant, `link-service` row extended): delete rows by `user_id` + files under `links/qr/{userId}/`; counts in the certificate.
 
 ## Verification drills
 

@@ -15,4 +15,4 @@ Phase 1 BA · BDD; legacy drills preserved by name.
 | AC-09 | Materials drill | an enrolled student and a non-student | the material link endpoint is called | enrolled: single-use ≤ 15 min link; non-student: 403; a used link fails |
 | AC-10 | Completion/cert drill | `auto90` and `explicit` courses; position at 89% then 91% | completion is evaluated | 89% stays incomplete; 91% completes under `auto90`; certificate mints exactly once |
 | AC-11 | Price-change drill | an enrollment followed by a course price edit | the enrollment is re-checked | access unchanged; no re-charge; audit shows the edit |
-| AC-12 | Purge drill | a seller with a course; a buyer with enrollments + progress + certificate | each purge runs | seller: curriculum + objects + dependent rows deleted with counts; buyer: enrollments/progress deleted; certificates revoked |
+| AC-12 | Purge drill | a seller with a course; a buyer with enrollments + progress + certificate | each purge runs | seller: curriculum + files + dependent rows deleted with counts; buyer: enrollments/progress deleted; certificates revoked |

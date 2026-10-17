@@ -54,7 +54,7 @@ CREATE TABLE profile.lead_export_jobs (
   selection_ids    JSONB,
   row_count        INTEGER CHECK (row_count >= 0),
   status           TEXT NOT NULL DEFAULT 'queued',
-  object_key       TEXT,
+  file_path        TEXT,
   grant_expires_at TIMESTAMPTZ,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   finished_at      TIMESTAMPTZ,
@@ -90,8 +90,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON profile.lead_notes, profile.lead_tags,
 - Append-only enforcement: notes/tags are insert-only in app code (no UPDATE paths); alerts fire on UPDATE/DELETE statements against `lead_notes`/`lead_tags` (same posture as `lead_events`).
 - Vocabulary: auto-add on first use until 50 per account (`SELECT count(*) ... FOR UPDATE` guard); deletions absent; foreign vocabularies invisible via RLS.
 - Query history: write-on-search (100 % or sampled — fixed at 100 % at this volume); trimmed to the newest 20 per account by a nightly sweep; fire-and-forget (NFR-04).
-- Export jobs: worker picks `queued` rows, streams CSV (fixed column order per BR-11) to MinIO `leads-exports/{userId}/{jobId}.csv`, sets `done` + `object_key`; grants are HMAC-derived (`jobId|userId|exp`), never stored; quota counters in Redis db 4 (`lead:exports:{day}` TTL 24 h, `lead:exportopen:{userId}` gauge); 7-day sweep deletes objects + rows.
-- Purge (feature 02 participant): delete by `user_id` across the five tables + MinIO prefix `leads-exports/{userId}/`; counts returned for the certificate.
+- Export jobs: worker picks `queued` rows, streams CSV (fixed column order per BR-11) to `profile/exports/leads/{userId}/{jobId}.csv` on the uploads volume, sets `done` + `file_path`; grants are HMAC-derived (`jobId|userId|exp`), never stored; quota counters in Redis db 4 (`lead:exports:{day}` TTL 24 h, `lead:exportopen:{userId}` gauge); 7-day sweep deletes files + rows.
+- Purge (feature 02 participant): delete by `user_id` across the five tables + uploads namespace `profile/exports/leads/{userId}/`; counts returned for the certificate.
 - Redis db 4 additions: `lead:exports:*`, `lead:exportopen:*`, `lead:reinvite:{leadId}` (3/day cap counter, TTL 24 h).
 
 ## Verification drills
@@ -100,5 +100,5 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON profile.lead_notes, profile.lead_tags,
 2. Scope drill: overlapping cross-creator fixtures (same email/name in two accounts) return zero foreign rows for both the owner and any filter combination (RLS probe).
 3. Vocabulary drill: 50-tag cap enforced under concurrent inserts (two writers, one row wins); foreign vocabulary invisible.
 4. Export drill: `filters` and `ids` modes; frozen count matches streamed rows byte-for-byte on the stable columns; `chk_export_payload` rejects empty modes.
-5. Grant drill: HMAC grant verifies only for the owning `userId`; expiry at 15 min; object private (no presigned bucket URL exists).
-6. Purge drill: five-table delete + objects removed; certificate counts exact.
+5. Grant drill: HMAC grant verifies only for the owning `userId`; expiry at 15 min; file private (no direct storage URL exists).
+6. Purge drill: five-table delete + files removed; certificate counts exact.

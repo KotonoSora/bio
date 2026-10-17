@@ -1,0 +1,76 @@
+resume-builder platform deploy notes (04-containers-and-compose.md)
+
+BOOT
+  cp deploy/.env.example .env
+  sh deploy/init-data.sh                     # data-root tree (idempotent)
+  docker compose build gateway               # first boot only: prewarm the shared Gradle cache
+  docker compose up -d --build               # or: podman-compose up -d --build
+  sh deploy/smoke.sh                         # G3: health, edge SPA/media/SSR, beacon 202, owner read, login
+
+ONE COMMAND GREEN (both runtimes). Clean-checkout boot target: < 5 min on the
+developer baseline machine (first build excluded: Gradle + image layers cache).
+
+PORTS (env override on conflict; nothing hard-codes a host port)
+  80/443 nginx edge (EDGE_HTTP_PORT/EDGE_HTTPS_PORT), 8080 gateway, 8081 account,
+  8082 profile, 8083 link, 8084 public-site, 8085 analytics, 8086 resume,
+  8087 shop, 8088 billing, 8089 publish, 8090 web (dev-only SPA surface),
+  5432 postgres, 6379 redis.
+
+STORAGE (09-local-storage-and-nginx-spec.md; no object-store tooling exists)
+  Every persistent byte is bind-mounted under the data root (DATA_ROOT, default
+  ./data): postgres/, redis/, uploads/<service>/<namespace>, logs/nginx/,
+  edge/certs/. The Nginx cache dir is a disposable named volume. The edge serves
+  only allowlisted public namespaces under /media/* (read-only mount); gated
+  bytes go X-Accel-Redirect into internal locations. ./data/ is gitignored;
+  init-data.sh pre-creates the namespace tree with 0700 service-uid dirs.
+
+EDGE
+  The nginx compose service bakes the React SPA at image build and fronts the
+  gateway; public SSR pages edge-cache for 60 s, /go/* is never cached. Dev
+  self-signs TLS into ./data/edge/certs on first boot; prod mounts real certs.
+
+ROOTLESS PODMAN CAVEATS (behavior identical across runtimes)
+  - 80/443 need privileges: rootless runs override EDGE_HTTP_PORT=8880
+    EDGE_HTTPS_PORT=8443 (parity.sh does this for both runtimes so smoke output
+    stays comparable).
+  - Bind-mount state is per-runtime; clear it with `podman unshare rm -rf ./data`
+    before switching runtimes (parity.sh does this).
+  - podman-compose: pip install podman-compose (CI parity job does this).
+
+SECRETS
+  Never committed (CI grep gate). Rotation per secret, exercised before first
+  production release: sh deploy/drill-secret-rotation.sh (JWT dual-key window).
+
+DRILLS (one-shot scripts; k6/fixture targets run as compose profiles, never served)
+  sh deploy/smoke.sh                 # G3 smoke
+  sh deploy/openapi-diff.sh          # G4 additive-only (services must be up)
+  sh deploy/drill-identity.sh        # E0 exit: gateway issues, service verifies, forged denied
+  sh deploy/drill-queue-replay.sh [N]# queue replay + dedupe collapse
+  sh deploy/drill-cache-flush.sh     # eviction honesty + boot repair
+  sh deploy/drill-restore.sh         # restore-to-scratch replay (separate instance)
+  sh deploy/drill-secret-rotation.sh # JWT dual-key window
+  sh deploy/run-drill.sh <drill>     # run + archive output to deploy/drill-log/
+  sh deploy/trace.sh                 # feature -> image -> flyway -> drill records
+  sh deploy/gate.sh [--hotfix]       # full G1-G7 gate -> deploy/gate-log/<tag>.json
+  sh deploy/sbom-scan.sh             # G1: High/Critical block (waivers in deploy/waivers/)
+
+RELEASES
+  sh deploy/tag.sh [semver]          # :semver-gitsha tags + deploy/releases record
+  Promotion = digest swap; rollback = previous digest + current schema (G2 rule)
+  plus cache purge via POST /internal/v1/purge where declared.
+  Swarm/Kubernetes is out of scope for v1; compose-by-digest is the contract.
+
+SCALE-OUT (07; gated on the E3 100k-mixed gate - numbers are targets until then)
+  docker compose -f docker-compose.yml -f docker-compose.scale.yml up -d --build \
+    --scale public-site-service=3 --scale link-service=3 --scale analytics-service=2
+  SCALE=1 STAGE=10k sh deploy/drill-load.sh   # k6 via LB (stages: smoke|10k|100k|1m)
+  sh deploy/capacity-review.sh <stage>        # headroom >= 30% floor + provision plan
+  Read replicas: REPLICA_DATASOURCE_URL per link/analytics (lag-aware, 5 s bound,
+  fail back to primary; money/session writes never route; profile writes stay primary).
+  Pre-render: 300 s edge cache, purge-by-tag + warm, origin-SSR fallback (never stale 404).
+
+DEGRADE LADDER (shed non-critical first, protect income, then SSR)
+  analytics realtime -> POST /internal/v1/degrade {"shedRealtime":true} (intake 202s kept)
+  public-site warming -> skip warmSlugs in purge (origin SSR always answers)
+  protected (never shed): checkout/grants (billing), redirects (link), writes (profile)
+  Breach any gate 30 min -> capacity action item; two quarters -> arch review (01 doctrine).

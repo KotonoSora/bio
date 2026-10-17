@@ -4,7 +4,7 @@ Phase 1 BA · Feature 17 of 53 (resume) · Implemented by `docs/02-architecture-
 
 ## Purpose
 
-A resume is a document whose saved versions are frozen: saving captures a snapshot, and reprinting that snapshot later is byte-identical even after the profile changes. This protects job applications from silent content drift - the failure mode where a recruiter sees something different from what the candidate sent. Draft edits and frozen snapshots are separate objects at every layer: the client literally cannot corrupt a saved version by editing.
+A resume is a document whose saved versions are frozen: saving captures a snapshot, and reprinting that snapshot later is byte-identical even after the profile changes. This protects job applications from silent content drift - the failure mode where a recruiter sees something different from what the candidate sent. Draft edits and frozen snapshots are separate artifacts at every layer: the client literally cannot corrupt a saved version by editing.
 
 ## Objectives
 
@@ -12,7 +12,7 @@ A resume is a document whose saved versions are frozen: saving captures a snapsh
 - O-2 Draft discipline: autosave touches only client-side draft state; only the explicit snapshot endpoint writes a version.
 - O-3 One public CV: at most one document per profile is public; publishing names the displaced document; unpublishing clears both flags.
 - O-4 No dangling-public: a document linked to a visible `resume` block deletes only after explicit confirm and block unlink - never a visible block pointing at a deleted document.
-- O-5 Bounded storage, honest retrieval: versions older than 30 days that are not the published one move to blob archive; retrieval says `archived` upfront instead of timing out silently.
+- O-5 Bounded storage, honest retrieval: versions older than 30 days that are not the published one move to the archive volume; retrieval says `archived` upfront instead of timing out silently.
 
 ## Personas and RBAC
 
@@ -29,7 +29,7 @@ A resume is a document whose saved versions are frozen: saving captures a snapsh
 |---|---|
 | Q-01 Multiple public resumes | One public resume per profile in v1 (partial unique index); a multi-snapshot picker requires a flagged amendment. |
 | Q-02 Manual vs auto snapshot on publish | Manual explicit save only. Publishing selects an already-saved version and never auto-creates one; publish without a saved version is refused `422 snapshot_required`. |
-| Q-03 Archive retention | `resume-archives` bucket (private, server-side reads only), one NDJSON object per document, retention `>= 90 days` (bucket lifecycle handles pruning beyond that); retrieval is stated as potentially slow (`<= 5 s`), never silent. |
+| Q-03 Archive retention | `resume/archives` uploads namespace (private, server-side reads only), one NDJSON file per document, retention `>= 90 days` (retention sweep handles pruning beyond that); retrieval is stated as potentially slow (`<= 5 s`), never silent. |
 | Q-04 Cover letter | A `template_id` variant of the same document model; no separate table, no separate lifecycle. |
 
 ## In scope

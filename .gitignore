@@ -1,0 +1,14 @@
+# Never commit real secrets. Copy to .env for local boot: cp deploy/.env.example .env
+# See deploy/.env.example for the documented variable set.
+.env
+*.env
+!*.env.example
+.gradle/
+build/
+node_modules/
+dist/
+.DS_Store
+.idea/
+*.iml
+.kotlin
+/data/

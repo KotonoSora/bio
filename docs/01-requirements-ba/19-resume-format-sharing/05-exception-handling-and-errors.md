@@ -1,6 +1,6 @@
 # Resume Format Sharing - Exception Handling and Errors (feature 19)
 
-Phase 1 BA · Failure paths handled in `docs/02-architecture-techlead/19-resume-format-sharing/05-security-logging-and-rate-limiting.md`. Codes are stable contract; problems follow RFC 9457.
+Phase 1 BA · Failure paths handled in `docs/02-architecture-techlead/19-resume-format-sharing/06-security-logging-and-rate-limiting.md`. Codes are stable contract; problems follow RFC 9457.
 
 | Scenario | Path Type | System Handling | Displayed Error Message |
 |---|---|---|---|
@@ -21,4 +21,4 @@ Phase 1 BA · Failure paths handled in `docs/02-architecture-techlead/19-resume-
 | Removed format requested by URL | Public | Detail shows a removed-state page (not a raw 404: takedown is public information) | "This format was removed." |
 | Purged author's format requested | Public | Rows deleted by the purge participant; parity like any missing slug | "This format isn't available." |
 | Thumbnail generation failure | System | Card renders without image (text-first card); retried by the next publish; metric | No error to visitors |
-| Blob store down during publish | API | Publish holds? No: publish fails atomically; draft intact | "Couldn't finish publishing - try again." |
+| Storage volume down during publish | API | Publish holds? No: publish fails atomically; draft intact | "Couldn't finish publishing - try again." |

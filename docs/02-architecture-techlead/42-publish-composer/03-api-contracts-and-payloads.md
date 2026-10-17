@@ -1,12 +1,12 @@
 # Publish Composer - API Contracts and Payloads (feature 42)
 
-Phase 2 TL · Owner routes + ops console contracts. Auth/rate rules: `docs/02-architecture-techlead/42-publish-composer/05-security-logging-and-rate-limiting.md`. Problems follow RFC 9457.
+Phase 2 TL · Owner routes + ops console contracts. Auth/rate rules: `docs/02-architecture-techlead/42-publish-composer/06-security-logging-and-rate-limiting.md`. Problems follow RFC 9457.
 
 ## Endpoints
 
 | Method & path | Auth | Request | Success | Errors (code) |
 |---|---|---|---|---|
-| `POST /api/v1/posts/uploads` | session + CSRF | `UploadInitRequest` | `200 UploadInitView` (server-issued presigned parts) | 422 `media_invalid`; 429 |
+| `POST /api/v1/posts/uploads` | session + CSRF | `UploadInitRequest` | `200 UploadInitView` (server-issued part jobs) | 422 `media_invalid`; 429 |
 | `POST /api/v1/posts/uploads/{uploadId}/complete` | session + CSRF | - | `200 {videoKey, thumbKey?}` (gates verified) | 409 `upload_incomplete`; 422 `media_invalid` |
 | `POST /api/v1/posts` | session + CSRF | `PostCreateRequest` | `201 PostView` (draft or scheduled) | 422 `media_invalid`, `caption_too_long`, `validation_failed`; 403 `quota_exhausted`; 409 `connection_dead`; 429 |
 | `GET /api/v1/posts/{id}` | session | - | `200 PostView` (computed rollup) | 404; 401 |
@@ -22,7 +22,7 @@ Phase 2 TL · Owner routes + ops console contracts. Auth/rate rules: `docs/02-ar
 
 ```kotlin
 data class UploadInitRequest(val fileName: String, val sizeBytes: Long, val durationMs: Long)
-data class UploadInitView(val uploadId: String, val parts: List<String>) // presigned, server-issued
+data class UploadInitView(val uploadId: String, val parts: List<String>) // part URLs, server-issued
 data class TargetRef(val network: String, val accountId: String)
 data class PostCreateRequest(val videoKey: String, val thumbKey: String? = null,
   val caption: String, val trims: Map<String, String> = emptyMap(),
@@ -48,13 +48,13 @@ Post-commit, at-least-once, idempotent consumers (baseline 03).
 
 ## Rules
 
-- Upload: parts are server-issued presigned URLs; object keys server-random; gates (duration ≤ 3 min, size ≤ 300 MB, MP4/H.264 allowlist, magic-byte) verified at init and complete; incomplete uploads expire unpublishable.
+- Upload: parts are server-issued part URLs on the service; file names server-random; gates (duration ≤ 3 min, size ≤ 300 MB, MP4/H.264 allowlist, magic-byte) verified at init and complete; incomplete uploads expire unpublishable.
 - Schedule: synchronous validation is complete — media gates, healthy targets (41), caps, quota, caption limits; success creates the post + one target row per selection; dispatch is async (stream).
 - Edit/cancel: allowed until `run_at − publish.policy.lockMinutes`; `dispatch_started` once the scheduler has flipped the parent; cancel flips parent + queued children in one transaction (no dispatch possible).
 - Retry: server-side eligibility (`failed|retrying-exhausted`); `confirm_required` on ambiguous-timeout targets with no provider idempotency — the confirm route unblocks exactly one manual retry; `unknown` never auto-retries.
 - Ops: pause/resume flips `publish.network_pause` (fresh-read ≤ 5 s, audited); resume replays in `run_at` order; DLQ replay is dual-control on mass (reason + second operator), single replay otherwise; queue/lag views are aggregates + ids only.
 - Webhooks: provider publish-confirmation events reconcile target status through the same guarded transitions (idempotent); revoke signals route to 41's health path.
-- No token material appears in any DTO, event, message, or problem detail; media preview URLs are signed ≤ 15 min.
+- No token material appears in any DTO, event, message, or problem detail; media preview grants ≤ 15 min.
 
 ## Error catalog additions
 

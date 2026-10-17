@@ -14,7 +14,7 @@ Phase 2 TL · Feature 25 of 53 — shop 4/5; extends `shop-service` (port 8087, 
 | D-6 | Guest tips ship: the tip checkout path accepts sessionless payers with a mandatory receipt email (hashed at rest), Turnstile + throttles; guest bookings do not exist (BR-16). | The legacy guest drill is honored without importing the claim machinery features 23-24 rejected for access delivery. |
 | D-7 | Tip messages: sanitized on write (plain text, links/markup stripped), `pending` until owner moderation; the wall renders approved rows only via `GET /internal/v1/tips/{productId}/supporters`; moderation emits `shop.tip_wall_changed.v1` purging the product-page key (feature 10 row). | Wall safety + freshness ≤ 60 s; no social posting ever in v1. |
 | D-8 | Money boundaries: booking/tip rows never store amounts; the order snapshots price (feature 22 rule); refund reasons fixed (BR-05/14); tip finality lives in the 32-40 refund router branching on the product kind already snapshotted on the order. | Zero invented finance values; the money services remain the only setters. |
-| D-9 | Purge: seller scope deletes windows/overrides/bookings-as-owner/tip messages + objects; buyer/guest scope deletes their bookings and scrubs message authorship — approved anonymous pins stay anonymous, named approved messages lose the name and show `Supporter`. | Privacy default (Q4) with a defined scrub semantic (BR-20). |
+| D-9 | Purge: seller scope deletes windows/overrides/bookings-as-owner/tip messages + files; buyer/guest scope deletes their bookings and scrubs message authorship — approved anonymous pins stay anonymous, named approved messages lose the name and show `Supporter`. | Privacy default (Q4) with a defined scrub semantic (BR-20). |
 
 ## Component map
 

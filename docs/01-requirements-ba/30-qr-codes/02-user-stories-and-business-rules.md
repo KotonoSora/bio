@@ -25,4 +25,4 @@ Phase 1 BA · Realized by `docs/02-architecture-techlead/30-qr-codes/` (BR-01..B
 - BR-09 Preview honesty: no client-side generation of official codes; browser preview rendering is allowed only watermarked `PREVIEW — not for print` (enforced by overlay, not by trust); downloads always come from the server render log.
 - BR-10 Generation abuse: session + CSRF on owner renders; ops-only packs (creator token → 403 + audit); per-user/per-ops quotas; Turnstile-class challenge on generate/bulk; secrets env/vault only.
 - BR-11 Subordinateship: the render log is a log, never truth (truth stays in `short_links`); reprints always re-render from the live record; the log exists for history, audit, and pack assembly.
-- BR-12 Purge: account deletion removes render rows (by `user_id`) and render objects; raw scan evidence is feature 31's domain (hashed only, no identity to purge).
+- BR-12 Purge: account deletion removes render rows (by `user_id`) and render files; raw scan evidence is feature 31's domain (hashed only, no identity to purge).

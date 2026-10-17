@@ -19,7 +19,7 @@ Phase 1 BA · Stories seed `06-acceptance-criteria.md`; rules `BR-xx` are quoted
 
 - **BR-01 Badge ownership.** The badge is a platform-owned SVG rendered only from `verification_status=verified`; badge-like emoji or markup inside `bio`/`display_name` renders as plain text. No user-uploadable badge asset exists.
 - **BR-02 States.** Exactly five: `none`, `pending`, `verified`, `rejected`, `revoked`. `verified` requires a manual ops decision - no auto-award rules in v1. A profile holds at most one open (`pending`) request.
-- **BR-03 Evidence.** Evidence lives in blob storage under random keys (`verification/{ulid}.ext`), referenced by `evidence_ref` only - never inline in PG, never served to creators after submission, never rendered inline (sandboxed viewer only). Single file per application, <= 10 MB, PDF/PNG/JPEG.
+- **BR-03 Evidence.** Evidence lives on the local storage volume under server-generated names (`verification/{ulid}.ext`), referenced by `evidence_ref` only - never inline in PG, never served to creators after submission, never rendered inline (sandboxed viewer only). Single file per application, <= 10 MB, PDF/PNG/JPEG.
 - **BR-04 Rename interplay.** A rename of a verified profile sets status back to `pending` atomically with the rename; the badge hides until re-approved.
 - **BR-05 Revocation.** Any -> `revoked` is one audited ops action with a reason; the public badge disappears within the cache-purge SLA (<= 2 min worst case).
 - **BR-06 Self-reported counts.** Capped at 100,000,000 per network, rate-limited on change, and versioned (history rows). A 10x jump vs the previous value raises `follower_jump_review` (count still stored; review decides). Display copy never implies audit.

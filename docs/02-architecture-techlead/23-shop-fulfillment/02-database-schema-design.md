@@ -47,7 +47,7 @@ CREATE TABLE shop.digital_files (
   file_id        TEXT NOT NULL UNIQUE,
   user_id        TEXT NOT NULL,
   role           TEXT NOT NULL DEFAULT 'file',
-  object_key     TEXT NOT NULL,
+  file_path      TEXT NOT NULL,
   size_bytes     BIGINT NOT NULL CHECK (size_bytes > 0),
   mime_verified  TEXT NOT NULL,
   upgrade_policy TEXT NOT NULL DEFAULT 'free',
@@ -128,7 +128,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON shop.merch_designs, shop.print_jobs,
 - Status transitions are compare-and-set `UPDATE ... WHERE status = :expected`; terminal states (`delivered|failed|cancelled`) have no outgoing path.
 - `chk_design_source` carries only `upload`; `ai` joins exactly when feature 16 ships (never stubbed).
 - `ship_to_json` is write-once; buyer purge nulls it + `buyer_user_id` (D-8); owner reads and every DTO enumerate columns — `ship_to_json` is never selected outside the adapter path.
-- Bodies (`role='body'`) are sanitized markdown objects; the mint path refuses `role='body'` (bodies render only through the fragment endpoint).
+- Bodies (`role='body'`) are sanitized markdown payloads; the mint path refuses `role='body'` (bodies render only through the fragment endpoint).
 - One `current` row per product via the partial unique index; publish flips within one transaction + audit.
 - Redis db 9: `merch:callbacks` stream (group `partner-cb`), `merch:cb:{eventId}` dedupe (24 h), `digital:mint:{entitlementId}` single-flight (30 s).
 

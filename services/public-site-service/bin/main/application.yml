@@ -1,0 +1,41 @@
+server:
+  port: ${SERVER_PORT:8080}
+  # SIGTERM graceful shutdown: drain in-flight requests, close queue consumers.
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  application:
+    name: public-site-service
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: 5
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      service: public-site-service
+  otlp:
+    metrics:
+      export:
+        url: ${OTEL_EXPORTER_OTLP_ENDPOINT:}
+
+internal:
+  jwt:
+    public-key-pem: ${INTERNAL_JWT_PUBLIC_KEY_PEM:}
+    previous-public-key-pem: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:}
+    audience: public-site-service
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} service=public-site-service trace=%X{traceId:-} level=%-5level msg=%m%n"
