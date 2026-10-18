@@ -23,10 +23,12 @@ import {
   accountApi,
   authApi,
   deletionApi,
+  planApi,
   profileApi,
   type DeleteStatusResponse,
   type MeResponse,
   type MyProviderView,
+  type PlanResponse,
   type ProviderView,
   type SessionSummary,
 } from './api/account';
@@ -34,7 +36,7 @@ import ConfirmDialog from './components/ConfirmDialog';
 import DeleteAccountDialog, { LITERAL_DELETE } from './components/DeleteAccountDialog';
 import StepUpDialog from './components/StepUpDialog';
 import { describeError, isUnauthenticated } from './lib/errors';
-import { lastActiveBucket } from './lib/format';
+import { formatVnd, lastActiveBucket } from './lib/format';
 import { currentReturnTo, postForm } from './lib/forms';
 import { useMfeContext } from './mfe-context';
 import {
@@ -51,6 +53,8 @@ type DialogState =
   | { kind: 'confirm-revoke'; session: SessionSummary }
   | { kind: 'confirm-revoke-others' }
   | { kind: 'confirm-restore' }
+  | { kind: 'confirm-cancel-plan' }
+  | { kind: 'confirm-change-plan' }
   | { kind: 'delete' }
   | { kind: 'step-up'; action: PendingAction }
   | null;
@@ -85,6 +89,10 @@ export default function AccountSettings() {
   const [expected, setExpected] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
+
+  // Feature 03 plan panel: the owner plan read is the panel's truth; cancel is
+  // forwarded to feature 36's endpoint with the step-up contract (BR-06).
+  const [plan, setPlan] = useState<PlanResponse | null>(null);
 
   const [email, setEmail] = useState('');
   const [emailSyntaxOk, setEmailSyntaxOk] = useState(true);
@@ -256,6 +264,34 @@ export default function AccountSettings() {
     }
   }, [refuse, t]);
 
+  const refreshPlan = useCallback(async () => {
+    setPlan(await planApi.plan());
+  }, []);
+
+  /**
+   * BR-06 one-click cancel (features 36's mechanics, step-up from feature 01):
+   * one confirmation, service-to-period-end + lossless-downgrade copy, no
+   * retention maze. Nothing applies on `403 step_up_required` - the dialog
+   * parks the action and re-auth resumes it.
+   */
+  const runCancelPlan = useCallback(async () => {
+    try {
+      const res = await planApi.cancel();
+      setPlan(res);
+      setNotice(t('settings.plan.cancelledNotice'));
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'step_up_required') {
+        const action: PendingAction = { kind: 'cancel-plan', plan: plan?.plan ?? 'pro' };
+        setPendingAction(action);
+        setDialog({ kind: 'step-up', action });
+        return;
+      }
+      refuse(err);
+    } finally {
+      setDialog(null);
+    }
+  }, [plan?.plan, refuse, t]);
+
   const bootstrap = useCallback(async (): Promise<boolean> => {
     try {
       const [m, ps, ss] = await Promise.all([accountApi.me(), accountApi.providers(), accountApi.sessions()]);
@@ -269,7 +305,6 @@ export default function AccountSettings() {
         throw err;
       });
       setDeletion(del);
-      return true;
     } catch (err) {
       if (isUnauthenticated(err)) {
         toLogin();
@@ -278,7 +313,11 @@ export default function AccountSettings() {
       setNotice(describeError(err));
       return false;
     }
-  }, [toLogin]);
+    // Feature 03: the plan read is an independent panel read; its failure
+    // degrades to its own notice instead of taking down the settings surface.
+    void planApi.plan().then(setPlan).catch((err) => refuse(err));
+    return true;
+  }, [refuse, toLogin]);
 
   const booted = useRef(false);
   useEffect(() => {
@@ -295,9 +334,10 @@ export default function AccountSettings() {
       if (!pending) return;
       if (pending.kind === 'delete') await runDelete(pending.confirmation);
       else if (pending.kind === 'unlink') await runUnlink(pending.provider, pending.label);
+      else if (pending.kind === 'cancel-plan') await runCancelPlan();
       else await startLink(pending.provider, pending.label);
     })();
-  }, [bootstrap, runDelete, runUnlink, startLink]);
+  }, [bootstrap, runCancelPlan, runDelete, runUnlink, startLink]);
 
   const countdownActive = resendIn > 0;
   useEffect(() => {
@@ -410,7 +450,9 @@ export default function AccountSettings() {
   const dialogActionLabel = (action: PendingAction) =>
     action.kind === 'delete'
       ? t('actions.delete')
-      : t(action.kind === 'link' ? 'actions.link' : 'actions.unlink', { provider: action.label });
+      : action.kind === 'cancel-plan'
+        ? t('actions.cancelPlan')
+        : t(action.kind === 'link' ? 'actions.link' : 'actions.unlink', { provider: action.label });
   const daysLeftText = (iso: string) => {
     const days = daysLeft(iso);
     return days === 1 ? t('settings.deletion.dayLeft') : t('settings.deletion.daysLeft', { count: days });
@@ -466,6 +508,66 @@ export default function AccountSettings() {
           {t('settings.conflictNotice')}
         </Notice>
       )}
+
+      {/* Feature 03 plan panel (BA 04): tier chip, renewal row, trial row, and the
+          paid-state buttons; rows appear only for values the server projected. */}
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2">{t('settings.plan.title')}</CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              {plan ? (plan.plan === 'pro' ? t('settings.plan.proChip') : t('settings.plan.freeChip')) : t('common.dash')}
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm">
+            <span className="text-muted-foreground">{t('settings.plan.currentLabel')}</span>{' '}
+            <span className="font-medium">
+              {plan ? (plan.plan === 'pro' ? t('settings.plan.proChip') : t('settings.plan.freeChip')) : t('common.dash')}
+            </span>
+          </p>
+
+          {plan?.trial && (
+            <p className="text-sm">
+              {t('settings.plan.trial', { days: plan.trial.days, date: purgeDate(plan.trial.endsAt) })}
+            </p>
+          )}
+
+          {plan?.subscription && (
+            <p className="text-sm">
+              <span className="text-muted-foreground">{t('settings.plan.renewal')}</span>{' '}
+              {t(
+                plan.subscription.status === 'cancelled' ? 'settings.plan.serviceUntil' : 'settings.plan.renewalOn',
+                {
+                  amountVnd: formatVnd(plan.subscription.nextAmountVnd),
+                  date: purgeDate(plan.subscription.periodEnd),
+                  term: plan.subscription.term,
+                },
+              )}
+            </p>
+          )}
+
+          {plan?.plan === 'free' && (
+            <p>
+              <a className="text-sm font-medium underline underline-offset-4" href="/app/pricing">
+                {t('settings.plan.seePlans')}
+              </a>
+            </p>
+          )}
+
+          {plan?.plan === 'pro' && (
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" onClick={() => setDialog({ kind: 'confirm-cancel-plan' })}>
+                {t('settings.plan.cancel')}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setDialog({ kind: 'confirm-change-plan' })}>
+                {t('settings.plan.change')}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -713,6 +815,29 @@ export default function AccountSettings() {
           onConfirm={() => {
             setDialog(null);
             void revokeOthers();
+          }}
+        />
+      )}
+      {dialog?.kind === 'confirm-cancel-plan' && plan?.subscription && (
+        <ConfirmDialog
+          title={t('settings.plan.cancelTitle')}
+          body={t('settings.plan.cancelBody', { date: purgeDate(plan.subscription.periodEnd) })}
+          confirmLabel={t('settings.plan.cancelConfirm')}
+          danger
+          onCancel={() => setDialog(null)}
+          onConfirm={() => void runCancelPlan()}
+        />
+      )}
+      {dialog?.kind === 'confirm-change-plan' && (
+        <ConfirmDialog
+          title={t('settings.plan.changeTitle')}
+          body={t('settings.plan.changeBody')}
+          confirmLabel={t('settings.plan.changeConfirm')}
+          onCancel={() => setDialog(null)}
+          onConfirm={() => {
+            setDialog(null);
+            // The pricing page owns the change effects presentation (BR-07); checkout lands with release 33/34.
+            navigate('/pricing');
           }}
         />
       )}

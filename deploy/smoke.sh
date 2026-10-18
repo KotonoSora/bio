@@ -30,6 +30,22 @@ MFE_CSS="$(printf '%s' "$MFE_MANIFEST" | python3 -c 'import json,sys; print(json
 curl -sf "$EDGE/app/$MFE_CSS" | grep -q -- '--background' || { echo "FAIL edge mfe css"; exit 1; }
 echo "ok edge mfe"
 
+echo "== pricing surface (feature 03: edge 302 + frozen public plans read) =="
+CODE="$(curl -s -o /dev/null -w '%{http_code}' "$EDGE/pricing")"
+[ "$CODE" = "302" ] || { echo "FAIL /pricing=$CODE"; exit 1; }
+LOC="$(curl -s -o /dev/null -w '%{redirect_url}' "$EDGE/pricing")"
+case "$LOC" in
+  */app/pricing) ;;
+  *) echo "FAIL /pricing redirect -> $LOC"; exit 1 ;;
+esac
+PLANS_HEADERS="$(mktemp)"
+if ! curl -sf -D "$PLANS_HEADERS" -o /dev/null "$EDGE/api/v1/plans"; then
+  echo "FAIL public plans read"; rm -f "$PLANS_HEADERS"; exit 1
+fi
+grep -qi '^cache-control: public, max-age=300' "$PLANS_HEADERS" || { echo "FAIL plans cache headers"; rm -f "$PLANS_HEADERS"; exit 1; }
+rm -f "$PLANS_HEADERS"
+echo "ok pricing surface"
+
 echo "== edge proxies public SSR to the gateway =="
 curl -sf "$EDGE/smokeuser" | grep -q smokeuser || { echo "FAIL edge SSR"; exit 1; }
 echo "ok edge SSR"

@@ -46,6 +46,17 @@ jobs:
           npm ci
           npm run build:web
           npm test --workspaces --if-present
+      - name: "Pricing copy drift gate (T-07: claims render through plans-claims.json only)"
+        run: |
+          node --test scripts/*.test.mjs
+          node scripts/check-plan-claims.mjs
+      - name: Plan-claims release archive (feature 03 T-08 / NFR-08 / G7)
+        run: node scripts/plan-claims-release.mjs --tag "ci-${GITHUB_SHA::7}"
+      - name: Archive plan-claims release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan-claims
+          path: deploy/releases/plan-claims/
       - name: Build
         run: ./gradlew build --no-daemon
       - name: Integration tests (PG 18.6 via Testcontainers)

@@ -13,6 +13,9 @@ mkdir -p deploy/releases
 echo "== build all images =="
 docker compose build
 
+echo "== plan-claims release archive (feature 03 T-08 / NFR-08 / G7) =="
+node scripts/plan-claims-release.mjs --tag "$TAG"
+
 OUT="deploy/releases/local-$TAG.env"
 : > "$OUT"
 {
@@ -20,6 +23,7 @@ OUT="deploy/releases/local-$TAG.env"
   echo "# Wrapper: $(cat deploy/wrapper-checksum.txt)"
   echo "# Catalog: gradle/libs.versions.toml @ $(git hash-object gradle/libs.versions.toml)"
   echo "# Web lockfile: web/package-lock.json @ $(git hash-object web/package-lock.json 2>/dev/null || echo missing)"
+  echo "# Plan-claims archive: deploy/releases/plan-claims/$TAG (registry export + rendered snapshot + diff vs previous tag)"
 } >> "$OUT"
 for svc in $SERVICES; do
   # Compose service name -> image repo (the `nginx` row builds resume/edge).

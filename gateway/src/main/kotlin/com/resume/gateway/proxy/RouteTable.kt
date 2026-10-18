@@ -4,9 +4,10 @@ import com.resume.gateway.config.GatewayRoutes
 
 /**
  * Gateway forwarding table (01-architecture-and-service-topology.md): the gateway
- * routes the SSO surface (`/api/auth/`), the owner API (`/api/v1/me`), short
- * links (`/go/`), public resume reads (`/cv/`) and `/{username}` (public reads)
- * to the owning service of the closed service map. Most specific prefix
+ * routes the SSO surface (`/api/auth/`), the owner API (`/api/v1/me`), the tier
+ * presentation reads (`/api/v1/plan`, `/api/v1/plans`, forward `/api/v1/billing/`),
+ * short links (`/go/`), public resume reads (`/cv/`) and `/{username}` (public
+ * reads) to the owning service of the closed service map. Most specific prefix
  * wins; unknown API paths fail closed (404) - the gateway never guesses an owner,
  * and the internal mesh namespace stays mesh-only.
  */
@@ -43,6 +44,9 @@ class RouteTable(private val serviceHosts: Map<String, String> = GatewayRoutes.S
             "/api/v1/links/" to "link-service",
             "/api/v1/resumes/" to "resume-service",
             "/api/v1/products/" to "shop-service",
+            "/api/v1/plans/" to "billing-service",
+            "/api/v1/plan/" to "account-service",
+            "/api/v1/billing/" to "billing-service",
             "/api/v1/checkout/" to "billing-service",
             "/api/v1/publish/" to "publish-service",
             "/api/v1/social/" to "publish-service",

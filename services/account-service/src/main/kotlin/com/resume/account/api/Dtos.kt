@@ -49,6 +49,28 @@ data class EntitlementSnapshotResponse(
     val resolvedAt: Instant,
 )
 
+/**
+ * Feature 03 account plan read (TL 03): tier from the feature 01 snapshot plus
+ * optional subscription rows composed from feature 36's projection. Absent
+ * fields stay absent - nothing is invented (BR-03, BR-05).
+ */
+data class PlanResponse(
+    val plan: String, // free | pro (feature 01 snapshot)
+    val subscription: SubscriptionProjection? = null, // null when effective free or projection absent pre-36
+    val trial: TrialState? = null, // derived from 36's read when status = trial
+)
+
+data class SubscriptionProjection(
+    val status: String, // active | grace | cancelled | trial (feature 36)
+    val term: String, // monthly | yearly
+    val periodEnd: Instant,
+    val periodStart: Instant, // additive (G4)
+    val nextAmountVnd: Long, // the buyer's own next amount, never a headline (BR-05)
+    val graceEndsAt: Instant? = null, // present only in grace
+)
+
+data class TrialState(val days: Int, val endsAt: Instant)
+
 data class RecoveryLinkRequest(val userId: String = "", val evidenceRef: String = "")
 
 data class RecoveryLinkResponse(val token: String, val expiresAt: Instant)

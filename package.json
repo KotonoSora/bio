@@ -10,6 +10,9 @@
   "scripts": {
     "build:mfes": "node scripts/build-mfes.mjs",
     "build:web": "npm run build:mfes && npm run build --workspace web && node scripts/check-bundle-budget.mjs",
+    "check:plan-claims": "node scripts/check-plan-claims.mjs",
+    "release:plan-claims": "node scripts/plan-claims-release.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs",
     "test": "npm test --workspaces --if-present"
   }
 }

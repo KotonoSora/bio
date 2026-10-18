@@ -56,6 +56,10 @@ DRILLS (one-shot scripts; k6/fixture targets run as compose profiles, never serv
 
 RELEASES
   sh deploy/tag.sh [semver]          # :semver-gitsha tags + deploy/releases record
+  Plan-claims archive (feature 03 T-08 / NFR-08 / G7): tag.sh and the G7 gate
+  run `node scripts/plan-claims-release.mjs --tag <tag>` -> registry export +
+  rendered-copy snapshot + diff vs the previous tag under
+  deploy/releases/plan-claims/<tag>/ (copied to CI artifacts by the build job).
   Promotion = digest swap; rollback = previous digest + current schema (G2 rule)
   plus cache purge via POST /internal/v1/purge where declared.
   Swarm/Kubernetes is out of scope for v1; compose-by-digest is the contract.

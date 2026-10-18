@@ -76,5 +76,5 @@ class SecurityConfig(
         return http.build()
     }
 
-    fun publicPaths(): Array<String> = arrayOf("/webhooks/**")
+    fun publicPaths(): Array<String> = arrayOf("/webhooks/**", "/api/v1/plans")
 }

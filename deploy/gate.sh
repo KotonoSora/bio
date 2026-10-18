@@ -57,9 +57,10 @@ fi
 echo "== G7 drills + deviations =="
 sh deploy/run-drill.sh drill-queue-replay.sh >/dev/null || fail 7 queue-replay
 sh deploy/run-drill.sh drill-cache-flush.sh >/dev/null || fail 7 cache-flush
+node scripts/plan-claims-release.mjs --tag "$TAG" >/dev/null || fail 7 "plan-claims archive (feature 03 T-08 / NFR-08)"
 OPEN_DEVS="$(grep -rl 'DEVIATION FLAGGED' docs/ 2>/dev/null | while read -r f; do grep -L 'DEVIATION CARRIED' "$f"; done | tr '\n' ' ')"
 [ -z "$OPEN_DEVS" ] && DEVS="none open" || DEVS="OPEN: $OPEN_DEVS"
-pass 7 "drills green; deviations reconciled ($DEVS)"
+pass 7 "drills green; plan-claims archive written; deviations reconciled ($DEVS)"
 fi
 
 WAIVERS="$(ls deploy/waivers/*.txt 2>/dev/null | tr '\n' ' ')"
@@ -73,6 +74,7 @@ cat > "$LOG" <<EOF
   "grype_digest": "$SBOM_SHA",
   "waivers": "$WAIVERS",
   "rollback_target": "previous digest (deploy/releases/)",
+  "plan_claims_archive": "deploy/releases/plan-claims/$TAG",
   "deviations": "${DEVS:-pending-boot}",
   "report": "drill-log/gate-$TAG.log"
 }

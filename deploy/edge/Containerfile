@@ -15,6 +15,7 @@ COPY packages/ui/package.json packages/ui/package.json
 RUN npm ci
 COPY web/ web/
 COPY mfe/ mfe/
+COPY plans-claims.json plans-claims.json
 COPY packages/ packages/
 COPY scripts/ scripts/
 RUN npm run build:web

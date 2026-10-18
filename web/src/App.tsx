@@ -9,7 +9,6 @@ import NotFound from './pages/NotFound';
 import RecoveryLanding from './pages/RecoveryLanding';
 import Resumes from './pages/Resumes';
 import WelcomeUsername from './pages/WelcomeUsername';
-
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
     'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
@@ -30,6 +29,9 @@ export default function App() {
             <NavLink to="/resumes" className={navLinkClass}>
               {t('nav.resumes')}
             </NavLink>
+            <NavLink to="/pricing" className={navLinkClass}>
+              {t('nav.pricing')}
+            </NavLink>
             <NavLink to="/account/settings" className={navLinkClass}>
               {t('nav.settings')}
             </NavLink>
@@ -40,6 +42,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/resumes" element={<Resumes />} />
+          <Route path="/pricing" element={<MfeMount name="plans" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/error" element={<AuthError />} />
           <Route path="/welcome/username" element={<WelcomeUsername />} />

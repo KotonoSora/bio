@@ -68,6 +68,9 @@ class SecurityConfig(
                 // Session-bound endpoints self-check on the `sid` claim, so anonymous
                 // probes fall through to the `auth_disabled` 404 surface.
                 it.requestMatchers("/api/auth/**", "/api/v1/auth/**").permitAll()
+                // The public pricing data read (feature 03 D-2, S-7): anonymous
+                // public-read class, cache-first, verified cache-leg-only downstream.
+                it.requestMatchers("/api/v1/plans").permitAll()
                 // Session/owner API.
                 it.requestMatchers("/api/v1/**").authenticated()
                 it.anyRequest().authenticated()

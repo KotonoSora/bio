@@ -33,6 +33,26 @@ class RouteTableTest {
     }
 
     @Test
+    fun `tier presentation reads route to their owning services (feature 03, D-1 and D-2)`() {
+        // The public plans read is billing's (feature 35's serving surface); the
+        // trigram-exact path never bleeds into the account plan read.
+        assertEquals("billing-service", routes.resolve("/api/v1/plans")?.service)
+        assertEquals("billing-service", routes.resolve("/api/v1/plans/extra/wrong")?.service)
+        // The account plan read is account-service's, anonymous by contract
+        // (401 at the gateway; the service self-checks the session).
+        assertEquals("account-service", routes.resolve("/api/v1/plan")?.service)
+        // Near-misses never guess an owner.
+        assertNull(routes.resolve("/api/v1/plansx"))
+    }
+
+    @Test
+    fun `billing forward surfaces route to billing-service (features 36-39)`() {
+        assertEquals("billing-service", routes.resolve("/api/v1/billing/plan/cancel")?.service)
+        assertEquals("billing-service", routes.resolve("/api/v1/billing/trial/start")?.service)
+        assertNull(routes.resolve("/api/v1/billingx/plan/cancel"))
+    }
+
+    @Test
     fun `public ssr pages route to public-site-service`() {
         assertEquals("public-site-service", routes.resolve("/someuser")?.service)
         assertEquals("public-site-service", routes.resolve("/s/ms.js")?.service)
