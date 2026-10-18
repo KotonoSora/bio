@@ -6,7 +6,8 @@
 export type PendingAction =
   | { kind: 'link'; provider: string; label: string }
   | { kind: 'unlink'; provider: string; label: string }
-  | { kind: 'delete'; confirmation: string };
+  | { kind: 'delete'; confirmation: string }
+  | { kind: 'cancel-plan'; plan: string };
 
 const KEY = 'acct.pendingAction';
 
@@ -24,9 +25,13 @@ export function takePendingAction(): PendingAction | null {
       provider?: string;
       label?: string;
       confirmation?: string;
+      plan?: string;
     };
     if (parsed.kind === 'delete' && typeof parsed.confirmation === 'string') {
       return { kind: 'delete', confirmation: parsed.confirmation };
+    }
+    if (parsed.kind === 'cancel-plan' && typeof parsed.plan === 'string') {
+      return { kind: 'cancel-plan', plan: parsed.plan };
     }
     if ((parsed.kind === 'link' || parsed.kind === 'unlink') && typeof parsed.provider === 'string') {
       return { kind: parsed.kind, provider: parsed.provider, label: parsed.label ?? parsed.provider };

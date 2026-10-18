@@ -46,6 +46,8 @@ jobs:
           npm ci
           npm run build:web
           npm test --workspaces --if-present
+      - name: Pricing copy drift gate (T-07: claims render through plans-claims.json only)
+        run: node scripts/check-plan-claims.mjs
       - name: Build
         run: ./gradlew build --no-daemon
       - name: Integration tests (PG 18.6 via Testcontainers)

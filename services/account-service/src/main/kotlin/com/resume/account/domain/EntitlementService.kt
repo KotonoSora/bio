@@ -24,14 +24,14 @@ class EntitlementService(
     private val ledger: PlanLedgerClient,
     props: AccountProperties,
     meters: MeterRegistry,
-) {
+) : EntitlementSnapshotSource {
     private data class Cached(val snapshot: EntitlementSnapshot, val at: Instant)
 
     private val cache = ConcurrentHashMap<String, Cached>()
     private val cacheSeconds = props.services.entitlementCacheSeconds.coerceAtMost(30).coerceAtLeast(1)
     private val miss = meters.counter("entitlement_snapshot_miss")
 
-    fun snapshot(userId: String): EntitlementSnapshot {
+    override fun snapshot(userId: String): EntitlementSnapshot {
         val now = Instant.now()
         cache[userId]?.let { if (it.at.plusSeconds(cacheSeconds).isAfter(now)) return it.snapshot }
         val ledgerPlan = ledger.fetch(userId)

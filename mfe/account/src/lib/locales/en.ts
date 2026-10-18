@@ -81,6 +81,30 @@ const en = {
       cancelledChip: 'Cancelled',
       cancelledNotice: 'Deletion cancelled. Your account stays active.',
     },
+    // Feature 03 copy: renewal honesty (BR-05) and one-click cancel (BR-06).
+    // Dates and amounts are data-driven; the dictionaries carry no numbers.
+    plan: {
+      title: 'Plan',
+      currentLabel: 'Current plan',
+      freeChip: 'Free',
+      proChip: 'Pro',
+      seePlans: 'See plans',
+      renewal: 'Your renewal price',
+      renewalOn: '{{amountVnd}} renews on {{date}} ({{term}})',
+      serviceUntil: '{{amountVnd}} already paid; service runs until {{date}} ({{term}})',
+      trial: 'Trial: {{days}} days left, ends {{date}}',
+      cancel: 'Cancel plan',
+      cancelTitle: 'Cancel your plan?',
+      cancelBody:
+        'Your plan serves until {{date}}, then drops back to Free. Nothing is deleted and your public pages keep working; pro-only features stop serving. Export anything you need first - you can always resubscribe.',
+      cancelConfirm: 'Cancel my plan',
+      cancelledNotice: 'Cancellation set. Your plan serves until the period end.',
+      change: 'Change plan',
+      changeTitle: 'Change your plan?',
+      changeBody:
+        'Upgrades start a fresh billing term right away; switches re-price at your next renewal. Billing ends when the period ends - no partial-period billing happens mid-term.',
+      changeConfirm: 'Choose a plan',
+    },
   },
   buckets: { now: 'Active now', today: 'Today', week: 'This week', earlier: 'Earlier' },
   stepUp: {
@@ -88,7 +112,12 @@ const en = {
     actionLine: "You're about to: {{action}}",
     window: 'This confirmation stays valid for 10 minutes.',
   },
-  actions: { link: 'Link {{provider}}', unlink: 'Unlink {{provider}}', delete: 'Delete your account' },
+  actions: {
+    link: 'Link {{provider}}',
+    unlink: 'Unlink {{provider}}',
+    delete: 'Delete your account',
+    cancelPlan: 'Cancel your plan',
+  },
   errors: {
     throttled: 'Too many attempts. Try again in {{seconds}}.',
     stepUpRequired: "Confirm it's you to continue.",

@@ -20,7 +20,7 @@ import java.util.Base64
  * `csrf_token` cookie value in the `X-CSRF-Token` header (fetch/JSON ops) or as
  * a form field (navigation posts that hand off to the IdP). Runs before the
  * security chain so the token cookie is issued on every response, including
- * 401s. Anonymous surfaces that never carry a session (SSO initiation,
+ * 401s - except cookieless public reads (see cookielessRead). Anonymous surfaces that never carry a session (SSO initiation,
  * callbacks, recovery, webhooks, beacon, merch callbacks) are exempt from
  * validation - downstream verifies by signature/Turnstile/state.
  *
@@ -37,7 +37,9 @@ class CsrfDoubleSubmitFilter(
     private val rng = SecureRandom()
 
     override fun doFilterInternal(req: HttpServletRequest, res: HttpServletResponse, chain: FilterChain) {
-        ensureCookie(req, res)
+        if (req.method !in SAFE || !cookielessRead(req.requestURI)) {
+            ensureCookie(req, res)
+        }
         if (req.method in SAFE || exempt(req.requestURI)) {
             chain.doFilter(req, res)
             return
@@ -76,6 +78,15 @@ class CsrfDoubleSubmitFilter(
                 .toString(),
         )
     }
+
+    /**
+     * Anonymous public reads with no mutations exist behind the edge cache
+     * (feature 03 NFR-01/02): a minted token cookie would set Set-Cookie on
+     * every cacheable answer, so nginx would never store it. SAFE methods on
+     * these prefixes get no cookie; mutations still validate as usual.
+     */
+    private fun cookielessRead(path: String): Boolean =
+        path.startsWith("/api/v1/plans")
 
     private fun formField(body: ByteArray): String? {
         for (pair in String(body, Charsets.UTF_8).split('&')) {

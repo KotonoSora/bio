@@ -1,0 +1,122 @@
+[
+  {
+    "claimId": "pricing_heading",
+    "textPattern": "Simple pricing",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.version"
+  },
+  {
+    "claimId": "pricing_subtitle",
+    "textPattern": "Two plans. Cancel anytime.",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "term_monthly",
+    "textPattern": "Monthly",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.prices"
+  },
+  {
+    "claimId": "term_yearly",
+    "textPattern": "Yearly",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.prices"
+  },
+  {
+    "claimId": "tier_free",
+    "textPattern": "Free",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "tier_pro",
+    "textPattern": "Pro",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "one_profile",
+    "textPattern": "One profile",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "profiles.limit"
+  },
+  {
+    "claimId": "unlimited_profiles",
+    "textPattern": "Unlimited profiles",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/01-architecture-and-tech-stack.md",
+    "key": "profiles.limit"
+  },
+  {
+    "claimId": "unlimited_links",
+    "textPattern": "Unlimited links",
+    "enforcement": "docs/02-architecture-techlead/08-link-blocks/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "tips_enabled",
+    "textPattern": "Tips enabled",
+    "enforcement": "docs/02-architecture-techlead/25-shop-consultations-and-tips/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "basic_resume",
+    "textPattern": "Basic resume builder",
+    "enforcement": "docs/02-architecture-techlead/17-resume-documents/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "custom_domain",
+    "textPattern": "Custom domain",
+    "enforcement": "docs/02-architecture-techlead/04-custom-domains/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "realtime_analytics",
+    "textPattern": "Realtime analytics",
+    "enforcement": "docs/02-architecture-techlead/14-realtime-global/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "premium_templates",
+    "textPattern": "Premium templates",
+    "enforcement": "docs/02-architecture-techlead/18-resume-templates/01-architecture-and-tech-stack.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "ai_jd_tailor",
+    "textPattern": "AI JD tailoring",
+    "enforcement": "docs/02-architecture-techlead/35-entitlement-and-plans/03-api-contracts-and-payloads.md",
+    "key": "plansResponse.tiers"
+  },
+  {
+    "claimId": "monthly_price",
+    "textPattern": "{price} per month",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/02-database-schema-design.md",
+    "key": "plansResponse.prices"
+  },
+  {
+    "claimId": "yearly_price",
+    "textPattern": "{price} per year",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/02-database-schema-design.md",
+    "key": "plansResponse.prices"
+  },
+  {
+    "claimId": "yearly_saving_badge",
+    "textPattern": "Save {yearlyDiscountPct}% with yearly billing",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/02-database-schema-design.md",
+    "key": "yearlyDiscountPct"
+  },
+  {
+    "claimId": "trial_cta",
+    "textPattern": "Try Pro free for {trialDays} days",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/02-database-schema-design.md",
+    "key": "trialDays"
+  },
+  {
+    "claimId": "prices_refreshing",
+    "textPattern": "Prices are refreshing - try again in a moment.",
+    "enforcement": "docs/02-architecture-techlead/03-tier-presentation/05-security-logging-and-rate-limiting.md",
+    "key": "plansResponse.prices"
+  }
+]

@@ -12,7 +12,7 @@ Tests never boot the stack; start it with `docker compose up -d` first.
 | `tests/01-account-and-access.full-login.spec.ts` | Opt-in suite (4 cases): real SSO dance against the mock IdP, identity stability, open-redirect clamp, logout. |
 | `tests/01-account-and-access.authenticated.spec.ts` | Opt-in suite (15 cases): one SSO dance per run seeds a session; every case then tests post-login surfaces with zero login steps (owner reads, sessions/revoke scoping, contact email, link/unlink guards, step-up, sign-out). |
 | `mock-idp/server.mjs` | Zero-dependency mock OIDC IdP (authorize consent page, token exchange, RS256 id_token, JWKS). |
-| `scripts/enable-full-login.sh` / `disable-full-login.sh` | Toggle `.env` between the mock and placeholder IdP; enable also ensures the dev internal-JWT keypair, disable blanks it again. Recreates gateway + affected services. |
+| `scripts/enable-full-login.sh` / `disable-full-login.sh` | Toggle `.env` between the mock and placeholder IdP; enable also ensures the dev internal-JWT keypair, disable blanks it again. Recreates gateway + affected services **and the edge** (nginx caches upstream IPs at startup). |
 | `01-account-and-access.test-cases.md` | The full case catalog (AC-01..AC-15 mapping, integration-owned list, runbook). |
 
 ## Run
@@ -105,6 +105,33 @@ Budget: 6 dances = 12 auth ops. The suite is ordered and runs `workers=1`
 because cases share identity B/D state by design; run it as its own command, a
 minute apart from `test:full`/`test:auth`. Without `idp:on` the suite skips;
 without `E2E_FULL_LOGIN=1` (default runs) it never starts.
+
+## Tier presentation suite (feature 03)
+
+`tests/03-tier-presentation.spec.ts` runs in the default set (no IdP): the
+public pricing surface - the frozen `GET /api/v1/plans` contract and its
+cache-first serving, the `/pricing` SPA route, two tier cards with
+registry-backed claims (`plans-claims.json`), the term toggle, server-absence
+rules (unset config renders no price/badge/trial), the claim-trace drift drill,
+and the anonymous guard on the account plan read (10 cases).
+
+`tests/03-tier-presentation.authenticated.spec.ts` is opt-in and dances one
+identity per run - the account plan read resolves free with private cache
+headers and no invented subscription/trial rows, tampered client plan flags
+are ignored, and the account screen shows the Free chip with paid-state rows
+hidden (BR-05, T-06):
+
+```sh
+cd e2e
+npm run idp:on               # once (mock IdP + dev JWT keypair)
+npm run test:plan            # headless
+npm run test:headed:plan     # visible browser
+npm run idp:off              # restore the placeholder IdP afterwards
+```
+
+Budget: 1 dance = 2 auth ops (the rest is plain HTTP/UI on the seeded
+session). Without `idp:on` the suite skips; without `E2E_FULL_LOGIN=1`
+(default runs) it never starts.
 
 ## Limits and troubleshooting
 

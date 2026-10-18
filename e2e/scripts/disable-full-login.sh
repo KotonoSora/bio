@@ -32,6 +32,9 @@ print('.env restored: generic-oidc back to placeholder defaults')
 PY
 
 docker compose up -d gateway account-service profile-service >/dev/null
-echo 'gateway + account-service + profile-service recreated (dev-user identity baseline):'
+# The edge caches upstream IPs at startup: recreate it last so nginx
+# re-resolves the (possibly new) gateway IP.
+docker compose up -d --force-recreate nginx >/dev/null
+echo 'gateway + account-service + profile-service + edge recreated (dev-user identity baseline):'
 docker inspect "$(docker compose ps -q account-service)" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep '^GENERIC_OIDC_AUTHORIZE_URI=' || true
 docker compose exec -T account-service printenv INTERNAL_JWT_PUBLIC_KEY_PEM | wc -c | sed 's/^/  verify key bytes (1 = blank): /'

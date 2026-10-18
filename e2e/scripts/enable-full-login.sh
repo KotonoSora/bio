@@ -87,7 +87,11 @@ print('.env updated: mesh signing key -> dev internal keypair')
 PY
 
 docker compose up -d gateway account-service profile-service >/dev/null
-echo 'gateway + account-service + profile-service recreated:'
+# The edge caches upstream IPs at startup: recreate it last so nginx
+# re-resolves the (possibly new) gateway IP, or /api/* answers with stale
+# upstream 404s while the gateway is fine.
+docker compose up -d --force-recreate nginx >/dev/null
+echo 'gateway + account-service + profile-service + edge recreated:'
 docker compose exec -T gateway printenv INTERNAL_JWT_PRIVATE_KEY_PEM | head -1
 docker compose exec -T account-service printenv INTERNAL_JWT_PUBLIC_KEY_PEM | head -1
 docker inspect "$(docker compose ps -q account-service)" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep '^GENERIC_OIDC_AUTHORIZE_URI=' || true

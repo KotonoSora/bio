@@ -4,6 +4,15 @@
 // reads "This week"; anything older reads "Earlier".
 export type ActiveBucket = 'now' | 'today' | 'week' | 'earlier';
 
+// Feature 03 (BR-12): the SPA formats server-traveled VND integers; it never
+// computes discounts, proration, or percentages itself.
+const vndFormatter = new Intl.NumberFormat('en', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+
+export function formatVnd(value: number): string {
+  if (!Number.isInteger(value)) throw new Error('VND amounts are integers end to end (NFR-04)');
+  return vndFormatter.format(value);
+}
+
 const ACTIVE_NOW_MS = 5 * 60 * 1000;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 

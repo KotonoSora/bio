@@ -65,6 +65,31 @@ export interface DeleteStatusResponse {
   certificateRef: string | null;
 }
 
+/**
+ * Feature 03 mirrors (TL 03 source-of-truth DTOs; names frozen, additive-only).
+ * Absence stays absence: `subscription`/`trial` stay missing until feature 36
+ * answers the projection - the panel renders rows only for values present.
+ */
+export interface SubscriptionProjection {
+  status: string; // active | grace | cancelled | trial
+  term: string; // monthly | yearly
+  periodEnd: string;
+  periodStart: string;
+  nextAmountVnd: number;
+  graceEndsAt: string | null;
+}
+
+export interface TrialState {
+  days: number;
+  endsAt: string;
+}
+
+export interface PlanResponse {
+  plan: string; // "free" | "pro"
+  subscription: SubscriptionProjection | null;
+  trial: TrialState | null;
+}
+
 export const profileApi = {
   mine: () => api<ProfileLite[]>('/api/v1/profiles/me'),
 };
@@ -103,4 +128,15 @@ export const deletionApi = {
       body: JSON.stringify({ confirmation }),
     }),
   cancel: () => api<DeleteStatusResponse>('/api/v1/account/delete-cancel', { method: 'POST' }),
+};
+
+/**
+ * Feature 03 plan panel: the owner plan read (account-service) is truth;
+ * cancel is a billing action forwarded to feature 36's endpoint with the
+ * feature 01 step-up contract (step-up applies when re-auth stalled > 10 min).
+ * No plan switching/mechanics are reinvented here.
+ */
+export const planApi = {
+  plan: () => api<PlanResponse>('/api/v1/plan'),
+  cancel: () => api<PlanResponse>('/api/v1/billing/plan/cancel', { method: 'POST' }),
 };
