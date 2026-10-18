@@ -86,7 +86,10 @@ env.write_text('\n'.join(lines) + '\n')
 print('.env updated: mesh signing key -> dev internal keypair')
 PY
 
-docker compose up -d gateway account-service profile-service >/dev/null
+docker compose up -d gateway account-service profile-service public-site-service analytics-service resume-service shop-service billing-service publish-service >/dev/null
+# Every service above verifies the internal identity JWT with
+# INTERNAL_JWT_PUBLIC_KEY_PEM; they must be recreated in the same step as the
+# key material, or they keep the old (blank) key and answer 401 invalid_identity.
 # The edge caches upstream IPs at startup: recreate it last so nginx
 # re-resolves the (possibly new) gateway IP, or /api/* answers with stale
 # upstream 404s while the gateway is fine.

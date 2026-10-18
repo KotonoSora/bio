@@ -31,7 +31,9 @@ env.write_text('\n'.join(out).rstrip() + '\n')
 print('.env restored: generic-oidc back to placeholder defaults')
 PY
 
-docker compose up -d gateway account-service profile-service >/dev/null
+docker compose up -d gateway account-service profile-service public-site-service analytics-service resume-service shop-service billing-service publish-service >/dev/null
+# Mirror of enable-full-login.sh: every internal-identity verifier is recreated
+# with the restored (blank) key material so no container keeps a stale key.
 # The edge caches upstream IPs at startup: recreate it last so nginx
 # re-resolves the (possibly new) gateway IP.
 docker compose up -d --force-recreate nginx >/dev/null

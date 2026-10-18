@@ -101,7 +101,8 @@ for (const list of tierClaimLists) {
 }
 
 // 4. No hard-typed pricing literals in copy (AC-02/BR-03 seeded-stale drill).
-const LITERAL = /\b(save\b.*?\b\d|per\s+(month|year)\b.*?\b\d|\b\d+\s*%\s*(off|with)|\btry\b.*?\b\d+\s*days?\b|for\s+\d+\s+days?\b)/i;
+// Both amount orders are covered: "per month 59000" and "59000 per month".
+const LITERAL = /\b(save\b.*?\b\d|per\s+(month|year)\b.*?\b\d|\b\d[\d.,]*\s*(vnd|₫|đ)?\s*per\s+(month|year)\b|\b\d+\s*%\s*(off|with)|\btry\b.*?\b\d+\s*days?\b|for\s+\d+\s+days?\b)/i;
 for (const c of contents) {
   for (const [i, line] of c.text.split('\n').entries()) {
     const vs = line.replace(/['"`{}()/[\]#*_-]/g, ' ');
