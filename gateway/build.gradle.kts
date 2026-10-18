@@ -32,6 +32,23 @@ tasks.named<Test>("integrationTest") {
     useJUnitPlatform()
 }
 
+// Build contract: `integrationTest` runs against Redis 7.4 via Testcontainers.
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets["main"].output + configurations["testRuntimeClasspath"]
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+configurations {
+    named("integrationTestImplementation") { extendsFrom(configurations["testImplementation"]) }
+}
+
+tasks.named<Test>("integrationTest") {
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+}
+
 // Deterministic main class (Kotlin top-level main compiles to <File>Kt).
 springBoot {
     mainClass.set("com.resume.gateway.GatewayApplicationKt")

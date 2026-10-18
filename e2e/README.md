@@ -133,6 +133,61 @@ Budget: 1 dance = 2 auth ops (the rest is plain HTTP/UI on the seeded
 session). Without `idp:on` the suite skips; without `E2E_FULL_LOGIN=1`
 (default runs) it never starts.
 
+## Custom domains suite (feature 04)
+
+`tests/04-custom-domains.spec.ts` runs in the default set (no IdP): owner-API
+auth guards, the mesh-only domain namespace (reclaim/denylist/resolve stay
+`404` at the edge), and the foreign-host neutral error contract - unknown
+hosts render "This site isn't available." with the 60 s negative-cache
+headers, no profile content, no redirect - plus the platform-host routing
+order lock (resolve is a foreign-host concern only).
+
+`tests/04-custom-domains.authenticated.spec.ts` is opt-in and dances one
+identity per run - malformed hostnames (`hostname_invalid`), denylisted
+denials (`domain_denied`), the fail-closed free gate (`domain_forbidden`,
+no partial rows), the client-plan-flag tamper probe, and the domains surface
+on a free account showing the upgrade path instead of a fake form:
+
+```sh
+cd e2e
+npm run idp:on               # once (mock IdP + dev JWT keypair)
+npm run test:domains         # headless
+npm run test:headed:domains  # visible browser
+npm run idp:off              # restore the placeholder IdP afterwards
+```
+
+Budget: 1 dance = 2 auth ops (the rest is plain HTTP/UI on the seeded
+session; ~10 domain API calls stay inside the 10/min owner envelope).
+Without `idp:on` the suite skips; without `E2E_FULL_LOGIN=1` (default runs)
+it never starts.
+
+`tests/04-custom-domains.pro.spec.ts` is the full use case, end to end:
+add a hostname -> publish the TXT challenge -> verify DNS control -> the
+verified host serves the BOUND profile (canonical `https://{host}/{username}`
+on any bio path) -> remove -> neutral again. Two structural facts are
+unreachable in the default stack, so the suite seeds exactly what features
+35/36 (monetize) and real DNS would provide, nothing more: the entitlement
+snapshot `rb:plan:{userId}` (Redis db 4, the same cache the ITs seed) and TXT
+answers registered through `e2e/mock-doh`, which profile-service resolves via
+`DOMAINS_DOH_RESOLVER`:
+
+```sh
+cd e2e
+npm run domains:on             # idp:on wiring + DOMAINS_DOH_RESOLVER -> mock DoH
+npm run test:domains-pro       # headless (3 tests, one dance)
+npm run domains:off            # restores the baseline resolver
+npm run idp:off                # restore the placeholder IdP afterwards
+```
+
+The removal assertion pins the state-change path: `domain.state_changed.v1`
+drops the gateway decision (live event path, gateway
+`DomainStateConsumerIT`), and the poll window covers the 30 s positive TTL
+backstop, so a skipped event still fails closed. The suite cleans up its
+plan key and binding in `afterAll`. Run it a minute apart from the other
+dance suites (auth budget). `domains:on` sets JWT keys, so run
+`deploy/smoke.sh` only after `domains:off` + `idp:off` restored the blank-key
+baseline (direct service reads need the dev-user fallback).
+
 ## Limits and troubleshooting
 
 - Auth endpoints allow 20 ops/min per IP (`429 throttled`). A default run is

@@ -7,6 +7,7 @@ import com.resume.profile.domain.UsernameTakenException
 import org.slf4j.MDC
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -83,6 +84,59 @@ class ProblemHandler {
         pd.setProperty("code", "foreign_profile")
         pd.setProperty("traceId", MDC.get("traceId") ?: "")
         return pd
+    }
+
+    /**
+     * Feature 04 codes (BA 05 catalog; never renamed): `hostname_invalid` /
+     * `domain_denied` / `domain_quota_reached` (422), `domain_taken` (409),
+     * `domain_forbidden` (403 - the fail-closed gate and foreign targets
+     * alike), `domain_not_found` (404). Deny answers never carry plan facts.
+     */
+    @ExceptionHandler(
+        com.resume.profile.domain.domains.HostnameInvalidException::class,
+        com.resume.profile.domain.domains.DomainDeniedException::class,
+        com.resume.profile.domain.domains.DomainQuotaReachedException::class,
+        com.resume.profile.domain.domains.DomainTakenException::class,
+        com.resume.profile.domain.domains.DomainForbiddenException::class,
+        com.resume.profile.domain.domains.ForeignDomainException::class,
+        com.resume.profile.domain.domains.DomainNotFoundException::class,
+    )
+    fun handleDomain(ex: RuntimeException): ProblemDetail {
+        val (status, code) = when (ex) {
+            is com.resume.profile.domain.domains.HostnameInvalidException ->
+                HttpStatus.UNPROCESSABLE_ENTITY to "hostname_invalid"
+            is com.resume.profile.domain.domains.DomainDeniedException ->
+                HttpStatus.UNPROCESSABLE_ENTITY to "domain_denied"
+            is com.resume.profile.domain.domains.DomainQuotaReachedException ->
+                HttpStatus.UNPROCESSABLE_ENTITY to "domain_quota_reached"
+            is com.resume.profile.domain.domains.DomainTakenException ->
+                HttpStatus.CONFLICT to "domain_taken"
+            is com.resume.profile.domain.domains.DomainForbiddenException ->
+                HttpStatus.FORBIDDEN to "domain_forbidden"
+            is com.resume.profile.domain.domains.ForeignDomainException ->
+                HttpStatus.FORBIDDEN to "domain_forbidden"
+            else -> HttpStatus.NOT_FOUND to "domain_not_found"
+        }
+        val pd = ProblemDetail.forStatusAndDetail(status, ex.message ?: "Rejected")
+        pd.type = URI.create("https://resume-builder.local/problems/$code")
+        pd.title = code
+        pd.setProperty("code", code)
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return pd
+    }
+
+    /** 429 `throttled` (NFR-08): keyed feature envelope with Retry-After. */
+    @ExceptionHandler(com.resume.profile.security.DomainRateLimiter.ThrottleException::class)
+    fun handleThrottle(ex: com.resume.profile.security.DomainRateLimiter.ThrottleException):
+        ResponseEntity<ProblemDetail> {
+        val pd = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.message ?: "Too many requests")
+        pd.type = URI.create("https://resume-builder.local/problems/throttled")
+        pd.title = "throttled"
+        pd.setProperty("code", "throttled")
+        pd.setProperty("traceId", MDC.get("traceId") ?: "")
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .header("Retry-After", ex.seconds.toString())
+            .body(pd)
     }
 
     @ExceptionHandler(IllegalStateException::class)

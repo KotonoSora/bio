@@ -85,6 +85,15 @@ service:
   ratelimit:
     per-minute: ${SERVICE_RATELIMIT_PER_MINUTE:120}
 
+# Feature 04 custom domains: DoH TXT port (fetch-only, fail-closed) and the
+# background worker switch (disable per-instance for a dedicated sweeper).
+domains:
+  doh:
+    resolver: ${DOMAINS_DOH_RESOLVER:https://dns.google/resolve}
+    timeout-ms: ${DOMAINS_DOH_TIMEOUT_MS:3000}
+  worker:
+    enabled: ${DOMAINS_WORKER_ENABLED:true}
+
 logging:
   pattern:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} service=profile-service trace=%X{traceId:-} level=%-5level msg=%m%n"

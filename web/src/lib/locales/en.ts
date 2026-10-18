@@ -2,7 +2,7 @@
 // strings never appear here; this dictionary owns presentation only.
 // `{{name}}` placeholders are filled by i18next interpolation at call sites.
 const en = {
-  nav: { dashboard: 'Dashboard', resumes: 'Resumes', pricing: 'Pricing', settings: 'Account settings' },
+  nav: { dashboard: 'Dashboard', resumes: 'Resumes', pricing: 'Pricing', settings: 'Account settings', domains: 'Domains' },
   common: { loading: 'Loading…', retry: 'Try again' },
   mfe: { failed: "This section couldn't load." },
   pricing: { upgrade: 'See plans' },

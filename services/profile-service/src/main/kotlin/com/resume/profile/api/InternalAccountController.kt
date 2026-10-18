@@ -1,6 +1,7 @@
 package com.resume.profile.api
 
 import com.resume.profile.domain.AccountPurgeService
+import com.resume.profile.security.RlsUserHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,6 +22,9 @@ class PurgeRequestValidationException(message: String) : RuntimeException(messag
  * Platform purge participant contract (feature 02 D-1; mesh-only, service JWT):
  * `POST /internal/v1/account/purge` + `GET /internal/v1/account/purge-probe/{userId}`.
  * The handler owns its SQL and RLS scope; the controller only shapes the DTOs.
+ * The `svc` scope wraps the service call OUTSIDE the transaction boundary - the
+ * transaction binds its connection at begin, so a scope set inside would arrive
+ * too late (deny-by-default would silently filter every statement).
  */
 @RestController
 @RequestMapping("/internal/v1/account")
@@ -31,13 +35,13 @@ class InternalAccountController(private val purge: AccountPurgeService) {
         if (body.userId.isBlank() || body.runId.isBlank()) {
             throw PurgeRequestValidationException("userId and runId are required.")
         }
-        val counts = purge.purge(body.userId, body.runId)
+        val counts = RlsUserHolder.asService { purge.purge(body.userId, body.runId) }
         return AccountPurgeResponse(runId = body.runId, tables = counts.tables, files = counts.files)
     }
 
     @GetMapping("/purge-probe/{userId}")
     fun probe(@PathVariable userId: String): AccountPurgeProbeResponse {
-        val residual = purge.probe(userId)
+        val residual = RlsUserHolder.asService { purge.probe(userId) }
         return AccountPurgeProbeResponse(userId = userId, residualRows = residual.rows, residualFiles = residual.files)
     }
 }

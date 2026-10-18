@@ -9,24 +9,28 @@ import { defineConfig } from '@playwright/test';
 // Overrides: EDGE_URL, HEADED=1, SLOWMO=<ms>.
 const baseURL = process.env.EDGE_URL ?? 'http://localhost';
 const headed = process.env.HEADED === '1';
-// Full-login runs need the mock IdP (e2e/mock-idp); Playwright manages its
-// lifecycle only when that suite is enabled. Default runs never start it.
+// Full-login runs need the mock IdP (e2e/mock-idp); the custom-domains
+// serving suite also needs the mock DoH resolver (e2e/mock-doh, feature 04
+// TXT verification). Playwright manages their lifecycle only when the
+// suites are enabled; default runs never start them.
 const fullLogin = process.env.E2E_FULL_LOGIN === '1';
+const domainsPro = process.env.E2E_DOMAINS_PRO === '1';
+const webServers = [
+  ...(fullLogin ? [{ command: 'node mock-idp/server.mjs', url: 'http://localhost:9099/__health' }] : []),
+  ...(domainsPro ? [{ command: 'node mock-doh/server.mjs', url: 'http://localhost:9097/__health' }] : []),
+].map((server) => ({
+  ...server,
+  reuseExistingServer: true,
+  stdout: 'ignore' as const,
+  stderr: 'pipe' as const,
+}));
 
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
-  webServer: fullLogin
-    ? {
-        command: 'node mock-idp/server.mjs',
-        url: 'http://localhost:9099/__health',
-        reuseExistingServer: true,
-        stdout: 'ignore',
-        stderr: 'pipe',
-      }
-    : undefined,
+  webServer: webServers.length > 0 ? webServers : undefined,
   use: {
     baseURL,
     headless: !headed,

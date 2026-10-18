@@ -90,6 +90,9 @@ services:
       SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-rb_session}
       CSRF_COOKIE_NAME: ${CSRF_COOKIE_NAME:-csrf_token}
       ACCOUNT_SERVICE_URL: http://account-service:8080
+      # Feature 04 host routing: platform hosts skip the resolve; everything
+      # else must be a verified binding (safe defaults cover the dev edge).
+      EDGE_PLATFORM_HOSTS: ${EDGE_PLATFORM_HOSTS:-localhost,127.0.0.1,::1}
     depends_on:
       redis:
         condition: service_healthy
@@ -182,6 +185,9 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_DATABASE: 4
       STORAGE_ROOT: /srv/uploads
+      # Feature 04 TXT verification DoH endpoint; the opt-in domains-pro e2e
+      # drill points this at the local mock resolver (e2e/mock-doh).
+      DOMAINS_DOH_RESOLVER: ${DOMAINS_DOH_RESOLVER:-https://dns.google/resolve}
       # Gateway-signed identity verification (blank = dev-user branch).
       INTERNAL_JWT_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PUBLIC_KEY_PEM:-}
       INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM: ${INTERNAL_JWT_PREVIOUS_PUBLIC_KEY_PEM:-}
