@@ -182,6 +182,26 @@ account:
       - name: analytics-service
         base-url: ${ANALYTICS_SERVICE_URL:http://analytics-service:8080}
 
+concierge:
+  # Feature 05 (TL 01 D-6). SLA windows are Q-01: blank = not configured, the
+  # board reports that honestly - never an invented number. The dev/e2e wiring
+  # (e2e/scripts/enable-concierge.sh) sets zero-minute windows for the miss drill.
+  owner-user-ids: ${CONCIERGE_OWNER_USER_IDS:}
+  sla-tiers:
+    standard:
+      response-minutes: ${CONCIERGE_SLA_STANDARD_RESPONSE_MINUTES:}
+      completion-minutes: ${CONCIERGE_SLA_STANDARD_COMPLETION_MINUTES:}
+    rapid:
+      response-minutes: ${CONCIERGE_SLA_RAPID_RESPONSE_MINUTES:}
+      completion-minutes: ${CONCIERGE_SLA_RAPID_COMPLETION_MINUTES:}
+  credit-rule: ${CONCIERGE_CREDIT_RULE:service_credit}
+  referral-url: ${CONCIERGE_REFERRAL_URL:/app/concierge}
+  link-ttl-minutes: 15
+  link-signing-key: ${CONCIERGE_LINK_SIGNING_KEY:}
+  requests-per-day: ${CONCIERGE_REQUESTS_PER_DAY:20}
+  client-actions-per-minute: ${CONCIERGE_CLIENT_ACTIONS_PER_MINUTE:60}
+  ops-per-minute: ${CONCIERGE_OPS_PER_MINUTE:120}
+
 logging:
   pattern:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} service=account-service trace=%X{traceId:-} level=%-5level msg=%m%n"

@@ -47,6 +47,12 @@ class RateLimitFilter(
         path.startsWith("/api/auth/step-up") || path.startsWith("/api/auth/link/") ||
             path.startsWith("/api/auth/unlink/") -> Rule("authuser", 10, Duration.ofMinutes(1), perUser = true)
         path.startsWith("/api/v1/me") -> Rule("owner", 60, Duration.ofMinutes(1), perUser = true)
+        // Feature 05 concierge board: session-scoped reads/writes. The normative
+        // feature envelopes are stricter and enforced service-side (20 task
+        // requests/day/contract; approve/pause/exit 60/min/user) - this rule keeps
+        // the board out of the shared anonymous-api bucket while holding the
+        // internal-ops ceiling (TL 05 "Rate envelopes").
+        path.startsWith("/api/v1/concierge") -> Rule("concierge", 120, Duration.ofMinutes(1), perUser = true)
         path.startsWith("/api/t/") -> Rule("beacon", 60, Duration.ofMinutes(1), perUser = false) // tolerated burst
         path.startsWith("/webhooks/") -> null // provider IP + signature path instead
         path.startsWith("/api/") -> Rule("api", 60, Duration.ofMinutes(1), perUser = false)

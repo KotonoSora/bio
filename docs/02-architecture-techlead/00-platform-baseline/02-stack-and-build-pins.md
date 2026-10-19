@@ -26,6 +26,7 @@ Every service uses these starters only: `web`, `validation`, `data-jpa`, `securi
 ## Kotlin and Spring conventions
 
 - Data classes for DTOs and requests; Jackson serializes ISO8601 (`Instant`) and omits nulls where contracts say "absent".
+- Boot 4 carries both Jackson generations: register the Kotlin module on every mapper a service binds with (MVC request bodies are Jackson 3: `JsonMapperBuilderCustomizer`) so data-class defaults fill omitted JSON fields.
 - Bean Validation on all request DTOs; RFC 9457 `ProblemDetail` for every error, stable `code` strings (never renamed).
 - Service layer returns Kotlin `Result<T>` (or sealed domain errors mapped at the API boundary); exceptions never cross service/mesh boundaries - the API layer maps to `ProblemDetail` with `traceId` only, no stack traces.
 - JPA: Kotlin `no-arg`/`all-open` plugins; no lazy loading outside transactions; statement timeout 5 s default per service.

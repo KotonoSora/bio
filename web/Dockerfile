@@ -4,6 +4,7 @@ WORKDIR /src
 COPY package.json package-lock.json ./
 COPY web/package.json web/package.json
 COPY mfe/account/package.json mfe/account/package.json
+COPY mfe/concierge/package.json mfe/concierge/package.json
 COPY mfe/domains/package.json mfe/domains/package.json
 COPY packages/mfe-kit/package.json packages/mfe-kit/package.json
 COPY packages/ui/package.json packages/ui/package.json

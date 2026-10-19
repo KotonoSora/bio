@@ -39,6 +39,9 @@ class RouteTable(private val serviceHosts: Map<String, String> = GatewayRoutes.S
             "/api/v1/me/" to "account-service",
             "/api/v1/accounts/" to "account-service",
             "/api/v1/account/" to "account-service",
+            // Feature 05 concierge dashboard surface (contract, board, approvals,
+            // dual-confirm transitions) - account-service owns the rows (TL 01 D-1).
+            "/api/v1/concierge/" to "account-service",
             "/api/v1/profiles/" to "profile-service",
             "/api/v1/domains/" to "profile-service",
             "/api/t/leads/submit/" to "profile-service",
