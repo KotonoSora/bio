@@ -35,6 +35,9 @@ export default function App() {
             <NavLink to="/account/settings" className={navLinkClass}>
               {t('nav.settings')}
             </NavLink>
+            <NavLink to="/account/domains" className={navLinkClass}>
+              {t('nav.domains')}
+            </NavLink>
           </nav>
         </div>
       </header>
@@ -47,6 +50,7 @@ export default function App() {
           <Route path="/auth/error" element={<AuthError />} />
           <Route path="/welcome/username" element={<WelcomeUsername />} />
           <Route path="/account/settings" element={<MfeMount name="account" />} />
+          <Route path="/account/domains" element={<MfeMount name="domains" />} />
           <Route path="/recovery/:token" element={<RecoveryLanding />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

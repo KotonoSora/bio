@@ -32,12 +32,13 @@ import java.util.Base64
 class CsrfDoubleSubmitFilter(
     @Value("\${edge.csrf.cookie-name:csrf_token}") private val cookieName: String,
     @Value("\${edge.csrf.cookie-secure:true}") private val secure: Boolean,
+    private val platformHosts: PlatformHosts,
 ) : OncePerRequestFilter() {
 
     private val rng = SecureRandom()
 
     override fun doFilterInternal(req: HttpServletRequest, res: HttpServletResponse, chain: FilterChain) {
-        if (req.method !in SAFE || !cookielessRead(req.requestURI)) {
+        if (req.method !in SAFE || !cookielessRead(req)) {
             ensureCookie(req, res)
         }
         if (req.method in SAFE || exempt(req.requestURI)) {
@@ -84,9 +85,15 @@ class CsrfDoubleSubmitFilter(
      * (feature 03 NFR-01/02): a minted token cookie would set Set-Cookie on
      * every cacheable answer, so nginx would never store it. SAFE methods on
      * these prefixes get no cookie; mutations still validate as usual.
+     *
+     * Feature 04 extends the same rule to every non-platform Host (BR-04,
+     * NFR-05): custom-domain reads - including the neutral error page - are
+     * public, sessionless and cached per host, and the neutral page is
+     * contractually cookie-free.
      */
-    private fun cookielessRead(path: String): Boolean =
-        path.startsWith("/api/v1/plans")
+    private fun cookielessRead(req: HttpServletRequest): Boolean =
+        req.requestURI.startsWith("/api/v1/plans") ||
+            !platformHosts.isPlatform(PlatformHosts.normalize(req.getHeader(HttpHeaders.HOST)))
 
     private fun formField(body: ByteArray): String? {
         for (pair in String(body, Charsets.UTF_8).split('&')) {

@@ -23,6 +23,7 @@ dependencies {
     implementation(libs.flyway.postgres)
     implementation(libs.spring.boot.flyway)
     runtimeOnly(libs.postgres)
+    implementation(libs.icu4j)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)

@@ -1,9 +1,9 @@
 package com.resume.profile.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.resume.profile.data.CustomDomainRepository
 import com.resume.profile.data.ProfileRepository
 import com.resume.profile.data.RetiredUsernameRepository
-import com.resume.profile.security.RlsUserHolder
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -22,7 +22,9 @@ data class ProfileResidual(val rows: Map<String, Long>, val files: Long)
  * profile delete in one transaction under the server-set `svc` scope with an
  * explicit user predicate - zero cross-user deletes (NFR-09). Idempotent per
  * `runId` (counts cached; the tombstone insert is ON CONFLICT DO NOTHING), and a
- * different active run answers `409 purge_in_progress` (S-3).
+ * different active run answers `409 purge_in_progress` (S-3). The `svc` scope is
+ * set by the caller ABOVE the transaction boundary (the tx binds its connection
+ * at begin - a scope set inside this method would arrive too late).
  *
  * Avatar files belong to feature 09's pipeline and are not migrated yet: `files`
  * is honestly 0 until that namespace exists (TL 03 counts table).
@@ -30,6 +32,7 @@ data class ProfileResidual(val rows: Map<String, Long>, val files: Long)
 @Service
 class AccountPurgeService(
     private val profiles: ProfileRepository,
+    private val domains: CustomDomainRepository,
     private val retired: RetiredUsernameRepository,
     private val audit: AuditService,
     private val redis: StringRedisTemplate,
@@ -40,9 +43,9 @@ class AccountPurgeService(
     private val conflicts = meters.counter("deletion.purge.conflict")
 
     @Transactional
-    fun purge(userId: String, runId: String): ProfilePurgeCounts = RlsUserHolder.asService {
+    fun purge(userId: String, runId: String): ProfilePurgeCounts {
         val cacheKey = cacheKey(userId, runId)
-        redisGet(cacheKey)?.let { return@asService mapper.readValue(it, ProfilePurgeCounts::class.java) }
+        redisGet(cacheKey)?.let { return mapper.readValue(it, ProfilePurgeCounts::class.java) }
 
         val activeKey = activeKey(userId)
         val active = redisGet(activeKey)
@@ -57,24 +60,35 @@ class AccountPurgeService(
             for (profile in rows) {
                 retiredInserted += retired.retireIfAbsent(profile.username).toLong()
             }
+            // Bindings first: the profile delete cascades to custom_domains, and the
+            // explicit delete keeps the certificate count honest.
+            val domainsDeleted = domains.deleteByUserId(userId).toLong()
             val deleted = profiles.deleteByUserId(userId).toLong()
-            val tables = linkedMapOf("profiles" to deleted, "retired_usernames" to retiredInserted)
+            val tables = linkedMapOf(
+                "profiles" to deleted,
+                "retired_usernames" to retiredInserted,
+                "custom_domains" to domainsDeleted,
+            )
             val counts = ProfilePurgeCounts(tables = tables, files = 0)
             redisSet(cacheKey, mapper.writeValueAsString(counts), Duration.ofHours(24))
             audit.append(userId, "svc:account-purge", "profile.purge", runId, "ok")
-            log.info("profile purge user={} run={} profiles={} retired={}", userId, runId, deleted, retiredInserted)
-            counts
+            log.info(
+                "profile purge user={} run={} profiles={} retired={} domains={}",
+                userId, runId, deleted, retiredInserted, domainsDeleted,
+            )
+            return counts
         } finally {
             redisDelete(activeKey)
         }
     }
 
-    /** Weekly residual probe (BR-10): profile rows for the account, nothing else. */
+    /** Weekly residual probe (BR-10): profile rows + bindings for the account, nothing else. */
     @Transactional(readOnly = true)
-    fun probe(userId: String): ProfileResidual = RlsUserHolder.asService {
+    fun probe(userId: String): ProfileResidual {
         val residual = linkedMapOf<String, Long>()
         residual["profiles"] = profiles.countByUserId(userId)
-        ProfileResidual(rows = residual, files = 0)
+        residual["custom_domains"] = domains.countByUserId(userId)
+        return ProfileResidual(rows = residual, files = 0)
     }
 
     private fun cacheKey(userId: String, runId: String) = "profile:purge:$userId:$runId"

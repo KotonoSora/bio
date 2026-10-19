@@ -48,19 +48,31 @@ class ServiceProxy(
         )
         .build()
 
-    fun forward(req: HttpServletRequest, res: HttpServletResponse) {
-        val target = routes.resolve(req.requestURI)
+    /**
+     * [pathOverride] lets the host-routed bio surface rewrite the forwarded
+     * path to the resolved (bound) username (feature 04 BR-04) - route lookup,
+     * upstream URI and query preservation all key off the same value; the
+     * client's own path never changes which route is contacted.
+     */
+    fun forward(
+        req: HttpServletRequest,
+        res: HttpServletResponse,
+        extraHeaders: Map<String, String> = emptyMap(),
+        pathOverride: String? = null,
+    ) {
+        val path = pathOverride ?: req.requestURI
+        val target = routes.resolve(path)
         if (target == null) {
-            problem(res, 404, "not_found", "no route for ${req.requestURI}")
+            problem(res, 404, "not_found", "no route for $path")
             return
         }
         val query = req.queryString?.let { "?$it" } ?: ""
-        val uri = URI.create(target.baseUrl + req.requestURI + query)
+        val uri = URI.create(target.baseUrl + path + query)
         val method = HttpMethod.valueOf(req.method)
         val payload = requestBody(req)
 
         try {
-            val spec = client.method(method).uri(uri).headers { it.addAll(outboundHeaders(req, target)) }
+            val spec = client.method(method).uri(uri).headers { it.addAll(outboundHeaders(req, target, extraHeaders)) }
             if (payload != null && method != HttpMethod.GET && method != HttpMethod.HEAD) {
                 spec.body(payload).exchange { _, upstream -> relay(upstream, res) }
             } else {
@@ -90,11 +102,17 @@ class ServiceProxy(
         if (bytes.isNotEmpty()) res.outputStream.write(bytes)
     }
 
-    private fun outboundHeaders(req: HttpServletRequest, target: RouteTable.Target): HttpHeaders {
+    private fun outboundHeaders(
+        req: HttpServletRequest,
+        target: RouteTable.Target,
+        extraHeaders: Map<String, String>,
+    ): HttpHeaders {
         val headers = HttpHeaders()
         req.headerNames.toList().forEach { name ->
             if (name.lowercase() !in REQUEST_DENY) headers.addAll(name, req.getHeaders(name).toList())
         }
+        // Gateway-set context only: the client's own value was stripped above.
+        extraHeaders.forEach { (name, value) -> headers.set(name, value) }
         val base = URI.create(target.baseUrl)
         headers.set(HttpHeaders.HOST, "${base.host}:${base.port}")
         val priorXff = req.getHeader("X-Forwarded-For")
@@ -155,6 +173,8 @@ class ServiceProxy(
             "transfer-encoding", "te", "trailer", "upgrade", "proxy-authorization", "expect",
             "x-forwarded-for", "x-forwarded-proto", "x-forwarded-host", "x-forwarded-port", "forwarded",
             "x-csrf-token",
+            // Feature 04: host context is gateway-set only, never client-supplied.
+            "x-rb-host-context",
         )
         private val RESPONSE_DENY = setOf(
             "connection", "keep-alive", "transfer-encoding", "content-length", "te", "trailer",

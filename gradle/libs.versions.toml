@@ -16,6 +16,9 @@ micrometerOtel = "1.15.1"
 flyway = "11.10.0"
 postgresDriver = "42.7.5"
 jedisOrLettuce = "6.5.3.RELEASE"
+# Feature 04: the reference IDNA2008 (UTS #46) implementation for hostname
+# punycode (java.net.IDN is IDNA2003 only). profile-service only.
+icu4j = "77.1"
 # Gradle wrapper itself is pinned to 9.8.1 (gradle-wrapper.properties). No dynamic versions anywhere.
 
 [libraries]
@@ -44,6 +47,7 @@ jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-
 archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 testcontainers-junit5 = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgres = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
+icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

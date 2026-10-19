@@ -26,6 +26,11 @@ edge:
     cookie-secure: ${SESSION_COOKIE_SECURE:true}
   # Introspect rebuild target (edge key miss / db 2 loss); mesh DNS in compose.
   account-service-url: ${ACCOUNT_SERVICE_URL:http://account-service:8080}
+  # Feature 04 host routing: foreign-host resolve target (positive 30 s /
+  # negative 60 s decision cache) and the platform host list that skips it.
+  profile-service-url: ${PROFILE_SERVICE_URL:http://profile-service:8080}
+  platform-hosts: ${EDGE_PLATFORM_HOSTS:localhost,127.0.0.1,::1}
+  host-resolve-timeout-ms: ${EDGE_HOST_RESOLVE_TIMEOUT_MS:2000}
 
 management:
   endpoints:
