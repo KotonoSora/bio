@@ -149,6 +149,16 @@ services:
       GENERIC_OIDC_USERINFO_URI: ${GENERIC_OIDC_USERINFO_URI:-}
       GENERIC_OIDC_JWK_SET_URI: ${GENERIC_OIDC_JWK_SET_URI:-}
       GENERIC_OIDC_ISSUER: ${GENERIC_OIDC_ISSUER:-}
+      # Feature 05 concierge (TL 01 D-6): config-provisioned first owner; SLA
+      # windows stay blank unless the environment supplies the product numbers
+      # (Q-01) - the dev/e2e zero-window tier comes from scripts/enable-concierge.sh.
+      CONCIERGE_OWNER_USER_IDS: ${CONCIERGE_OWNER_USER_IDS:-concierge-owner-dev}
+      CONCIERGE_SLA_STANDARD_RESPONSE_MINUTES: ${CONCIERGE_SLA_STANDARD_RESPONSE_MINUTES:-}
+      CONCIERGE_SLA_STANDARD_COMPLETION_MINUTES: ${CONCIERGE_SLA_STANDARD_COMPLETION_MINUTES:-}
+      CONCIERGE_SLA_RAPID_RESPONSE_MINUTES: ${CONCIERGE_SLA_RAPID_RESPONSE_MINUTES:-}
+      CONCIERGE_SLA_RAPID_COMPLETION_MINUTES: ${CONCIERGE_SLA_RAPID_COMPLETION_MINUTES:-}
+      CONCIERGE_LINK_SIGNING_KEY: ${CONCIERGE_LINK_SIGNING_KEY:-}
+      CONCIERGE_REFERRAL_URL: ${CONCIERGE_REFERRAL_URL:-/app/concierge}
     volumes:
       - ${DATA_ROOT:-./data}/uploads/account:/srv/uploads/account
     depends_on:

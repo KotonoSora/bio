@@ -38,6 +38,9 @@ export default function App() {
             <NavLink to="/account/domains" className={navLinkClass}>
               {t('nav.domains')}
             </NavLink>
+            <NavLink to="/concierge" className={navLinkClass}>
+              {t('nav.concierge')}
+            </NavLink>
           </nav>
         </div>
       </header>
@@ -51,6 +54,7 @@ export default function App() {
           <Route path="/welcome/username" element={<WelcomeUsername />} />
           <Route path="/account/settings" element={<MfeMount name="account" />} />
           <Route path="/account/domains" element={<MfeMount name="domains" />} />
+          <Route path="/concierge" element={<MfeMount name="concierge" />} />
           <Route path="/recovery/:token" element={<RecoveryLanding />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

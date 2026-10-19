@@ -14,6 +14,9 @@ Tests never boot the stack; start it with `docker compose up -d` first.
 | `mock-idp/server.mjs` | Zero-dependency mock OIDC IdP (authorize consent page, token exchange, RS256 id_token, JWKS). |
 | `scripts/enable-full-login.sh` / `disable-full-login.sh` | Toggle `.env` between the mock and placeholder IdP; enable also ensures the dev internal-JWT keypair, disable blanks it again. Recreates gateway + affected services **and the edge** (nginx caches upstream IPs at startup). |
 | `01-account-and-access.test-cases.md` | The full case catalog (AC-01..AC-15 mapping, integration-owned list, runbook). |
+| `tests/05-concierge-managed-service.spec.ts` | Default suite (5 cases): concierge owner-API guards, the mesh-only internal namespace, and the session-gated SPA route. |
+| `tests/05-concierge-managed-service.authenticated.spec.ts` | Opt-in staffed journey (13 ordered cases, `workers=1`): activation gates, refusals, approvals + dispatch gate, dual-confirm transitions, exit handoff, SLA drill, request envelope. |
+| `scripts/enable-concierge.sh` / `disable-concierge.sh` | Toggle the concierge dev wiring in the repo-root `.env` (full login + owner bootstrap + zero-window SLA tier) and recreate account-service. |
 
 ## Run
 
@@ -187,6 +190,38 @@ plan key and binding in `afterAll`. Run it a minute apart from the other
 dance suites (auth budget). `domains:on` sets JWT keys, so run
 `deploy/smoke.sh` only after `domains:off` + `idp:off` restored the blank-key
 baseline (direct service reads need the dev-user fallback).
+
+## Concierge managed service suite (feature 05)
+
+`tests/05-concierge-managed-service.spec.ts` runs in the default set (no IdP):
+session/CSRF guards on the owner API, the mesh-only internal namespace
+(staff/template/approval routes never answer at the edge), and the session-gated
+SPA route - an anonymous visit lands on the sign-in step, never a fabricated
+board.
+
+`tests/05-concierge-managed-service.authenticated.spec.ts` is the staffed
+agency journey (13 ordered cases, `workers=1`, `--list` order is the contract):
+the staffing + setup-plan gates on activation, off-menu/over-volume refusals,
+approvals and the dispatch gate, the signed-email confirmation (single use -
+replay rejected), dual-confirm pause + initiator cancel, exit handoff with
+retained history, and the second client's SLA-miss + request-envelope drill.
+
+```sh
+cd e2e
+npm run concierge:on         # full login + owner bootstrap + zero-window dev SLA tier
+npm run test:concierge       # headless
+npm run concierge:off        # restore the placeholder IdP afterwards
+```
+
+`concierge:on` = `idp:on` plus the concierge keys in the repo-root `.env`
+(owner bootstrap, 0-minute standard windows for the miss drill); without it the
+suite skips with the fix instruction, and without `E2E_FULL_LOGIN=1` (default
+runs) it never starts. Budget: 2 dances = 4 auth ops - run it a minute apart
+from the other dance suites. Each invocation mints a fresh `E2E_CONCIERGE_RUN`
+id; the id is recorded next to the seed in `.auth/concierge*.json` (gitignored)
+because Playwright discards the worker after any failed case: the after-restart
+`beforeAll` reuses still-live sessions instead of re-dancing, and the ordered
+journey state is written through the same way so one real failure stays one.
 
 ## Limits and troubleshooting
 

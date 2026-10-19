@@ -3,6 +3,10 @@ package com.resume.account.domain
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.resume.account.api.PurgeProbeResponse
 import com.resume.account.api.PurgeResponse
+import com.resume.account.data.ConciergeApprovalRepository
+import com.resume.account.data.ConciergeContractRepository
+import com.resume.account.data.ConciergeStaffRepository
+import com.resume.account.data.ConciergeTaskRepository
 import com.resume.account.data.LinkedAccountRepository
 import com.resume.account.data.SessionRepository
 import com.resume.account.data.UserRepository
@@ -26,6 +30,10 @@ class AccountPurgeHandler(
     private val users: UserRepository,
     private val links: LinkedAccountRepository,
     private val sessions: SessionRepository,
+    private val conciergeContracts: ConciergeContractRepository,
+    private val conciergeTasks: ConciergeTaskRepository,
+    private val conciergeApprovals: ConciergeApprovalRepository,
+    private val conciergeStaff: ConciergeStaffRepository,
     private val redis: StringRedisTemplate,
     private val mapper: ObjectMapper,
     meters: MeterRegistry,
@@ -47,6 +55,13 @@ class AccountPurgeHandler(
         redis.opsForValue().setIfAbsent(activeKey, runId, Duration.ofMinutes(30))
         try {
             val tables = linkedMapOf<String, Long>()
+            // Feature 05 rows belong to the client account (TL 03 roster): the
+            // approvals count is recorded before the contract delete cascades
+            // (approvals carry no app-role DELETE grant - append-only ledger).
+            tables["concierge_approvals"] = conciergeApprovals.countByUserId(userId)
+            tables["concierge_tasks"] = conciergeTasks.deleteByUserId(userId).toLong()
+            tables["concierge_contracts"] = conciergeContracts.deleteByUserId(userId).toLong()
+            tables["concierge_staff"] = conciergeStaff.deleteByUserId(userId).toLong()
             tables["sessions"] = sessions.deleteByUserId(userId).toLong()
             tables["linked_accounts"] = links.deleteByUserId(userId).toLong()
             tables["users"] = users.deleteByUserId(userId).toLong()
@@ -65,6 +80,8 @@ class AccountPurgeHandler(
         residual["users"] = if (users.existsById(userId)) 1 else 0
         residual["linked_accounts"] = links.countByUserId(userId)
         residual["sessions"] = sessions.countByUserId(userId)
+        residual["concierge_contracts"] = conciergeContracts.findLive(userId)?.let { 1L } ?: 0L
+        residual["concierge_approvals"] = conciergeApprovals.countByUserId(userId)
         PurgeProbeResponse(userId = userId, residualRows = residual, residualFiles = 0)
     }
 

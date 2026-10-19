@@ -12,6 +12,10 @@ jjwt = "0.12.6"
 # Jackson 2 runtime set (jjwt/logstash/springdoc bring 2.x; Boot 4's own mapper is Jackson 3).
 # The Kotlin module must match the 2.x databind on the runtime classpath.
 jackson2 = "2.21.5"
+# Spring MVC binds request bodies with Boot 4's Jackson 3 JsonMapper: the 3.x
+# Kotlin module must match the databind Boot 4 pulls (tools.jackson 3.1.5), or
+# data-class defaults never fill omitted fields (partial PATCH bodies 422).
+jackson3 = "3.1.5"
 micrometerOtel = "1.15.1"
 flyway = "11.10.0"
 postgresDriver = "42.7.5"
@@ -44,6 +48,7 @@ jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson2" }
+jackson3-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin", version.ref = "jackson3" }
 archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 testcontainers-junit5 = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgres = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
